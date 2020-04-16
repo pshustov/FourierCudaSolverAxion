@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CudaCompile Include="Parallel Reduction\reduction_kernel.cu">
+      <Filter>Parallel Reduction</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Source\kernel.cu">
+      <Filter>Source</Filter>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Distribution">
+      <UniqueIdentifier>{b974b60a-a3e6-41b3-8e82-e1ed97e22fe8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FFT">
+      <UniqueIdentifier>{76090fc5-6426-4c97-aa07-9af1d2e8a750}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Parallel Reduction">
+      <UniqueIdentifier>{4603699e-b713-49d4-91ce-2e68d41dbcef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{19e9a0ac-9f26-494b-ba01-1b987823139f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{38860047-79f9-42ef-820a-08888ed2f361}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="FFT\FFT_implication.h">
+      <Filter>FFT</Filter>
+    </ClInclude>
+    <ClInclude Include="Parallel Reduction\reduction.h">
+      <Filter>Parallel Reduction</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\complexCuda.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\equations.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\gridCuda.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\system.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\vector.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\vectorCuda.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Distribution\distribution.h">
+      <Filter>Distribution</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\stdafx.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="FFT\FFT_implication.cpp">
+      <Filter>FFT</Filter>
+    </ClCompile>
+    <ClCompile Include="Parallel Reduction\reduction.cpp">
+      <Filter>Parallel Reduction</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\equation.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\gridCuda.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\system.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\fourierCudaSolverAxion.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Distribution\distribution.cpp">
+      <Filter>Distribution</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
