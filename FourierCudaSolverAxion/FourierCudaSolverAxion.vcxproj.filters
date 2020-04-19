@@ -7,6 +7,9 @@
     <CudaCompile Include="Source\kernel.cu">
       <Filter>Source</Filter>
     </CudaCompile>
+    <CudaCompile Include="Source\equation.cpp" />
+    <CudaCompile Include="FFT\FFT_implication.cpp" />
+    <CudaCompile Include="Source\gridCuda.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Distribution">
@@ -58,17 +61,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FFT\FFT_implication.cpp">
-      <Filter>FFT</Filter>
-    </ClCompile>
     <ClCompile Include="Parallel Reduction\reduction.cpp">
       <Filter>Parallel Reduction</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\equation.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\gridCuda.cpp">
-      <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Source\system.cpp">
       <Filter>Source</Filter>
