@@ -53,7 +53,14 @@ private:
 		fDistrOut << time << "\t";
 		for (int i = 0; i < Nf - 1; i++)
 		{
-			fDistrOut << f(i).abs() << "\t";
+			if (std::isnan(f(i).abs()))
+			{
+				fDistrOut << 0 << "\t";
+			}
+			else
+			{
+				fDistrOut << f(i).abs() << "\t";
+			}
 		}
 		fDistrOut << f(Nf - 1).abs() << std::endl;
 	}

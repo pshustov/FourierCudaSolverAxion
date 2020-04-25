@@ -7,9 +7,15 @@
     <CudaCompile Include="Source\kernel.cu">
       <Filter>Source</Filter>
     </CudaCompile>
-    <CudaCompile Include="Source\equation.cpp" />
-    <CudaCompile Include="FFT\FFT_implication.cpp" />
-    <CudaCompile Include="Source\gridCuda.cpp" />
+    <CudaCompile Include="FFT\FFT_implication.cpp">
+      <Filter>FFT</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Source\equation.cpp">
+      <Filter>Source</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Source\gridCuda.cpp">
+      <Filter>Source</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Distribution">
