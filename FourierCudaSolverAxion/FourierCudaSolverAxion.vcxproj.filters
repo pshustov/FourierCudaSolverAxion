@@ -4,17 +4,17 @@
     <CudaCompile Include="Source\kernel.cu">
       <Filter>Source</Filter>
     </CudaCompile>
-    <CudaCompile Include="FFT\FFT_implication.cpp">
-      <Filter>FFT</Filter>
-    </CudaCompile>
-    <CudaCompile Include="Source\equation.cpp">
-      <Filter>Source</Filter>
-    </CudaCompile>
-    <CudaCompile Include="Source\gridCuda.cpp">
-      <Filter>Source</Filter>
-    </CudaCompile>
     <CudaCompile Include="Parallel_Reduction\reduction_kernel.cu">
       <Filter>Parallel Reduction</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Source\equation.cu">
+      <Filter>Source</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Source\gridCuda.cu">
+      <Filter>Source</Filter>
+    </CudaCompile>
+    <CudaCompile Include="FFT\FFT_implication.cu">
+      <Filter>FFT</Filter>
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>

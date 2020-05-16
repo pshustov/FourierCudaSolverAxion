@@ -50,18 +50,18 @@ private:
 
 	void printDistr()
 	{
-		fDistrOut << time << "\t";
-		for (int i = 0; i < Nf - 1; i++)
+		fDistrOut << time;
+		for (int i = 0; i < Nf; i++)
 		{
 			if (std::isnan(f(i).abs()))
 			{
-				fDistrOut << 0 << "\t";
+				fDistrOut << "\t" << 0;
 			}
 			else
 			{
-				fDistrOut << f(i).abs() << "\t";
+				fDistrOut << "\t" << f(i).abs();
 			}
 		}
-		fDistrOut << f(Nf - 1).abs() << std::endl;
+		fDistrOut << std::endl;
 	}
 };

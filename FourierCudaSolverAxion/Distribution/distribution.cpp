@@ -47,6 +47,8 @@ Distribution::Distribution(cudaGrid_3D & Grid)
 	int N3 = (int) Grid.get_N3();
 	int N3red = (int) Grid.get_N3red();
 
+	time = Grid.get_time();
+
 	rhoK.set_size_erase(N1, N2, N3red);
 	omega.set_size_erase(N1, N2, N3red);
 
@@ -57,7 +59,7 @@ Distribution::Distribution(cudaGrid_3D & Grid)
 	if (N1 == N2 && N1 == N3) { N = N1; }
 	else { throw; }
 
-	if (abs(L1 - L2) / L1 < 1e-10 && abs(L1 - L3) / L1 < 1e-10) { kappa = 2 * M_PI / L1; }
+	if (abs(L1 - L2) / L1 < 1e-10 && abs(L1 - L3) / L1 < 1e-10) { kappa = 2 * Ma_PI / L1; }
 	else { throw; }
 
 	double d = double(N) / 2.0 / double(Nf);

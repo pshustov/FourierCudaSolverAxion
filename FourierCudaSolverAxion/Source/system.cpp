@@ -47,7 +47,7 @@ void systemEquCuda_3D::printingVTK()
 	Grid.hostSynchronize_q();
 
 	char buf[100];
-	sprintf_s(buf, "dataFolder/data_%07.0f.vtk", time * 1000);
+	sprintf(buf, "dataFolder/data_%07.0f.vtk", time * 1000);
 	std::ofstream outVTK(buf);
 	outVTK.precision(4);
 
@@ -79,7 +79,7 @@ void systemEquCuda_3D::printingVTKrho()
 	Grid.hostSynchronize_rho();
 
 	char buf[100];
-	sprintf_s(buf, "dataFolderRho/dataRho_%07.0f.vtk", time * 1000);
+	sprintf(buf, "dataFolderRho/dataRho_%07.0f.vtk", time * 1000);
 	std::ofstream outVTK(buf);
 	outVTK.precision(4);
 

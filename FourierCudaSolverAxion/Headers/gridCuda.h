@@ -54,6 +54,7 @@ public:
 	double get_L1() const { return L1; }
 	double get_L2() const { return L2; }
 	double get_L3() const { return L3; }
+	double get_volume() const { return L1 * L2 * L3; }
 
 	cudaRVector get_x1() const { return x1; }
 	cudaRVector get_x2() const { return x2; }
@@ -136,6 +137,8 @@ public:
 	void calculateRhoK();
 	void calculateOmega();
 
+	void printTauInfo();
+
 private:
 	size_t N1, N2, N3, N3red;
 	size_t N1_print, N2_print, N3_print;
@@ -163,5 +166,12 @@ private:
 	double lambda, g;
 	double current_time;
 	bool isIFFTsync, isRhoCalculateted, isRhoKCalculateted;
+
+
+
+	double getNumberOfParticles();
+	double getMomentum(double numOfPart);
+	double getTauHalfLife(double numOfPart, double momentum);
+	void getTest();
 };
 

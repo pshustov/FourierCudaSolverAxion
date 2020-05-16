@@ -63,6 +63,11 @@ public:
 	double get_energy();
 	double get_delta() { return (energy - energy0) / energy0; }
 	double get_maxRho();
+	
+	void printTauInfo()
+	{
+		Grid.printTauInfo();
+	}
 
 
 private:

@@ -198,3 +198,149 @@ __global__ void kernelGetPhi5(const int N, double *T, double *q)
 		T[i] = q[i] * q[i] * q[i] * q[i] * q[i];
 	}
 }
+
+
+
+__global__ void kernelGetNumberOfParticles(const int N, const int Nred, const int Nkred, double* t, double* k_sqr, complex* Q)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (i < Nred)
+	{
+		if (i % Nkred == 0)
+		{
+			t[i] = sqrt(1 + k_sqr[i]) * (Q[i] * Q[i].get_conj()).real();
+		}
+		else
+		{
+			t[i] = 2 * sqrt(1 + k_sqr[i]) * (Q[i] * Q[i].get_conj()).real();
+		}
+	}
+	else
+	{
+		if (i < N)
+		{
+			t[i] = 0;
+		}
+	}
+}
+
+__global__ void kernelGetMomentum(const int N, const int Nred, const int Nkred, double* t, double* k_sqr, complex* Q)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (i < Nred)
+	{
+		if (i % Nkred == 0)
+		{
+			t[i] = sqrt(k_sqr[i] * (1 + k_sqr[i])) * (Q[i] * Q[i].get_conj()).real();
+		}
+		else
+		{
+			t[i] = 2 * sqrt(k_sqr[i] * (1 + k_sqr[i])) * (Q[i] * Q[i].get_conj()).real();
+		}
+	}
+	else
+	{
+		if (i < N)
+		{
+			t[i] = 0;
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+__global__ void kernelTestReal(const int N, double* t, double* q)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < N)
+	{
+		t[i] = q[i] * q[i];
+	}
+}
+
+
+__global__ void kernelTestComplex(const int Nred, complex* T, complex* Q)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < Nred)
+	{
+		T[i] = Q[i] * Q[i].get_conj();
+	}
+}
+
+
+__global__ void kernelTestComplex_v2(const int Nred, const int N, double* t, complex* Q)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < Nred)
+	{
+		t[i] = (Q[i] * Q[i].get_conj()).real();
+	}
+	else
+	{
+		if (i < N)
+		{
+			t[i] = 0;
+		}
+	}
+}
+
+__global__ void kernelTestComplex_v3(const int N1, const int N2, const int N3, double* t, complex* Q)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	
+	int k = i % (int)(0.5 * N3 + 1.0);
+
+	if (i < N1 * N2 * (N3 / 2 + 1))
+	{
+		if (2 * k == N3)
+		{
+			t[i] = (Q[i] * Q[i].get_conj()).real();
+		}
+		else
+		{
+			t[i] = 2 * (Q[i] * Q[i].get_conj()).real();
+		}
+	}
+	else
+	{
+		if (i < N1*N2*N3)
+		{
+			t[i] = 0;
+		}
+	}
+}
+
+
+__global__ void kernelTestComplex_v4(const int N, const int Nred, const int Nkred, double* t, complex* Q)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (i < Nred)
+	{
+		if (i % Nkred == 0)
+		{
+			t[i] = (Q[i] * Q[i].get_conj()).real();
+		}
+		else
+		{
+			t[i] = 2 * (Q[i] * Q[i].get_conj()).real();
+		}
+	}
+	else
+	{
+		if (i < N)
+		{
+			t[i] = 0;
+		}
+	}
+}
+

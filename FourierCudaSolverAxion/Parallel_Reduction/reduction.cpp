@@ -149,6 +149,9 @@ double reductionSum(int size, double *inData)
 	return result;
 }
 
+
+
+
 //
 //double reductionSigma2(int size, double *inData)
 //{
