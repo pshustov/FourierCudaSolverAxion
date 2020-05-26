@@ -102,9 +102,9 @@ void systemEquCuda_3D::printingVTKrho()
 	outVTK.close();
 }
 
-void systemEquCuda_3D::printingMaxVal(std::ofstream &out)
+void systemEquCuda_3D::printingMaxVal()
 {
-	out << get_time() << "\t" << get_maxRho() << std::endl;
+	out_maxVal << get_time() << "\t" << get_maxRho() << std::endl;
 }
 
 

@@ -20,14 +20,18 @@ public:
 		isEnergyCalculated = false;
 		energy0 = get_energy();
 
+		out_maxVal.open("out_maxVal.txt");
+		out_maxVal.precision(14);
 	}
-	~systemEquCuda_3D() {}
+	~systemEquCuda_3D() {
+		out_maxVal.close();
+	}
 
 	void evaluate();
 
 	void printingVTK();
 	void printingVTKrho();
-	void printingMaxVal(std::ofstream &out);
+	void printingMaxVal();
 
 	void save()
 	{
@@ -80,6 +84,7 @@ private:
 	double energy0, energy;
 	bool isEnergyCalculated;
 
+	std::ofstream out_maxVal;
 
 	void evlulate_step(const double _dt)
 	{
