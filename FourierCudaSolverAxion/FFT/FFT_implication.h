@@ -19,11 +19,13 @@ public:
 	{
 		dim = 1;
 		n = new int[dim];
+		L = 1;
+		N = 1;
 	}
 	cuFFT(const int dim, const int *_n, const int _BATCH = 1);
 	~cuFFT();
 
-	void reset(const int dim, const int *_n, const int _BATCH = 1);
+	void reset(const int dim, const int *_n, double _L, const int _BATCH = 1);
 
 	void forward(cudaCVector &f, cudaCVector &F);
 	void forward(cudaRVector &f, cudaCVector &F);
@@ -41,4 +43,6 @@ private:
 	int *n;
 	int BATCH;
 	cufftHandle planZ2Z, planD2Z, planZ2D;
+	double L;
+	int N;
 };
