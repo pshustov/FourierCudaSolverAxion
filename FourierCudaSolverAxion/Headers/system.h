@@ -29,10 +29,6 @@ public:
 
 	void evaluate();
 
-	void printingVTK();
-	void printingVTKrho();
-	void printingMaxVal();
-
 	void save()
 	{
 		std::ofstream fsave;
@@ -66,13 +62,6 @@ public:
 	double get_time() { return Grid.get_time(); }
 	double get_energy();
 	double get_delta() { return (energy - energy0) / energy0; }
-	double get_maxRho();
-	
-	void printTauInfo()
-	{
-		Grid.printTauInfo();
-	}
-
 
 private:
 	double precision;

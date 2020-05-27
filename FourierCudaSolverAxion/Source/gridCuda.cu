@@ -1,20 +1,6 @@
 #include "stdafx.h"
 
-//double reductionSigma2(int size, double *inData);
-//double reductionSigma4(int size, double *inData);
 double reductionSum(int size, double *inData);
-
-int getPow2(unsigned int N)
-{
-	int p = 0;
-	if (N&(N - 1) != 0) {
-		throw;
-	}
-	while (N >>= 1) {
-		p++;
-	}
-	return p;
-}
 
 cudaGrid_3D::cudaGrid_3D(const std::string filename)
 {
@@ -25,25 +11,8 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	in >> N1;	in >> N2; 	in >> N3;
 	in >> L1;	in >> L2;	in >> L3;
 
-
 	//check N1 N2 N3
 	if (N1 % N_MIN != 0 || N2 % N_MIN != 0 || N3 % N_MIN != 0) { throw; }
-
-	//set all others Ns 
-	int N_current_min = (int) (N1 < N2 ? (N1 < N3 ? N1 : N3) : (N2 < N3 ? N2 : N3));
-	factor = N_current_min / N_MIN;
-
-	if (factor > 2) {
-		N1_print = N1 / factor;
-		N2_print = N2 / factor;
-		N3_print = N3 / factor;
-	}
-	else
-	{
-		N1_print = N1;
-		N2_print = N2;
-		N3_print = N3;
-	}
 
 	//malloc for all varibles 
 	set_sizes();
@@ -51,13 +20,11 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	// set q p
 	for (size_t i = 0; i < N1*N2*N3; i++) {
 		in >> RHost(i);
-		//RHost(i) = 1;
 	}
 	q = RHost;
 
 	for (size_t i = 0; i < N1*N2*N3; i++) {
 		in >> RHost(i);
-		//RHost(i) = 1;
 	}
 	p = RHost;
 
@@ -86,22 +53,17 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 
 	isIFFTsync = true;
 	isRhoCalculateted = false;
-	isRhoKCalculateted = false;
 }
-
-
 
 cudaGrid_3D::~cudaGrid_3D()
 {
 }
-
 
 void cudaGrid_3D::fft()
 {
 	cufft.forward(q, Q);
 	cufft.forward(p, P);
 }
-
 
 void cudaGrid_3D::ifft()
 {
@@ -112,74 +74,6 @@ void cudaGrid_3D::ifft()
 	}
 	isIFFTsync = true;
 }
-
-
-void cudaGrid_3D::printingVTK(std::ofstream & outVTK) const
-{
-	int M = (int)RHost.size();
-	for (size_t i = 0; i < M; i++) {
-		outVTK << RHost(i) << '\n';
-	}
-	outVTK << std::flush;
-}
-
-
-void cudaGrid_3D::hostSynchronize_q()
-{
-	ifft();
-	if (factor > 2)
-	{
-		dim3 grid((unsigned int) N1_print, (unsigned int) N2_print, (unsigned int) N3_print);
-		dim3 block(factor, factor, factor);
-
-		kernelSyncBuf << <grid, block, factor*factor*factor * sizeof(double) >> > (get_buf_ptr(), get_q_ptr());
-		cudaDeviceSynchronize();
-		RHost = bufPrint;
-	}
-	else
-	{
-		RHost = q;
-	}
-}
-
-
-void cudaGrid_3D::hostSynchronize_p()
-{
-	ifft();
-	if (factor > 2)
-	{
-		dim3 grid((unsigned int)N1_print, (unsigned int)N2_print, (unsigned int)N3_print);
-		dim3 block(factor, factor, factor);
-
-		kernelSyncBuf << <grid, block, factor*factor*factor * sizeof(double) >> > (get_buf_ptr(), get_p_ptr());
-		cudaDeviceSynchronize();
-		RHost = bufPrint;
-	}
-	else
-	{
-		RHost = p;
-	}
-}
-
-
-void cudaGrid_3D::hostSynchronize_rho()
-{
-	ifft(); 
-	if (factor > 2)
-	{
-		dim3 grid((unsigned int)N1_print, (unsigned int)N2_print, (unsigned int)N3_print);
-		dim3 block(factor, factor, factor);
-
-		kernelSyncBuf << <grid, block, factor*factor*factor * sizeof(double) >> > (get_buf_ptr(), get_rho_ptr());
-		cudaDeviceSynchronize();
-		RHost = bufPrint;
-	}
-	else
-	{
-		RHost = rho;
-	}
-}
-
 
 void cudaGrid_3D::set_sizes()
 {
@@ -203,15 +97,10 @@ void cudaGrid_3D::set_sizes()
 	T.set_size_erase(N1, N2, N3red);
 
 	rho.set_size_erase(N1, N2, N3);
-	rhoK.set_size_erase(N1, N2, N3red);
-	omega.set_size_erase(N1, N2, N3red);
 
 	RHost.set_size_erase(N1, N2, N3);
 	CHost.set_size_erase(N1, N2, N3red);
-
-	bufPrint.set_size_erase(N1_print, N2_print, N3_print);
 }
-
 
 void cudaGrid_3D::set_xk()
 {
@@ -269,179 +158,4 @@ void cudaGrid_3D::set_xk()
 		}
 	}
 	k_sqr = temp31;
-}
-
-
-void cudaGrid_3D::calculateRho()
-{
-	if (!isRhoCalculateted)
-	{
-
-		ifft();
-
-		const int N = (int)(N1 * N2 * N3);
-		const int Nred = (int)(N1 * N2 * N3red);
-
-		dim3 block(BLOCK_SIZE);
-		dim3 grid((unsigned int)ceil((double)N / (double)BLOCK_SIZE));
-		dim3 gridRed((unsigned int)ceil((double)Nred / (double)BLOCK_SIZE));
-
-		kernelCulcRhoReal << <grid, block >> > (N, get_rho_ptr(), get_q_ptr(), get_p_ptr(), lambda, g);
-		cudaDeviceSynchronize();
-
-		///AddDir1
-		kernelDer << <gridRed, block >> > (Nred, get_T_ptr(), get_k1_ptr(), get_Q_ptr());
-		cudaDeviceSynchronize();
-		doFFT_T2t();
-		kernelAddMullSqr << <grid, block >> > (N, get_rho_ptr(), get_t_ptr(), 0.5);
-
-		///AddDir2
-		kernelDer << <grid, block >> > (Nred, get_T_ptr(), get_k2_ptr(), get_Q_ptr());
-		cudaDeviceSynchronize();
-		doFFT_T2t();
-		kernelAddMullSqr << <grid, block >> > (N, get_rho_ptr(), get_t_ptr(), 0.5);
-
-		///AddDir3
-		kernelDer << <grid, block >> > (Nred, get_T_ptr(), get_k3_ptr(), get_Q_ptr());
-		cudaDeviceSynchronize();
-		doFFT_T2t();
-		kernelAddMullSqr << <grid, block >> > (N, get_rho_ptr(), get_t_ptr(), 0.5);
-
-		isRhoCalculateted = true;
-	}
-}
-
-
-void cudaGrid_3D::calculateRhoK()
-{
-	if (!isRhoKCalculateted)
-	{
-		const int N = (int)(N1 * N2 * N3);
-		const int Nred = (int)(N1 * N2 * N3red);
-
-		dim3 block(BLOCK_SIZE);
-		dim3 grid((unsigned int)ceil((double)N / (double)BLOCK_SIZE));
-		dim3 gridRed((unsigned int)ceil((double)Nred / (double)BLOCK_SIZE));
-		
-		double m = 1 / (2. * 2. * Ma_PI * 2. * Ma_PI * 2. * Ma_PI);
-		kernelSetRhoK<<<gridRed, block>>>(rhoK.get_Array(), m, k_sqr.get_Array(), Q.get_Array(), P.get_Array());
-		cudaDeviceSynchronize();
-		
-		ifft();
-		kernelGetPhi3<<<grid, block>>>(N, t.get_Array(), q.get_Array());
-		cudaDeviceSynchronize();
-		doFFTforward(t, T);
-		m = lambda / (4. * 2. * Ma_PI * 2. * Ma_PI * 2. * Ma_PI);
-		kernelAddRhoK<<<gridRed, block>>>(m, Q.get_Array(), T.get_Array());
-		cudaDeviceSynchronize();
-
-		kernelGetPhi5<<<grid, block>>>(N, t.get_Array(), q.get_Array());
-		cudaDeviceSynchronize();
-		doFFTforward(t, T);
-		m = g / (6. * 2. * Ma_PI * 2. * Ma_PI * 2. * Ma_PI);
-		kernelAddRhoK<<<gridRed, block>>>(m, Q.get_Array(), T.get_Array());
-		cudaDeviceSynchronize();
-
-		isRhoKCalculateted = true;
-	}
-}
-
-
-void cudaGrid_3D::calculateOmega()
-{
-	double sigma2, sigma4;
-
-	const int N = (int)(N1 * N2 * N3);
-	const int Nred = (int)(N1 * N2 * N3red);
-
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((unsigned int)ceil((double)N / (double)BLOCK_SIZE));
-	dim3 gridRed((unsigned int)ceil((double)Nred / (double)BLOCK_SIZE));
-
-	ifft();
-	kernelGetPhi2<<<grid, block>>>(N, t.get_Array(), q.get_Array());
-
-	sigma2 = reductionSum(N, q.get_Array()) / N;
-	sigma4 = sigma2 * sigma2;
-	
-	cudaDeviceSynchronize();
-	kernelGetOmega<<<gridRed, block>>>(Nred, omega.get_Array(), k_sqr.get_Array(), sigma2, sigma4, lambda, g);
-	cudaDeviceSynchronize();
-}
-
-
-
-
-
-
-double cudaGrid_3D::getNumberOfParticles()
-{
-	const int N = (int)(N1 * N2 * N3);
-	const int Nred = (int)(N1 * N2 * N3red);
-
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((unsigned int)ceil((double)N / (double)BLOCK_SIZE));
-
-	cudaDeviceSynchronize();
-	kernelGetNumberOfParticles<<<grid, block>>>(N, Nred, N3red, t.get_Array(), k_sqr.get_Array(), Q.get_Array());
-	cudaDeviceSynchronize();
-	
-	return reductionSum(N, t.get_Array()) / get_volume();
-}
-
-double cudaGrid_3D::getMomentum(double numOfPart)
-{
-	const int N = (int)(N1 * N2 * N3);
-	const int Nred = (int)(N1 * N2 * N3red);
-
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((unsigned int)ceil((double)N / (double)BLOCK_SIZE));
-
-	cudaDeviceSynchronize();
-	kernelGetMomentum<<<grid, block>>>(N, Nred, N3red, t.get_Array(), k_sqr.get_Array(), Q.get_Array());
-	cudaDeviceSynchronize();
-
-	return reductionSum(N, t.get_Array()) / numOfPart / get_volume();
-}
-
-
-double cudaGrid_3D::getTauHalfLife(double numOfPart, double momentum)
-{
-	double p3 = momentum * momentum * momentum;
-	double num2 = numOfPart * numOfPart;
-	double V2 = get_volume() * get_volume();
-	double lam2 = get_lambda() * get_lambda();
-	return 6.7906109052542009928057072 * (p3 * V2) / (lam2 * num2);
-}
-
-void cudaGrid_3D::printTauInfo()
-{
-	double numOfPart = getNumberOfParticles();
-	double momentum = getMomentum(numOfPart);
-	double tau = getTauHalfLife(numOfPart, momentum);
-	std::cout << "Number of particles: " << numOfPart << ",\tmomentum: " << momentum << ",\ttau: " << tau << std::endl;
-	//getTest();
-}
-
-
-void cudaGrid_3D::getTest()
-{
-	const int N = (int)(N1 * N2 * N3);
-	const int Nred = (int)(N1 * N2 * N3red);
-
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((unsigned int)ceil((double)N / (double)BLOCK_SIZE));
-	dim3 gridRed((unsigned int)ceil((double)Nred / (double)BLOCK_SIZE));
-
-	cudaDeviceSynchronize();
-	kernelTestReal<<<grid, block>>>(N, t.get_Array(), q.get_Array());
-	cudaDeviceSynchronize();
-	double R = reductionSum(N, t.get_Array());
-
-	cudaDeviceSynchronize();
-	kernelTestComplex_v4<<<grid, block>>>(N, Nred, N3red, t.get_Array(), Q.get_Array());
-	cudaDeviceSynchronize();
-	double C = reductionSum(N, t.get_Array());
-
-	std::cout << "TEST Real sum = " << R << ", Complex sum = " << C / size() << std::endl;
 }

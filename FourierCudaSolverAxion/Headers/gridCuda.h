@@ -11,12 +11,6 @@ public:
 	void fft();
 	void ifft();
 
-	void printingVTK(std::ofstream & outVTK) const;
-
-	void hostSynchronize_q();
-	void hostSynchronize_p();
-	void hostSynchronize_rho();
-
 	void save(std::ofstream & fileSave)
 	{		
 		fileSave << get_N1() << "\n" << get_N2() << "\n" << get_N3() << "\n";
@@ -47,10 +41,6 @@ public:
 	size_t get_N3() const { return N3; }
 	size_t get_N3red() const { return N3red; }
 
-	size_t get_N1_print() const { return N1_print; }
-	size_t get_N2_print() const { return N2_print; }
-	size_t get_N3_print() const { return N3_print; }
-
 	double get_L1() const { return L1; }
 	double get_L2() const { return L2; }
 	double get_L3() const { return L3; }
@@ -71,8 +61,6 @@ public:
 	cudaCVector3 get_P() const { return P; }
 	cudaCVector3 get_T() const { return T; }
 	cudaRVector3 get_rho() const { return rho; }
-	cudaCVector3 get_rhoK() const { return rhoK; }
-	cudaRVector3 get_omega() const { return omega; }
 
 	double get_time() const { return current_time; }
 	double get_lambda() const { return lambda; }
@@ -95,12 +83,7 @@ public:
 	complex* get_P_ptr() { return P.get_Array(); }
 	complex* get_T_ptr() { return T.get_Array(); }
 
-	complex* get_rhoK_ptr() const { return rhoK.get_Array(); }
-	double* get_omega_ptr() const { return omega.get_Array(); }
-
 	double* get_rho_ptr() { return rho.get_Array(); }
-
-	double* get_buf_ptr() { return bufPrint.get_Array(); }
 
 
 	/// FFT and IFFT
@@ -121,7 +104,6 @@ public:
 	void setSmthChanged() { 
 		isRhoCalculateted = false; 
 		isIFFTsync = false;
-		isRhoKCalculateted = false;
 	}
 
 
@@ -133,16 +115,9 @@ public:
 	void set_sizes();
 	void set_xk();
 	void timestep(double dt) { current_time += dt; }
-	void calculateRho();
-	void calculateRhoK();
-	void calculateOmega();
-
-	void printTauInfo();
 
 private:
 	size_t N1, N2, N3, N3red;
-	size_t N1_print, N2_print, N3_print;
-	int factor;
 	double L1, L2, L3;
 
 	cudaRVector x1, x2, x3;
@@ -152,11 +127,6 @@ private:
 	cudaCVector3 Q, P, T;
 
 	cudaRVector3 rho;
-	cudaCVector3 rhoK;
-	cudaRVector3 omega;
-
-	cudaRVector3 bufPrint;
-
 
 	RVector3 RHost;
 	CVector3 CHost;
@@ -165,13 +135,6 @@ private:
 
 	double lambda, g;
 	double current_time;
-	bool isIFFTsync, isRhoCalculateted, isRhoKCalculateted;
-
-
-
-	double getNumberOfParticles();
-	double getMomentum(double numOfPart);
-	double getTauHalfLife(double numOfPart, double momentum);
-	void getTest();
+	bool isIFFTsync, isRhoCalculateted;
 };
 
