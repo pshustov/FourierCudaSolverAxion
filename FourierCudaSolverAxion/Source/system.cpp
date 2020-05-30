@@ -16,8 +16,6 @@ void systemEquCuda_3D::evaluate()
 		evlulate_step(t);
 	}
 
-	distr.waitUntilAsyncEnd();
-
 	isEnergyCalculated = false;
 }
 
