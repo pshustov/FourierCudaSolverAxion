@@ -65,7 +65,7 @@
     <ClInclude Include="Parallel_Reduction\reduction.h">
       <Filter>Parallel Reduction</Filter>
     </ClInclude>
-    <ClInclude Include="kbhit.h">
+    <ClInclude Include="Headers\kbhit.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
