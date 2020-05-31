@@ -75,8 +75,6 @@ using cudaRVector = cudaVector<double>;
 using cudaCVector = cudaVector<complex>;
 
 
-
-
 template <typename T>
 class d_cudaVector
 {
@@ -103,13 +101,6 @@ private:
 
 using d_cudaRVector = d_cudaVector<double>;
 using d_cudaCVector = d_cudaVector<complex>;
-
-
-
-
-
-
-
 
 
 

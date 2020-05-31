@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
 double reductionSum(int size, double *inData);
+template <typename T>
+T reductionSum_v2(int size, T* inData);
 
 cudaGrid_3D::cudaGrid_3D(const std::string filename)
 {

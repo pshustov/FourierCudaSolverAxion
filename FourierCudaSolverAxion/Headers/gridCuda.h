@@ -137,8 +137,6 @@ private:
 	double energy;
 	bool isIFFTsync, isEnergyCalculateted;
 
-
-	//__global__ void kernelCalculateEnergyQuad();
 	void calculateEnergy();
 };
 
