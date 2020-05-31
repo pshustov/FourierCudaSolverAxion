@@ -3,6 +3,9 @@
 
 void reduce(int witchKernel, int type, int size, int threads, int blocks, double *d_idata, double *d_odata);
 
+template <typename T>
+void reduce_v2(int size, int threads, int blocks, T(*fun)(T, T), T* d_idata, T* d_odata);
+
 unsigned int nextPow2(unsigned int x)
 {
 	--x;
@@ -12,11 +15,6 @@ unsigned int nextPow2(unsigned int x)
 	x |= x >> 8;
 	x |= x >> 16;
 	return ++x;
-}
-
-bool isPow2(unsigned int x)
-{
-	return ((x&(x - 1)) == 0);
 }
 
 void getNumBlocksAndThreads(int whichKernel, int n, int maxThreads, int &blocks, int &threads)
@@ -140,6 +138,61 @@ double reductionSum(int size, double *inData)
 	for (size_t i = 0; i < s; i++)
 	{
 		result += outData_host[i];
+	}
+
+	cudaFree(inData_dev);
+	cudaFree(outData_dev);
+	free(outData_host);
+
+	return result;
+}
+
+
+
+
+template <typename T>
+T reductionSum_v2(int size, T* inData)
+{
+	int witchKernel = 5;
+	int cpuFinalThreshold = 256;
+	int maxThreads = 256;
+
+	if (!isPow2(size)) throw;
+
+	int blocks = 0, threads = 0;
+	getNumBlocksAndThreads(witchKernel, size, maxThreads, blocks, threads);
+
+
+	T* inData_dev = NULL;
+	T* outData_dev = NULL;
+
+	cudaMalloc((void**)&inData_dev, blocks * sizeof(T));
+	cudaMalloc((void**)&outData_dev, blocks * sizeof(T));
+
+	T fun = [](T A, T B) { return A + B; };
+
+	reduce_v2<T>(size, threads, blocks, fun, inData, outData_dev);
+	cudaDeviceSynchronize();
+
+	int s = blocks;
+	while (s > cpuFinalThreshold)
+	{
+		cudaMemcpy(inData_dev, outData_dev, blocks * sizeof(T), cudaMemcpyDeviceToDevice);
+
+		getNumBlocksAndThreads(2, s, maxThreads, blocks, threads);
+		reduce(s, threads, blocks, fun, inData_dev, outData_dev);
+
+		s = blocks;
+	}
+
+	T* outData_host;
+	outData_host = (T*)malloc(s * sizeof(T));
+	cudaMemcpy(outData_host, outData_dev, s * sizeof(T), cudaMemcpyDeviceToHost);
+
+	T result = 0;
+	for (size_t i = 0; i < s; i++)
+	{
+		result = fun(result, outData_host[i]);
 	}
 
 	cudaFree(inData_dev);

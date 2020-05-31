@@ -23,3 +23,8 @@
 #ifndef MAX
 #define MAX(x,y) ((x > y) ? x : y)
 #endif
+
+bool isPow2(unsigned int x)
+{
+	return ((x & (x - 1)) == 0);
+}

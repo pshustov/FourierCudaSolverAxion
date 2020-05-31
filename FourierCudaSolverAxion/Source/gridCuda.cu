@@ -2,6 +2,9 @@
 
 double reductionSum(int size, double *inData);
 
+template <typename T>
+T reductionSum_v2(int size, T* inData);
+
 cudaGrid_3D::cudaGrid_3D(const std::string filename)
 {
 	current_time = 0;
@@ -157,7 +160,6 @@ void cudaGrid_3D::set_xk()
 }
 
 
-
 __global__ void kernelEnergyQuad(cudaRVector3Dev kSqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -183,9 +185,9 @@ void cudaGrid_3D::getEnergy()
 {
 	size_t Bx = 16, By = 8, Bz = 1;
 	dim3 block(Bx, By, Bz);
-	dim3 grid((N1 + Bx - 1) / Bx, (N2 + By - 1) / By, (N3 + Bz - 1) / Bz);
+	dim3 grid( (N1 + Bx - 1) / Bx, (N2 + By - 1) / By, (N3 + Bz - 1) / Bz);
 
-	kernelEnergyQuad << <grid, block >> > (k_sqr, Q, P, T);
+	kernelEnergyQuad<<<grid, block>>>(k_sqr, Q, P, T);
 	cudaDeviceSynchronize();
 
 	auto sum = reductionSum_v2<complex>(T.size(), T.getArray());

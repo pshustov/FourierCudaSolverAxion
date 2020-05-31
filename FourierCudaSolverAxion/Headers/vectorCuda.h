@@ -195,6 +195,11 @@ public:
 	}
 	__host__ ~cudaVector3Dev() {}
 
+	__device__ size_t size() const { return N1 * N2 * N3; }
+	__device__ size_t getN1() const { return N1; }
+	__device__ size_t getN2() const { return N2; }
+	__device__ size_t getN3() const { return N3; }
+
 	__device__ T& operator() (size_t i) { return Array[i]; }
 	__device__ const T& operator() (size_t i) const { return Array[i]; }
 
