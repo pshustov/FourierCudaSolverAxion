@@ -7,7 +7,7 @@ template <typename T> class vector3;
 template <typename T> class d_cudaVector;
 
 template <typename T>
- class cudaVector
+class cudaVector
 {
 public:
 	explicit cudaVector(const size_t _N = 1) : N(_N)
@@ -81,9 +81,11 @@ template <typename T>
 class d_cudaVector
 {
 public:
-	d_cudaVector(const cudaVector<T>& _V) :N(_V.get_N())
+	d_cudaVector(const cudaVector<T>& _V)// :N(_V.get_N())
 	{
 		Array = _V.Array;
+		std::cout << "Adress of Array: " << Array << std::endl;
+		std::cout << "Adress of Class: " << this << std::endl;
 	}
 	~d_cudaVector() 
 	{
@@ -96,9 +98,7 @@ public:
 	friend class cudaVector<T>;
 
 private:
-	size_t N;
 	T* Array;
-
 };
 
 using d_cudaRVector = d_cudaVector<double>;
@@ -172,6 +172,8 @@ public:
 	__host__ size_t get_N3() const { return N3; }
 	__host__ size_t size() const { return N1*N2*N3; }
 	
+
+	T* get_Array() const { return Array; }
 	__host__ void set_size_erase(const size_t _N1, const size_t _N2, const size_t _N3)
 	{
 		cudaFree(Array);
