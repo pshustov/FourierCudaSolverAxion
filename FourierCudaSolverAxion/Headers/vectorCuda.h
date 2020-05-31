@@ -25,10 +25,9 @@ public:
 		{
 			N = _V.N;
 			
-			//cudaFree(Array);
-			//cudaMalloc(&Array, N * sizeof(T));
-			//cudaMemcpy(Array, _V.Array, N * sizeof(T), cudaMemcpyDeviceToDevice);
-			Array = _V.Array;
+			cudaFree(Array);
+			cudaMalloc(&Array, N * sizeof(T));
+			cudaMemcpy(Array, _V.Array, N * sizeof(T), cudaMemcpyDeviceToDevice);
 		}
 		return *this;
 	}
@@ -173,8 +172,6 @@ public:
 	__host__ size_t get_N3() const { return N3; }
 	__host__ size_t size() const { return N1*N2*N3; }
 	
-	__host__ T* get_Array() const { return Array; }
-
 	__host__ void set_size_erase(const size_t _N1, const size_t _N2, const size_t _N3)
 	{
 		cudaFree(Array);
