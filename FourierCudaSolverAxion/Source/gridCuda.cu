@@ -80,23 +80,23 @@ void cudaGrid_3D::set_sizes()
 	if (N3 % 2 != 0) { throw; }
 	N3red = N3 / 2 + 1;
 
-	x1.set_size_erase(N1);
-	x2.set_size_erase(N2);
-	x3.set_size_erase(N3);
-	k1.set_size_erase(N1, N2, N3red);
-	k2.set_size_erase(N2, N2, N3red);
-	k3.set_size_erase(N3, N2, N3red);
+	x1.set(N1);
+	x2.set(N2);
+	x3.set(N3);
+	k1.set(N1, N2, N3red);
+	k2.set(N2, N2, N3red);
+	k3.set(N3, N2, N3red);
 
-	k_sqr.set_size_erase(N1, N2, N3red);
+	k_sqr.set(N1, N2, N3red);
 
-	q.set_size_erase(N1, N2, N3);
-	p.set_size_erase(N1, N2, N3);
-	t.set_size_erase(N1, N2, N3);
-	Q.set_size_erase(N1, N2, N3red);
-	P.set_size_erase(N1, N2, N3red);
-	T.set_size_erase(N1, N2, N3red);
+	q.set(N1, N2, N3);
+	p.set(N1, N2, N3);
+	t.set(N1, N2, N3);
+	Q.set(N1, N2, N3red);
+	P.set(N1, N2, N3red);
+	T.set(N1, N2, N3red);
 
-	rho.set_size_erase(N1, N2, N3);
+	rho.set(N1, N2, N3);
 
 	RHost.set_size_erase(N1, N2, N3);
 	CHost.set_size_erase(N1, N2, N3red);

@@ -566,7 +566,7 @@ public:
 		delete[] Array;
 	}
 
-	vector3(const cudaVector3<T>& _V) : N1(_V.get_N1()), N2(_V.get_N2()), N3(_V.get_N3())
+	vector3(const cudaVector3<T>& _V) : N1(_V.N1()), N2(_V.N2()), N3(_V.N3())
 	{
 		Array = new T[N1*N2*N3]();
 		cudaMemcpy(Array, _V.Array, N1*N2*N3 * sizeof(T), cudaMemcpyDeviceToHost);
@@ -574,9 +574,9 @@ public:
 	vector3& operator=(const cudaVector3<T>& _V)
 	{
 		delete[] Array;
-		N1 = _V.get_N1();
-		N2 = _V.get_N2();
-		N3 = _V.get_N3();
+		N1 = _V.N1();
+		N2 = _V.N2();
+		N3 = _V.N3();
 		Array = new T[N1*N2*N3];
 		cudaMemcpy(Array, _V.Array, N1*N2*N3 * sizeof(T), cudaMemcpyDeviceToHost);
 		cudaDeviceSynchronize();
