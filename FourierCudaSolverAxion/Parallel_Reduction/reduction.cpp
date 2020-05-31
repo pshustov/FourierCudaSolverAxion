@@ -6,6 +6,11 @@ void reduce(int witchKernel, int type, int size, int threads, int blocks, double
 template <typename T>
 void reduce_v2(int size, int threads, int blocks, T(*fun)(T, T), T* d_idata, T* d_odata);
 
+bool isPow2(unsigned int x)
+{
+	return ((x & (x - 1)) == 0);
+}
+
 unsigned int nextPow2(unsigned int x)
 {
 	--x;

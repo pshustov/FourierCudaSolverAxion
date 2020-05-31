@@ -189,9 +189,9 @@ template <typename T>
 class cudaVector3Dev
 {
 public:
-	__host__ cudaVector3Dev(const cudaVector3<T>& _V) : N1(_V.N1()), N2(_V.N2()), N3(_V.N3())
+	__host__ cudaVector3Dev(const cudaVector3<T>& _V) : N1(_V.getN1()), N2(_V.getN2()), N3(_V.getN3())
 	{
-		Array = _V.Array();
+		Array = _V.Array;
 	}
 	__host__ ~cudaVector3Dev() {}
 

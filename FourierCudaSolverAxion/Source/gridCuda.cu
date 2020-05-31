@@ -160,36 +160,36 @@ void cudaGrid_3D::set_xk()
 }
 
 
-__global__ void kernelEnergyQuad(cudaRVector3Dev kSqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
-{
-	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	int j = blockIdx.y * blockDim.y + threadIdx.y;
-	int k = blockIdx.z * blockDim.z + threadIdx.z;
-
-	int N1 = kSqr.getN1(), N2 = kSqr.getN2(), N3 = kSqr.getN3();
-
-	size_t ind = (i * N2 + j) * N3 + k;
-
-	if (i < N1 && j < N2 && k < N3)
-	{
-		if (k == 0) {
-			T(ind) = (P(ind).absSqr() + (1 + kSqr(ind)) * Q(ind).absSqr()) / 2.0;
-		}
-		else {
-			T(ind) = (P(ind).absSqr() + (1 + kSqr(ind)) * Q(ind).absSqr());
-		}
-	}
-}
+//__global__ void kernelEnergyQuad(cudaRVector3Dev kSqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
+//{
+//	int i = blockIdx.x * blockDim.x + threadIdx.x;
+//	int j = blockIdx.y * blockDim.y + threadIdx.y;
+//	int k = blockIdx.z * blockDim.z + threadIdx.z;
+//
+//	int N1 = kSqr.getN1(), N2 = kSqr.getN2(), N3 = kSqr.getN3();
+//
+//	size_t ind = (i * N2 + j) * N3 + k;
+//
+//	if (i < N1 && j < N2 && k < N3)
+//	{
+//		if (k == 0) {
+//			T(ind) = (P(ind).absSqr() + (1 + kSqr(ind)) * Q(ind).absSqr()) / 2.0;
+//		}
+//		else {
+//			T(ind) = (P(ind).absSqr() + (1 + kSqr(ind)) * Q(ind).absSqr());
+//		}
+//	}
+//}
 
 void cudaGrid_3D::getEnergy()
 {
-	size_t Bx = 16, By = 8, Bz = 1;
-	dim3 block(Bx, By, Bz);
-	dim3 grid( (N1 + Bx - 1) / Bx, (N2 + By - 1) / By, (N3 + Bz - 1) / Bz);
+	//size_t Bx = 16, By = 8, Bz = 1;
+	//dim3 block(Bx, By, Bz);
+	//dim3 grid( (N1 + Bx - 1) / Bx, (N2 + By - 1) / By, (N3 + Bz - 1) / Bz);
 
-	kernelEnergyQuad<<<grid, block>>>(k_sqr, Q, P, T);
-	cudaDeviceSynchronize();
+	//kernelEnergyQuad<<<grid, block>>>(k_sqr, Q, P, T);
+	//cudaDeviceSynchronize();
 
-	auto sum = reductionSum_v2<complex>(T.size(), T.getArray());
+	//auto sum = reductionSum_v2<complex>(T.size(), T.getArray());
 
 }
