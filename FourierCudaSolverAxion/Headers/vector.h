@@ -13,7 +13,7 @@ public:
 	{
 		Array = new T[N]();
 	}
-	vector(const vector& _V) : N(_V.get_N())
+	vector(const vector& _V) : N(_V.getN())
 	{
 		Array = new T[N];
 		for (size_t i = 0; i < N; i++)
@@ -36,7 +36,7 @@ public:
 		delete[] Array;
 	}
 
-	vector(const cudaVector<T>& _V) : N(_V.get_N())
+	vector(const cudaVector<T>& _V) : N(_V.getN())
 	{
 		Array = new T[N];
 		cudaMemcpy(Array, _V.Array, N * sizeof(T), cudaMemcpyDeviceToHost);
@@ -44,7 +44,7 @@ public:
 	vector& operator=(cudaVector<T>& _V)
 	{
 		delete[] Array;
-		N = _V.get_N();
+		N = _V.getN();
 		Array = new T[N];
 		cudaMemcpy(Array, _V.Array, N * sizeof(T), cudaMemcpyDeviceToHost);
 		return *this;
@@ -64,7 +64,7 @@ public:
 		return os;
 	}
 
-	size_t get_N() const { return N; }
+	size_t getN() const { return N; }
 
 	void set_size_erase(const size_t _N) {
 		delete[] Array;
@@ -103,7 +103,7 @@ public:
 
 	vector<T>& operator+= (const vector<T> &B)
 	{
-		if (N != B.get_N())
+		if (N != B.getN())
 			throw;
 		for (size_t i = 0; i < N; i++)
 		{
@@ -113,7 +113,7 @@ public:
 	}
 	vector<T>& operator-= (const vector<T> &B)
 	{
-		if (N != B.get_N())
+		if (N != B.getN())
 			throw;
 		for (size_t i = 0; i < N; i++)
 		{
@@ -123,7 +123,7 @@ public:
 	}
 	vector<T>& operator*= (const vector<T> &B)
 	{
-		if (N != B.get_N())
+		if (N != B.getN())
 			throw;
 		for (size_t i = 0; i < N; i++)
 		{
@@ -133,7 +133,7 @@ public:
 	}
 	vector<T>& operator/= (const vector<T> &B)
 	{
-		if (N != B.get_N())
+		if (N != B.getN())
 			throw;
 		for (size_t i = 0; i < N; i++)
 		{
@@ -144,7 +144,7 @@ public:
 
 	friend vector<T> operator+(const vector<T> &A, const vector<T> &B)
 	{
-		if (A.get_N() != B.get_N())
+		if (A.getN() != B.getN())
 			throw;
 
 		vector<T> temp = A;
@@ -153,7 +153,7 @@ public:
 	}
 	friend vector<T> operator-(const vector<T> &A, const vector<T> &B)
 	{
-		if (A.get_N() != B.get_N())
+		if (A.getN() != B.getN())
 			throw;
 
 		vector<T> temp = A;
@@ -162,7 +162,7 @@ public:
 	}
 	friend vector<T> operator*(const vector<T> &A, const vector<T> &B)
 	{
-		if (A.get_N() != B.get_N())
+		if (A.getN() != B.getN())
 			throw;
 
 		vector<T> temp = A;
@@ -171,7 +171,7 @@ public:
 	}
 	friend vector<T> operator/(const vector<T> &A, const vector<T> &B)
 	{
-		if (A.get_N() != B.get_N())
+		if (A.getN() != B.getN())
 			throw;
 
 		vector<T> temp = A;
@@ -181,8 +181,8 @@ public:
 
 	friend vector<T> operator+(const T &a, const vector<T> &B)
 	{
-		vector<T> temp(B.get_N());
-		for (size_t i = 0; i < B.get_N(); i++)
+		vector<T> temp(B.getN());
+		for (size_t i = 0; i < B.getN(); i++)
 		{
 			temp(i) = a + B(i);
 		}
@@ -196,8 +196,8 @@ public:
 	}
 	friend vector<T> operator-(const T &a, const vector<T> &B)
 	{
-		vector<T> temp(B.get_N());
-		for (size_t i = 0; i < B.get_N(); i++)
+		vector<T> temp(B.getN());
+		for (size_t i = 0; i < B.getN(); i++)
 		{
 			temp(i) = a - B(i);
 		}
@@ -211,8 +211,8 @@ public:
 	}
 	friend vector<T> operator*(const T &a, const vector<T> &B)
 	{
-		vector<T> temp(B.get_N());
-		for (size_t i = 0; i < B.get_N(); i++)
+		vector<T> temp(B.getN());
+		for (size_t i = 0; i < B.getN(); i++)
 		{
 			temp(i) = a * B(i);
 		}
@@ -541,7 +541,7 @@ public:
 	{
 		Array = new T[N1*N2*N3]();
 	}
-	vector3(const vector3& _M) : N1(_M.get_N1()), N2(_M.get_N2()), N3(_M.get_N3())
+	vector3(const vector3& _M) : N1(_M.getN1()), N2(_M.getN2()), N3(_M.getN3())
 	{
 		Array = new T[N1*N2*N3];
 		for (size_t i = 0; i < N1*N2*N3; i++)
@@ -552,9 +552,9 @@ public:
 		if (this != &_M)
 		{
 			delete[] Array;
-			N1 = _M.get_N1();
-			N2 = _M.get_N2();
-			N3 = _M.get_N3();
+			N1 = _M.getN1();
+			N2 = _M.getN2();
+			N3 = _M.getN3();
 			Array = new T[N1*N2*N3];
 			for (size_t i = 0; i < N1*N2*N3; i++)
 				Array[i] = _M(i);
@@ -574,9 +574,9 @@ public:
 	vector3& operator=(const cudaVector3<T>& _V)
 	{
 		delete[] Array;
-		N1 = _V.N1();
-		N2 = _V.N2();
-		N3 = _V.N3();
+		N1 = _V.getN1();
+		N2 = _V.getN2();
+		N3 = _V.getN3();
 		Array = new T[N1*N2*N3];
 		cudaMemcpy(Array, _V.Array, N1*N2*N3 * sizeof(T), cudaMemcpyDeviceToHost);
 		cudaDeviceSynchronize();
@@ -622,9 +622,9 @@ public:
 		return os;
 	}
 
-	size_t get_N1() const { return N1; }
-	size_t get_N2() const { return N2; }
-	size_t get_N3() const { return N3; }
+	size_t getN1() const { return N1; }
+	size_t getN2() const { return N2; }
+	size_t getN3() const { return N3; }
 	
 	size_t size() const { return N1*N2*N3; }
 
@@ -668,7 +668,7 @@ public:
 
 	vector3<T>& operator+= (const vector3<T> &B)
 	{
-		if (N1 != B.get_N1() || N2 != B.get_N2() || N3 != B.get_N3())
+		if (N1 != B.getN1() || N2 != B.getN2() || N3 != B.getN3())
 			throw;
 		for (size_t i = 0; i < N1*N2*N3; i++)
 		{
@@ -678,7 +678,7 @@ public:
 	}
 	vector3<T>& operator-= (const vector3<T> &B)
 	{
-		if (N1 != B.get_N1() || N2 != B.get_N2() || N3 != B.get_N3())
+		if (N1 != B.getN1() || N2 != B.getN2() || N3 != B.getN3())
 			throw;
 		for (size_t i = 0; i < N1*N2*N3; i++)
 		{
@@ -688,7 +688,7 @@ public:
 	}
 	vector3<T>& operator*= (const vector3<T> &B)
 	{
-		if (N1 != B.get_N1() || N2 != B.get_N2() || N3 != B.get_N3())
+		if (N1 != B.getN1() || N2 != B.getN2() || N3 != B.getN3())
 			throw;
 		for (size_t i = 0; i < N1*N2*N3; i++)
 		{
@@ -698,7 +698,7 @@ public:
 	}
 	vector3<T>& operator/= (const vector3<T> &B)
 	{
-		if (N1 != B.get_N1() || N2 != B.get_N2() || N3 != B.get_N3())
+		if (N1 != B.getN1() || N2 != B.getN2() || N3 != B.getN3())
 			throw;
 		for (size_t i = 0; i < N1*N2*N3; i++)
 		{
@@ -709,7 +709,7 @@ public:
 
 	friend vector3<T> operator+(const vector3<T> &A, const vector3<T> &B)
 	{
-		if (A.get_N1() != B.get_N1() || A.get_N2() != B.get_N2() || A.get_N3() != B.get_N3())
+		if (A.getN1() != B.getN1() || A.getN2() != B.getN2() || A.getN3() != B.getN3())
 			throw;
 
 		vector3<T> temp = A;
@@ -718,7 +718,7 @@ public:
 	}
 	friend vector3<T> operator-(const vector3<T> &A, const vector3<T> &B)
 	{
-		if (A.get_N1() != B.get_N1() || A.get_N2() != B.get_N2() || A.get_N3() != B.get_N3())
+		if (A.getN1() != B.getN1() || A.getN2() != B.getN2() || A.getN3() != B.getN3())
 			throw;
 
 		vector3<T> temp = A;
@@ -727,7 +727,7 @@ public:
 	}
 	friend vector3<T> operator*(const vector3<T> &A, const vector3<T> &B)
 	{
-		if (A.get_N1() != B.get_N1() || A.get_N2() != B.get_N2() || A.get_N3() != B.get_N3())
+		if (A.getN1() != B.getN1() || A.getN2() != B.getN2() || A.getN3() != B.getN3())
 			throw;
 
 		vector3<T> temp = A;
@@ -736,7 +736,7 @@ public:
 	}
 	friend vector3<T> operator/(const vector3<T> &A, const vector3<T> &B)
 	{
-		if (A.get_N1() != B.get_N1() || A.get_N2() != B.get_N2() || A.get_N3() != B.get_N3())
+		if (A.getN1() != B.getN1() || A.getN2() != B.getN2() || A.getN3() != B.getN3())
 			throw;
 
 		vector3<T> temp = A;
@@ -746,8 +746,8 @@ public:
 
 	friend vector3<T> operator+(const T &a, const vector3<T> &B)
 	{
-		vector3<T> temp(B.get_N1(), B.get_N2(), B.get_N3());
-		for (size_t i = 0; i < B.get_N1()*B.get_N2()*B.get_N3(); i++)
+		vector3<T> temp(B.getN1(), B.getN2(), B.getN3());
+		for (size_t i = 0; i < B.getN1()*B.getN2()*B.getN3(); i++)
 		{
 			temp(i) = a + B(i);
 		}
@@ -761,8 +761,8 @@ public:
 	}
 	friend vector3<T> operator-(const T &a, const vector3<T> &B)
 	{
-		vector3<T> temp(B.get_N1(), B.get_N2(), B.get_N3());
-		for (size_t i = 0; i < B.get_N1()*B.get_N2()*B.get_N3(); i++)
+		vector3<T> temp(B.getN1(), B.getN2(), B.getN3());
+		for (size_t i = 0; i < B.getN1()*B.getN2()*B.getN3(); i++)
 		{
 			temp(i) = a - B(i);
 		}
@@ -776,8 +776,8 @@ public:
 	}
 	friend vector3<T> operator*(const T &a, const vector3<T> &B)
 	{
-		vector3<T> temp(B.get_N1(), B.get_N2(), B.get_N3());
-		for (size_t i = 0; i < B.get_N1()*B.get_N2()*B.get_N3(); i++)
+		vector3<T> temp(B.getN1(), B.getN2(), B.getN3());
+		for (size_t i = 0; i < B.getN1()*B.getN2()*B.getN3(); i++)
 		{
 			temp(i) = a * B(i);
 		}

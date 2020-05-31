@@ -67,23 +67,23 @@ public:
 	double get_g() const { return g; }
 
 	/// Gets ptr
-	double* get_x1_ptr() { return x1.get_Array(); }
-	double* get_x2_ptr() { return x2.get_Array(); }
-	double* get_x3_ptr() { return x3.get_Array(); }
-	double* get_k1_ptr() { return k1.get_Array(); }
-	double* get_k2_ptr() { return k2.get_Array(); }
-	double* get_k3_ptr() { return k3.get_Array(); }
+	double* get_x1_ptr() { return x1.getArray(); }
+	double* get_x2_ptr() { return x2.getArray(); }
+	double* get_x3_ptr() { return x3.getArray(); }
+	double* get_k1_ptr() { return k1.getArray(); }
+	double* get_k2_ptr() { return k2.getArray(); }
+	double* get_k3_ptr() { return k3.getArray(); }
 
-	double* get_k_sqr_ptr() { return k_sqr.get_Array(); }
+	double* get_k_sqr_ptr() { return k_sqr.getArray(); }
 
-	double* get_q_ptr() { return q.get_Array(); }
-	double* get_p_ptr() { return p.get_Array(); }
-	double* get_t_ptr() { return t.get_Array(); }
-	complex* get_Q_ptr() { return Q.get_Array(); }
-	complex* get_P_ptr() { return P.get_Array(); }
-	complex* get_T_ptr() { return T.get_Array(); }
+	double* get_q_ptr() { return q.getArray(); }
+	double* get_p_ptr() { return p.getArray(); }
+	double* get_t_ptr() { return t.getArray(); }
+	complex* get_Q_ptr() { return Q.getArray(); }
+	complex* get_P_ptr() { return P.getArray(); }
+	complex* get_T_ptr() { return T.getArray(); }
 
-	double* get_rho_ptr() { return rho.get_Array(); }
+	double* get_rho_ptr() { return rho.getArray(); }
 
 
 	/// FFT and IFFT

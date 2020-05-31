@@ -80,7 +80,7 @@ void Distribution::setDistributionFunction(const complex* rhoKcuda, const double
 	omega.copyFromCudaPtr(omegaCuda);
 
 
-	for (int i = 0; i < f.get_N(); i++)
+	for (int i = 0; i < f.getN(); i++)
 	{
 		f(i) = 0;
 	}
