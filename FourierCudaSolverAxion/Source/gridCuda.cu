@@ -1,13 +1,13 @@
 #include "stdafx.h"
 
 double reductionSum(int size, double *inData);
+
 template <typename T>
 T reductionSum_v2(int size, T* inData);
 
 cudaGrid_3D::cudaGrid_3D(const std::string filename)
 {
 	current_time = 0;
-	energy = 0;
 
 	std::ifstream in(filename);
 
@@ -21,7 +21,7 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	set_sizes();
 
 	// set q p
-	RVector3 RHost(N1, N2, N3);
+	RVector3 RHost;
 	for (size_t i = 0; i < N1*N2*N3; i++) {
 		in >> RHost(i);
 	}
@@ -48,7 +48,7 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	n_fft[0] = (int)N1;
 	n_fft[1] = (int)N2;
 	n_fft[2] = (int)N3;
-	cufft.reset(3, n_fft, get_volume());
+	cufft.reset(3, n_fft, getVolume());
 
 	//fft
 	fft();
@@ -84,21 +84,21 @@ void cudaGrid_3D::set_sizes()
 	if (N3 % 2 != 0) { throw; }
 	N3red = N3 / 2 + 1;
 
-	x1.set_size_erase(N1);
-	x2.set_size_erase(N2);
-	x3.set_size_erase(N3);
-	k1.set_size_erase(N1, N2, N3red);
-	k2.set_size_erase(N2, N2, N3red);
-	k3.set_size_erase(N3, N2, N3red);
+	x1.set(N1);
+	x2.set(N2);
+	x3.set(N3);
+	k1.set(N1, N2, N3red);
+	k2.set(N2, N2, N3red);
+	k3.set(N3, N2, N3red);
 
-	k_sqr.set_size_erase(N1, N2, N3red);
+	k_sqr.set(N1, N2, N3red);
 
-	q.set_size_erase(N1, N2, N3);
-	p.set_size_erase(N1, N2, N3);
-	t.set_size_erase(N1, N2, N3);
-	Q.set_size_erase(N1, N2, N3red);
-	P.set_size_erase(N1, N2, N3red);
-	T.set_size_erase(N1, N2, N3red);
+	q.set(N1, N2, N3);
+	p.set(N1, N2, N3);
+	t.set(N1, N2, N3);
+	Q.set(N1, N2, N3red);
+	P.set(N1, N2, N3red);
+	T.set(N1, N2, N3red);
 }
 
 void cudaGrid_3D::set_xk()
@@ -160,19 +160,36 @@ void cudaGrid_3D::set_xk()
 }
 
 
-//__global__ void cudaGrid_3D::kernelCalculateEnergyQuad()
-//{
-//	int i = blockIdx.x * blockDim.x + threadIdx.x;
-//	if (i < N1 * N2 * N3red)
-//	{
-//		
-//	}
-//}
-
-
-void cudaGrid_3D::calculateEnergy()
+__global__ void kernelEnergyQuad(cudaRVector3Dev kSqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
 {
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	int j = blockIdx.y * blockDim.y + threadIdx.y;
+	int k = blockIdx.z * blockDim.z + threadIdx.z;
 
+	int N1 = kSqr.getN1(), N2 = kSqr.getN2(), N3 = kSqr.getN3();
 
-	isEnergyCalculateted = true;
+	size_t ind = (i * N2 + j) * N3 + k;
+
+	if (i < N1 && j < N2 && k < N3)
+	{
+		if (k == 0) {
+			T(ind) = (P(ind).absSqr() + (1 + kSqr(ind)) * Q(ind).absSqr()) / 2.0;
+		}
+		else {
+			T(ind) = (P(ind).absSqr() + (1 + kSqr(ind)) * Q(ind).absSqr());
+		}
+	}
+}
+
+void cudaGrid_3D::getEnergy()
+{
+	size_t Bx = 16, By = 8, Bz = 1;
+	dim3 block(Bx, By, Bz);
+	dim3 grid( (N1 + Bx - 1) / Bx, (N2 + By - 1) / By, (N3 + Bz - 1) / Bz);
+
+	kernelEnergyQuad<<<grid, block>>>(k_sqr, Q, P, T);
+	cudaDeviceSynchronize();
+
+	auto sum = reductionSum_v2<complex>(T.size(), T.getArray());
+
 }

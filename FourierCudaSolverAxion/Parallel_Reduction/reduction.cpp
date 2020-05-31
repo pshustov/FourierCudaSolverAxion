@@ -2,8 +2,9 @@
 #include "reduction.h"
 
 void reduce(int witchKernel, int type, int size, int threads, int blocks, double *d_idata, double *d_odata);
+
 template <typename T>
-void reduce_v2(int size, int threads, int blocks, T(*fun)(T, T), double* d_idata, double* d_odata);
+void reduce_v2(int size, int threads, int blocks, T(*fun)(T, T), T* d_idata, T* d_odata);
 
 unsigned int nextPow2(unsigned int x)
 {
@@ -14,11 +15,6 @@ unsigned int nextPow2(unsigned int x)
 	x |= x >> 8;
 	x |= x >> 16;
 	return ++x;
-}
-
-bool isPow2(unsigned int x)
-{
-	return ((x&(x - 1)) == 0);
 }
 
 void getNumBlocksAndThreads(int whichKernel, int n, int maxThreads, int &blocks, int &threads)
@@ -161,8 +157,11 @@ T reductionSum_v2(int size, T* inData)
 	int cpuFinalThreshold = 256;
 	int maxThreads = 256;
 
+	if (!isPow2(size)) throw;
+
 	int blocks = 0, threads = 0;
 	getNumBlocksAndThreads(witchKernel, size, maxThreads, blocks, threads);
+
 
 	T* inData_dev = NULL;
 	T* outData_dev = NULL;
@@ -170,10 +169,9 @@ T reductionSum_v2(int size, T* inData)
 	cudaMalloc((void**)&inData_dev, blocks * sizeof(T));
 	cudaMalloc((void**)&outData_dev, blocks * sizeof(T));
 
-	T funSum = [](T A, T B) { return A + B; };
+	T fun = [](T A, T B) { return A + B; };
 
-	//reduce(witchKernel, SUMMATION, size, threads, blocks, inData, outData_dev);
-	reduce_v2<T>(size, threads, blocks, funSum, inData, outData_dev);
+	reduce_v2<T>(size, threads, blocks, fun, inData, outData_dev);
 	cudaDeviceSynchronize();
 
 	int s = blocks;
@@ -182,7 +180,7 @@ T reductionSum_v2(int size, T* inData)
 		cudaMemcpy(inData_dev, outData_dev, blocks * sizeof(T), cudaMemcpyDeviceToDevice);
 
 		getNumBlocksAndThreads(2, s, maxThreads, blocks, threads);
-		reduce_v2<T>(s, threads, blocks, funSum, inData_dev, outData_dev);
+		reduce(s, threads, blocks, fun, inData_dev, outData_dev);
 
 		s = blocks;
 	}
@@ -194,7 +192,7 @@ T reductionSum_v2(int size, T* inData)
 	T result = 0;
 	for (size_t i = 0; i < s; i++)
 	{
-		result = funSum(result, outData_host[i]);
+		result = fun(result, outData_host[i]);
 	}
 
 	cudaFree(inData_dev);
@@ -203,6 +201,7 @@ T reductionSum_v2(int size, T* inData)
 
 	return result;
 }
+
 
 
 

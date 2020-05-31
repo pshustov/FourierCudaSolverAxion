@@ -156,6 +156,7 @@ __global__ void reduceKernelMax5(double *g_idata, double *g_odata, unsigned int 
 }
 
 
+
 __global__ void reduceKernelSum2(double *g_idata, double *g_odata, unsigned int n)
 {
 	cg::thread_block cta = cg::this_thread_block();
@@ -298,6 +299,81 @@ __global__ void reduceKernelSum5(double *g_idata, double *g_odata, unsigned int 
 	if (tid == 0) g_odata[blockIdx.x] = result;
 }
 
+
+
+template <typename T, unsigned int blockSize, bool nIsPow2>
+__global__ void
+reduce6(T* g_idata, T* g_odata, unsigned int n, T (*fun)(T, T))
+{
+	// Handle to thread block group
+	cg::thread_block cta = cg::this_thread_block();
+	T* sdata = SharedMemory<T>();
+
+	// perform first level of reduction,
+	// reading from global memory, writing to shared memory
+	unsigned int tid = threadIdx.x;
+	unsigned int i = blockIdx.x * blockSize * 2 + threadIdx.x;
+	unsigned int gridSize = blockSize * 2 * gridDim.x;
+
+	T result = 0;
+
+	// we reduce multiple elements per thread.  The number is determined by the
+	// number of active thread blocks (via gridDim).  More blocks will result
+	// in a larger gridSize and therefore fewer elements per thread
+	while (i < n)
+	{
+		result = fun(result, g_idata[i]);
+
+		// ensure we don't read out of bounds -- this is optimized away for powerOf2 sized arrays
+		if (nIsPow2 || i + blockSize < n)
+			result = fun(result, g_idata[i + blockSize]);
+
+		i += gridSize;
+	}
+
+	// each thread puts its local sum into shared memory
+	sdata[tid] = result;
+	cg::sync(cta);
+
+
+	// do reduction in shared mem
+	if ((blockSize >= 512) && (tid < 256))
+	{
+		sdata[tid] = result = fun(result, sdata[tid + 256]);
+	}
+
+	cg::sync(cta);
+
+	if ((blockSize >= 256) && (tid < 128))
+	{
+		sdata[tid] = result = fun(result, sdata[tid + 128]);
+	}
+
+	cg::sync(cta);
+
+	if ((blockSize >= 128) && (tid < 64))
+	{
+		sdata[tid] = result = fun(result, sdata[tid + 64]);
+	}
+
+	cg::sync(cta);
+
+	cg::thread_block_tile<32> tile32 = cg::tiled_partition<32>(cta);
+
+	if (cta.thread_rank() < 32)
+	{
+		// Fetch final intermediate sum from 2nd warp
+		if (blockSize >= 64) result = fun(result, sdata[tid + 32]);
+		// Reduce final warp using shuffle
+		for (int offset = tile32.size() / 2; offset > 0; offset /= 2)
+		{
+			result = fun(result, tile32.shfl_down(result, offset));
+		}
+	}
+
+	// write result for this block to global mem
+	if (cta.thread_rank() == 0) g_odata[blockIdx.x] = result;
+}
 
 void reduce(int wichKernel, int type, int size, int threads, int blocks, double *d_idata, double *d_odata)
 {
@@ -524,85 +600,8 @@ void reduce(int wichKernel, int type, int size, int threads, int blocks, double 
 
 
 
-template <typename T, unsigned int blockSize, bool nIsPow2>
-__global__ void
-reduce6(T* g_idata, T* g_odata, unsigned int n, T(*fun)(T,T))
-{
-	// Handle to thread block group
-	cg::thread_block cta = cg::this_thread_block();
-	T* sdata = SharedMemory<T>();
-
-	// perform first level of reduction,
-	// reading from global memory, writing to shared memory
-	unsigned int tid = threadIdx.x;
-	unsigned int i = blockIdx.x * blockSize * 2 + threadIdx.x;
-	unsigned int gridSize = blockSize * 2 * gridDim.x;
-
-	T result;
-
-	// we reduce multiple elements per thread.  The number is determined by the
-	// number of active thread blocks (via gridDim).  More blocks will result
-	// in a larger gridSize and therefore fewer elements per thread
-	while (i < n)
-	{
-		result = g_idata[i];
-
-		// ensure we don't read out of bounds -- this is optimized away for powerOf2 sized arrays
-		if (nIsPow2 || i + blockSize < n)
-			result = fun(result, g_idata[i + blockSize]);
-
-		i += gridSize;
-	}
-
-	// each thread puts its local sum into shared memory
-	sdata[tid] = result;
-	cg::sync(cta);
-
-
-	// do reduction in shared mem
-	if ((blockSize >= 512) && (tid < 256))
-	{
-		sdata[tid] = result = fun(result, sdata[tid + 256]);
-	}
-
-	cg::sync(cta);
-
-	if ((blockSize >= 256) && (tid < 128))
-	{
-		sdata[tid] = result = fun(result, sdata[tid + 128]);
-	}
-
-	cg::sync(cta);
-
-	if ((blockSize >= 128) && (tid < 64))
-	{
-		sdata[tid] = result = fun(result, sdata[tid + 64]);
-	}
-
-	cg::sync(cta);
-
-	cg::thread_block_tile<32> tile32 = cg::tiled_partition<32>(cta);
-
-	if (cta.thread_rank() < 32)
-	{
-		// Fetch final intermediate sum from 2nd warp
-		if (blockSize >= 64) result = fun(result, sdata[tid + 32]);
-		// Reduce final warp using shuffle
-		for (int offset = tile32.size() / 2; offset > 0; offset /= 2)
-		{
-			result = fun(result, tile32.shfl_down(result, offset));
-		}
-	}
-
-	// write result for this block to global mem
-	if (cta.thread_rank() == 0) g_odata[blockIdx.x] = result;
-}
-
-
-
-
 template <typename T>
-void reduce_v2(int size, int threads, int blocks, T(*fun)(T, T), double* d_idata, double* d_odata)
+void reduce_v2(int size, int threads, int blocks, T(*fun)(T, T), T* d_idata, T* d_odata)
 {
 	dim3 dimBlock(threads, 1, 1);
 	dim3 dimGrid(blocks, 1, 1);
@@ -690,7 +689,7 @@ void reduce_v2(int size, int threads, int blocks, T(*fun)(T, T), double* d_idata
                 reduce6<T,   4, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
                 break;
 
-			case  2:
+            case  2:
                 reduce6<T,   2, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
                 break;
 
@@ -699,7 +698,6 @@ void reduce_v2(int size, int threads, int blocks, T(*fun)(T, T), double* d_idata
                 break;
         }
     }
-
 }
 
 
