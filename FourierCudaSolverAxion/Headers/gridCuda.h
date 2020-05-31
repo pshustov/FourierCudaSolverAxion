@@ -18,6 +18,7 @@ public:
 
 		ifft();
 
+		RVector3 RHost(N1, N2, N3);
 		RHost = q;
 		for (size_t i = 0; i < RHost.size(); i++) {
 			fileSave << RHost(i) << '\n';
@@ -60,7 +61,6 @@ public:
 	cudaCVector3 get_Q() const { return Q; }
 	cudaCVector3 get_P() const { return P; }
 	cudaCVector3 get_T() const { return T; }
-	cudaRVector3 get_rho() const { return rho; }
 
 	double get_time() const { return current_time; }
 	double get_lambda() const { return lambda; }
@@ -83,8 +83,6 @@ public:
 	complex* get_P_ptr() { return P.get_Array(); }
 	complex* get_T_ptr() { return T.get_Array(); }
 
-	double* get_rho_ptr() { return rho.get_Array(); }
-
 
 	/// FFT and IFFT
 	void doFFT_t2T() { doFFTforward(t, T); }
@@ -100,9 +98,9 @@ public:
 	void set_lambda(const double _lambda) { lambda = _lambda; }
 	void set_g(const double _g) { g = _g; }
 	void setIFFTisNeeded() { isIFFTsync = false; }
-	void setRhoCalcIsNeeded() { isRhoCalculateted = false; }
+	void setEnergyCalcIsNeeded() { isEnergyCalculateted = false; }
 	void setSmthChanged() { 
-		isRhoCalculateted = false; 
+		isEnergyCalculateted = false; 
 		isIFFTsync = false;
 	}
 
@@ -115,6 +113,12 @@ public:
 	void set_sizes();
 	void set_xk();
 	void timestep(double dt) { current_time += dt; }
+	double getEnergy()
+	{
+		if (!isEnergyCalculateted)
+			calculateEnergy();
+		return energy;
+	}
 
 private:
 	size_t N1, N2, N3, N3red;
@@ -126,15 +130,15 @@ private:
 	cudaRVector3 q, p, t;
 	cudaCVector3 Q, P, T;
 
-	cudaRVector3 rho;
-
-	RVector3 RHost;
-	CVector3 CHost;
-
 	cuFFT cufft;
 
 	double lambda, g;
 	double current_time;
-	bool isIFFTsync, isRhoCalculateted;
+	double energy;
+	bool isIFFTsync, isEnergyCalculateted;
+
+
+	//__global__ void kernelCalculateEnergyQuad();
+	void calculateEnergy();
 };
 

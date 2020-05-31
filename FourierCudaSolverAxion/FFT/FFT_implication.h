@@ -21,6 +21,12 @@ public:
 		n = new int[dim];
 		L = 1;
 		N = 1;
+		BATCH = 1;
+
+		cufftPlan1d(&planZ2Z, N, CUFFT_Z2Z, BATCH);	
+		cufftPlan1d(&planD2Z, N, CUFFT_D2Z, BATCH);
+		cufftPlan1d(&planZ2D, N, CUFFT_Z2D, BATCH);
+
 	}
 	cuFFT(const int dim, const int *_n, const int _BATCH = 1);
 	~cuFFT();

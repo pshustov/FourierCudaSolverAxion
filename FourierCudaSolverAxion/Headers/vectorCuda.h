@@ -4,44 +4,45 @@
 
 template <typename T> class vector;
 template <typename T> class vector3;
+template <typename T> class d_cudaVector;
 
 template <typename T>
  class cudaVector
 {
 public:
-	__host__ explicit cudaVector(const size_t _N = 1) : N(_N)
+	explicit cudaVector(const size_t _N = 1) : N(_N)
 	{
 		cudaMalloc(&Array, N * sizeof(T));
 	}
-	__host__ cudaVector(const cudaVector& _V) : N(_V.get_N())
+	cudaVector(const cudaVector& _V) : N(_V.get_N())
 	{
 		cudaMalloc(&Array, N * sizeof(T));
 		cudaMemcpy(Array, _V.Array, N * sizeof(T), cudaMemcpyDeviceToDevice);
-		
 	}
-	__host__ cudaVector& operator=(const cudaVector& _V)
+	cudaVector& operator=(const cudaVector& _V)
 	{
 		if (this != &_V)
 		{
 			N = _V.N;
 			
-			cudaFree(Array);
-			cudaMalloc(&Array, N * sizeof(T));
-			cudaMemcpy(Array, _V.Array, N * sizeof(T), cudaMemcpyDeviceToDevice);
+			//cudaFree(Array);
+			//cudaMalloc(&Array, N * sizeof(T));
+			//cudaMemcpy(Array, _V.Array, N * sizeof(T), cudaMemcpyDeviceToDevice);
+			Array = _V.Array;
 		}
 		return *this;
 	}
-	__host__ ~cudaVector()
+	~cudaVector()
 	{
 		cudaFree(Array);
 	}
 	
-	__host__ cudaVector(const vector<T>& _V) : N(_V.get_N())
+	cudaVector(const vector<T>& _V) : N(_V.get_N())
 	{
 		cudaMalloc(&Array, N * sizeof(T));
 		cudaMemcpy(Array, _V.Array, N * sizeof(T), cudaMemcpyHostToDevice);
 	}
-	__host__ cudaVector& operator=(const vector<T>& _V)
+	cudaVector& operator=(const vector<T>& _V)
 	{
 		N = _V.get_N();
 
@@ -52,10 +53,10 @@ public:
 		return *this;
 	}
 
-	__host__ size_t get_N() const { return N; }
-	__host__ T* get_Array() const { return Array; }
+	size_t get_N() const { return N; }
+	T* get_Array() const { return Array; }
 
-	__host__ void set_size_erase(const size_t _N)
+	void set_size_erase(const size_t _N)
 	{
 		N = _N;
 		cudaFree(Array);
@@ -63,6 +64,8 @@ public:
 	}
 
 	friend class vector<T>;
+	friend class d_cudaVector<T>;
+
 
 private:
 	size_t N;
@@ -71,6 +74,47 @@ private:
 
 using cudaRVector = cudaVector<double>;
 using cudaCVector = cudaVector<complex>;
+
+
+
+
+template <typename T>
+class d_cudaVector
+{
+public:
+	d_cudaVector(const cudaVector<T>& _V) :N(_V.get_N())
+	{
+		Array = _V.Array;
+	}
+	~d_cudaVector() 
+	{
+	}
+
+	__device__ size_t get_N() const { return N; }
+	__device__ T& operator() (size_t i) { return Array[i]; }
+	__device__ const T& operator() (size_t i) const { return Array[i]; }
+
+	friend class cudaVector<T>;
+
+private:
+	size_t N;
+	T* Array;
+
+};
+
+using d_cudaRVector = d_cudaVector<double>;
+using d_cudaCVector = d_cudaVector<complex>;
+
+
+
+
+
+
+
+
+
+
+
 
 
 template <typename T>

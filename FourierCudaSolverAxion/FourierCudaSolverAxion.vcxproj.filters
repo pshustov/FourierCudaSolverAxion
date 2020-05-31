@@ -10,11 +10,11 @@
     <CudaCompile Include="Source\equation.cu">
       <Filter>Source</Filter>
     </CudaCompile>
-    <CudaCompile Include="Source\gridCuda.cu">
-      <Filter>Source</Filter>
-    </CudaCompile>
     <CudaCompile Include="FFT\FFT_implication.cu">
       <Filter>FFT</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Source\fourierCudaSolverAxion.cpp">
+      <Filter>Source</Filter>
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
@@ -73,14 +73,14 @@
     <ClCompile Include="Source\system.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Source\fourierCudaSolverAxion.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="Distribution\distribution.cpp">
       <Filter>Distribution</Filter>
     </ClCompile>
     <ClCompile Include="Parallel_Reduction\reduction.cpp">
       <Filter>Parallel Reduction</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\gridCuda.cu">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -5,6 +5,7 @@ double reductionSum(int size, double *inData);
 cudaGrid_3D::cudaGrid_3D(const std::string filename)
 {
 	current_time = 0;
+	energy = 0;
 
 	std::ifstream in(filename);
 
@@ -18,6 +19,7 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	set_sizes();
 
 	// set q p
+	RVector3 RHost(N1, N2, N3);
 	for (size_t i = 0; i < N1*N2*N3; i++) {
 		in >> RHost(i);
 	}
@@ -52,7 +54,7 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	std::cout << "First FFT have been done\n";
 
 	isIFFTsync = true;
-	isRhoCalculateted = false;
+	isEnergyCalculateted = false;
 }
 
 cudaGrid_3D::~cudaGrid_3D()
@@ -95,11 +97,6 @@ void cudaGrid_3D::set_sizes()
 	Q.set_size_erase(N1, N2, N3red);
 	P.set_size_erase(N1, N2, N3red);
 	T.set_size_erase(N1, N2, N3red);
-
-	rho.set_size_erase(N1, N2, N3);
-
-	RHost.set_size_erase(N1, N2, N3);
-	CHost.set_size_erase(N1, N2, N3red);
 }
 
 void cudaGrid_3D::set_xk()
@@ -158,4 +155,22 @@ void cudaGrid_3D::set_xk()
 		}
 	}
 	k_sqr = temp31;
+}
+
+
+//__global__ void cudaGrid_3D::kernelCalculateEnergyQuad()
+//{
+//	int i = blockIdx.x * blockDim.x + threadIdx.x;
+//	if (i < N1 * N2 * N3red)
+//	{
+//		
+//	}
+//}
+
+
+void cudaGrid_3D::calculateEnergy()
+{
+
+
+	isEnergyCalculateted = true;
 }

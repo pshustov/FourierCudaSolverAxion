@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-__global__ void kernelForwardNorm(const int size, const int N, const double L, double *V)
+__global__ void kernelForwardNorm(const size_t size, const int N, const double L, double *V)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < size)
@@ -8,7 +8,7 @@ __global__ void kernelForwardNorm(const int size, const int N, const double L, d
 		V[i] = V[i] * L / N;
 	}
 }
-__global__ void kernelForwardNorm(const int size, const int N, const double L, complex *V)
+__global__ void kernelForwardNorm(const size_t size, const int N, const double L, complex *V)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < size)
@@ -16,7 +16,7 @@ __global__ void kernelForwardNorm(const int size, const int N, const double L, c
 		V[i] = V[i] * L / N;
 	}
 }
-__global__ void kernelInverseNorm(const int size, const int N, const double L, double* V)
+__global__ void kernelInverseNorm(const size_t size, const int N, const double L, double* V)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < size)
@@ -24,7 +24,7 @@ __global__ void kernelInverseNorm(const int size, const int N, const double L, d
 		V[i] = V[i] / L;
 	}
 }
-__global__ void kernelInverseNorm(const int size, const int N, const double L, complex* V)
+__global__ void kernelInverseNorm(const size_t size, const int N, const double L, complex* V)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < size)
