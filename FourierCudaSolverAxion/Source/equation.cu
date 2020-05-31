@@ -55,9 +55,9 @@ equationsAxionSymplectic_3D::equationsAxionSymplectic_3D()
 void equationsAxionSymplectic_3D::equationCuda(const double dt, cudaGrid_3D& Grid)
 {
 
-	int N1 = (int)Grid.get_N1();
-	int N2 = (int)Grid.get_N2();
-	int N3red = (int)Grid.get_N3red();
+	int N1 = (int)Grid.getN1();
+	int N2 = (int)Grid.getN2();
+	int N3red = (int)Grid.getN3red();
 	int Nred = N1 * N2 * N3red;
 
 	dim3 block(BLOCK_SIZE);
@@ -89,10 +89,10 @@ void equationsAxionSymplectic_3D::equationCuda(const double dt, cudaGrid_3D& Gri
 
 void equationsAxionSymplectic_3D::getNonlin_Phi4_Phi6(cudaGrid_3D & Grid)
 {
-	int N1 = (int)Grid.get_N1();
-	int N2 = (int)Grid.get_N2();
-	int N3 = (int)Grid.get_N3();
-	int N3red = (int)Grid.get_N3red();
+	int N1 = (int)Grid.getN1();
+	int N2 = (int)Grid.getN2();
+	int N3 = (int)Grid.getN3();
+	int N3red = (int)Grid.getN3red();
 	int N = N1 * N2 * N3;
 
 

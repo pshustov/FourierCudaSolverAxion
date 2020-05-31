@@ -13,11 +13,12 @@ public:
 
 	void save(std::ofstream & fileSave)
 	{		
-		fileSave << get_N1() << "\n" << get_N2() << "\n" << get_N3() << "\n";
-		fileSave << get_L1() << "\n" << get_L2() << "\n" << get_L3() << "\n";
+		fileSave << getN1() << "\n" << getN2() << "\n" << getN3() << "\n";
+		fileSave << getL1() << "\n" << getL2() << "\n" << getL3() << "\n";
 
 		ifft();
 
+		RVector3 RHost;
 		RHost = q;
 		for (size_t i = 0; i < RHost.size(); i++) {
 			fileSave << RHost(i) << '\n';
@@ -36,15 +37,15 @@ public:
 
 	/// Gets
 	size_t size() const { return N1*N2*N3; }
-	size_t get_N1() const { return N1; }
-	size_t get_N2() const { return N2; }
-	size_t get_N3() const { return N3; }
-	size_t get_N3red() const { return N3red; }
+	size_t getN1() const { return N1; }
+	size_t getN2() const { return N2; }
+	size_t getN3() const { return N3; }
+	size_t getN3red() const { return N3red; }
 
-	double get_L1() const { return L1; }
-	double get_L2() const { return L2; }
-	double get_L3() const { return L3; }
-	double get_volume() const { return L1 * L2 * L3; }
+	double getL1() const { return L1; }
+	double getL2() const { return L2; }
+	double getL3() const { return L3; }
+	double getVolume() const { return L1 * L2 * L3; }
 
 	cudaRVector get_x1() const { return x1; }
 	cudaRVector get_x2() const { return x2; }
@@ -60,7 +61,6 @@ public:
 	cudaCVector3 get_Q() const { return Q; }
 	cudaCVector3 get_P() const { return P; }
 	cudaCVector3 get_T() const { return T; }
-	cudaRVector3 get_rho() const { return rho; }
 
 	double get_time() const { return current_time; }
 	double get_lambda() const { return lambda; }
@@ -83,8 +83,6 @@ public:
 	complex* get_P_ptr() { return P.getArray(); }
 	complex* get_T_ptr() { return T.getArray(); }
 
-	double* get_rho_ptr() { return rho.getArray(); }
-
 
 	/// FFT and IFFT
 	void doFFT_t2T() { doFFTforward(t, T); }
@@ -100,9 +98,9 @@ public:
 	void set_lambda(const double _lambda) { lambda = _lambda; }
 	void set_g(const double _g) { g = _g; }
 	void setIFFTisNeeded() { isIFFTsync = false; }
-	void setRhoCalcIsNeeded() { isRhoCalculateted = false; }
+	void setRhoCalcIsNeeded() { isEnergyCalculateted = false; }
 	void setSmthChanged() { 
-		isRhoCalculateted = false; 
+		isEnergyCalculateted = false; 
 		isIFFTsync = false;
 	}
 
@@ -126,15 +124,12 @@ private:
 	cudaRVector3 q, p, t;
 	cudaCVector3 Q, P, T;
 
-	cudaRVector3 rho;
-
-	RVector3 RHost;
-	CVector3 CHost;
-
 	cuFFT cufft;
 
 	double lambda, g;
 	double current_time;
-	bool isIFFTsync, isRhoCalculateted;
+	bool isIFFTsync, isEnergyCalculateted;
+
+	void getEnergy();
 };
 

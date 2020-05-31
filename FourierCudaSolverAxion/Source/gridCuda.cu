@@ -18,6 +18,7 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	set_sizes();
 
 	// set q p
+	RVector3 RHost;
 	for (size_t i = 0; i < N1*N2*N3; i++) {
 		in >> RHost(i);
 	}
@@ -44,7 +45,7 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	n_fft[0] = (int)N1;
 	n_fft[1] = (int)N2;
 	n_fft[2] = (int)N3;
-	cufft.reset(3, n_fft, get_volume());
+	cufft.reset(3, n_fft, getVolume());
 
 	//fft
 	fft();
@@ -52,7 +53,7 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	std::cout << "First FFT have been done\n";
 
 	isIFFTsync = true;
-	isRhoCalculateted = false;
+	isEnergyCalculateted = false;
 }
 
 cudaGrid_3D::~cudaGrid_3D()
@@ -95,11 +96,6 @@ void cudaGrid_3D::set_sizes()
 	Q.set(N1, N2, N3red);
 	P.set(N1, N2, N3red);
 	T.set(N1, N2, N3red);
-
-	rho.set(N1, N2, N3);
-
-	RHost.set_size_erase(N1, N2, N3);
-	CHost.set_size_erase(N1, N2, N3red);
 }
 
 void cudaGrid_3D::set_xk()
@@ -158,4 +154,17 @@ void cudaGrid_3D::set_xk()
 		}
 	}
 	k_sqr = temp31;
+}
+
+
+
+__global__ void kernelEnergyQuad()
+{
+
+}
+
+
+void cudaGrid_3D::getEnergy()
+{
+
 }

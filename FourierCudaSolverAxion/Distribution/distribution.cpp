@@ -42,19 +42,19 @@ Distribution::Distribution(cudaGrid_3D & Grid)
 	f.set_size_erase(Nf);
 	fDistrOut.open("fDistr.txt");
 
-	int N1 = (int) Grid.get_N1();
-	int N2 = (int) Grid.get_N2();
-	int N3 = (int) Grid.get_N3();
-	int N3red = (int) Grid.get_N3red();
+	int N1 = (int) Grid.getN1();
+	int N2 = (int) Grid.getN2();
+	int N3 = (int) Grid.getN3();
+	int N3red = (int) Grid.getN3red();
 
 	time = Grid.get_time();
 
 	rhoK.set_size_erase(N1, N2, N3red);
 	omega.set_size_erase(N1, N2, N3red);
 
-	double L1 = Grid.get_L1();
-	double L2 = Grid.get_L2();
-	double L3 = Grid.get_L3();
+	double L1 = Grid.getL1();
+	double L2 = Grid.getL2();
+	double L3 = Grid.getL3();
 
 	if (N1 == N2 && N1 == N3) { N = N1; }
 	else { throw; }
