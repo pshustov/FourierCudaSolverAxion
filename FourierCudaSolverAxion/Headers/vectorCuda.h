@@ -74,7 +74,6 @@ private:
 using cudaRVector = cudaVector<double>;
 using cudaCVector = cudaVector<complex>;
 
-
 /// 1D cuda Vector for Device
 template <typename T>
 class cudaVectorDev
@@ -102,7 +101,6 @@ using cudaCVectorDev = cudaVectorDev<complex>;
 
 template <typename T> class vector3;
 template <typename T> class cudaVector3Dev;
-
 
 
 /// 3D cuda Vector for host
@@ -182,7 +180,6 @@ private:
 
 using cudaRVector3 = cudaVector3<double>;
 using cudaCVector3 = cudaVector3<complex>;
-
 
 /// 3D cuda Vector for Device
 template <typename T>

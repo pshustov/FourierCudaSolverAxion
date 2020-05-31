@@ -21,10 +21,6 @@ void systemEquCuda_3D::evaluate()
 
 double systemEquCuda_3D::get_energy()
 {
-	if (!isEnergyCalculated)
-	{
-
-	}	
-	return energy;
+	return Grid.getEnergy();
 }
 

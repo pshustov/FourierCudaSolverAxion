@@ -97,8 +97,6 @@ public:
 	/// Sets 
 	void set_lambda(const double _lambda) { lambda = _lambda; }
 	void set_g(const double _g) { g = _g; }
-	void setIFFTisNeeded() { isIFFTsync = false; }
-	void setRhoCalcIsNeeded() { isEnergyCalculateted = false; }
 	void setSmthChanged() { 
 		isEnergyCalculateted = false; 
 		isIFFTsync = false;
@@ -113,6 +111,7 @@ public:
 	void set_sizes();
 	void set_xk();
 	void timestep(double dt) { current_time += dt; }
+	double getEnergy() { return 0; };
 
 private:
 	size_t N1, N2, N3, N3red;
@@ -130,6 +129,7 @@ private:
 	double current_time;
 	bool isIFFTsync, isEnergyCalculateted;
 
-	void getEnergy();
+	double energy;
+
 };
 

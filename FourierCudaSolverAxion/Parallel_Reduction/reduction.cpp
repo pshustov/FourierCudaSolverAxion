@@ -154,7 +154,6 @@ double reductionSum(int size, double *inData)
 
 
 
-
 template <typename T>
 T reductionSum_v2(int size, T* inData)
 {
