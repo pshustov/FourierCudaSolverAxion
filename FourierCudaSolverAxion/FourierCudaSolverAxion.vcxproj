@@ -48,7 +48,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(CudaToolkitIncludeDir);C:\ProgramData\NVIDIA Corporation\CUDA Samples\v10.1\common\inc;$(ProjectDir)\Distribution;$(ProjectDir)\FFT;$(ProjectDir)\Headers;$(ProjectDir)\Parallel Reduction;$(ProjectDir)\Source</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\work_Pavel\Axion\AxionProblem_v2.2\FourierCudaSolverAxion\FourierCudaSolverAxion\Parallel_Reduction;%(AdditionalIncludeDirectories);$(CudaToolkitIncludeDir);C:\ProgramData\NVIDIA Corporation\CUDA Samples\v10.1\common\inc;$(ProjectDir)\Distribution;$(ProjectDir)\FFT;$(ProjectDir)\Headers;$(ProjectDir)\Parallel_Reduction;$(ProjectDir)\Source</AdditionalIncludeDirectories>
       <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>

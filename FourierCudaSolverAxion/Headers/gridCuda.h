@@ -111,7 +111,7 @@ public:
 	void set_sizes();
 	void set_xk();
 	void timestep(double dt) { current_time += dt; }
-	double getEnergy() { return 0; };
+	double getEnergy();
 
 private:
 	size_t N1, N2, N3, N3red;

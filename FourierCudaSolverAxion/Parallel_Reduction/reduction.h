@@ -1,14 +1,6 @@
 #pragma once
 
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-
-#include <stdio.h>
-#include <cstdlib>
-#include <cooperative_groups.h>
-#include <ctime>
-#include <iostream>
-#include <vector>
+#include "stdafx.h"
 
 #define MAXIMUM 0
 #define SUMMATION 1
@@ -16,12 +8,13 @@
 #define SIGMA2 3
 #define SIGMA4 4
 
-#ifndef MIN
-#define MIN(x,y) ((x < y) ? x : y)
-#endif
+//#ifndef MIN
+//#define MIN(x,y) ((x < y) ? x : y)
+//#endif
+//
+//#ifndef MAX
+//#define MAX(x,y) ((x > y) ? x : y)
+//#endif
 
-#ifndef MAX
-#define MAX(x,y) ((x > y) ? x : y)
-#endif
-
-bool isPow2(unsigned int x);
+template <typename T>
+T reductionSum(int size, T* inData);

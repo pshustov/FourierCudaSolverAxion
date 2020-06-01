@@ -1,7 +1,5 @@
 #include "stdafx.h"
 
-double reductionSum(int size, double *inData);
-
 cudaGrid_3D::cudaGrid_3D(const std::string filename)
 {
 	current_time = 0;
@@ -176,21 +174,24 @@ void cudaGrid_3D::set_xk()
 //	}
 //}
 
-//double cudaGrid_3D::getEnergy()
-//{
-//	if (!isEnergyCalculateted)
-//	{
-//
-//		size_t Bx = 16, By = 8, Bz = 1;
-//		dim3 block(Bx, By, Bz);
-//		dim3 grid((N1 + Bx - 1) / Bx, (N2 + By - 1) / By, (N3 + Bz - 1) / Bz);
-//
-//		kernelEnergyQuad<<<grid, block>>>(k_sqr, Q, P, T);
-//		cudaDeviceSynchronize();
-//
-//		energy = reductionSum_v2<double>(T.size(), (double*) T.getArray());
-//
-//		isEnergyCalculateted = true;
-//	}
-//	return energy;
-//}
+double cudaGrid_3D::getEnergy()
+{
+	if (!isEnergyCalculateted)
+	{
+
+		size_t Bx = 16, By = 8, Bz = 1;
+		dim3 block(Bx, By, Bz);
+		dim3 grid((N1 + Bx - 1) / Bx, (N2 + By - 1) / By, (N3 + Bz - 1) / Bz);
+
+		////kernelEnergyQuad<<<grid, block>>>(k_sqr, Q, P, T);
+		//cudaDeviceSynchronize();
+
+		double* a = new double[10];
+		//energy = reductionSum<double>(10, a);
+		//energy = reductionSum<double>(10, a);
+
+		//energy = 0;
+		isEnergyCalculateted = true;
+	}
+	return energy;
+}
