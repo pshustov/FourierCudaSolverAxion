@@ -1,4 +1,4 @@
-#include "reduction.h"
+#include "stdafx.h"
 
 namespace cg = cooperative_groups;
 
@@ -38,7 +38,7 @@ struct SharedMemory<double>
 	}
 };
 
-template <typename T, unsigned int blockSize, bool nIsPow2>
+template <class T, unsigned int blockSize, bool nIsPow2>
 __global__ void kernekReduce(T* g_idata, T* g_odata, unsigned int n, T (*fun)(T, T))
 {
 	// Handle to thread block group
@@ -112,7 +112,7 @@ __global__ void kernekReduce(T* g_idata, T* g_odata, unsigned int n, T (*fun)(T,
 }
 
 
-template <typename T>
+template <class T>
 void reduce(int size, int threads, int blocks, T(*fun)(T, T), T* d_idata, T* d_odata)
 {
 	dim3 dimBlock(threads, 1, 1);
@@ -214,3 +214,5 @@ void reduce(int size, int threads, int blocks, T(*fun)(T, T), T* d_idata, T* d_o
 
 
 
+template void reduce<double>(int size, int threads, int blocks, double(*fun)(double, double), double* d_idata, double* d_odata);
+template void reduce<complex>(int size, int threads, int blocks, complex(*fun)(complex, complex), complex* d_idata, complex* d_odata);

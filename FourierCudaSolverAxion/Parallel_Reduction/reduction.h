@@ -1,15 +1,15 @@
 #pragma once
 
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-
-#include <stdio.h>
-#include <cstdlib>
-#include <cooperative_groups.h>
-#include <ctime>
-#include <iostream>
-#include <vector>
-
+#include "stdafx.h"
+//#include "cuda_runtime.h"
+//
+//#include <stdio.h>
+//#include <cstdlib>
+//#include <cooperative_groups.h>
+//#include <ctime>
+//#include <iostream>
+//#include <vector>
+//
 
 #define MAXIMUM 0
 #define SUMMATION 1
