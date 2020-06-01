@@ -1,7 +1,4 @@
-#include "stdafx.h"
-
-#include <cooperative_groups.h>
-
+#include "reduction.h"
 
 namespace cg = cooperative_groups;
 

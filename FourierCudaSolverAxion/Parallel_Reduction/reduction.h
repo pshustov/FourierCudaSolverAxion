@@ -1,6 +1,15 @@
 #pragma once
 
-#include "stdafx.h"
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
+
+#include <stdio.h>
+#include <cstdlib>
+#include <cooperative_groups.h>
+#include <ctime>
+#include <iostream>
+#include <vector>
+
 
 #define MAXIMUM 0
 #define SUMMATION 1
@@ -15,6 +24,3 @@
 //#ifndef MAX
 //#define MAX(x,y) ((x > y) ? x : y)
 //#endif
-
-template <typename T>
-T reductionSum(int size, T* inData);

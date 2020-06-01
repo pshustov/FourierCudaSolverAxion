@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "reduction.h"
 
 template <typename T>
 void reduce(int size, int threads, int blocks, T(*fun)(T, T), T* d_idata, T* d_odata);
@@ -53,8 +54,60 @@ void getNumBlocksAndThreads(int whichKernel, int n, int maxThreads, int &blocks,
 }
 
 
-template <typename T>
-T reductionSum(int size, T* inData)
+//template <typename T>
+//T reductionSum(int size, T* inData)
+//{
+//	int witchKernel = 5;
+//	int cpuFinalThreshold = 256;
+//	int maxThreads = 256;
+//
+//	if (!isPow2(size)) throw;
+//
+//	int blocks = 0, threads = 0;
+//	getNumBlocksAndThreads(witchKernel, size, maxThreads, blocks, threads);
+//
+//
+//	T* inData_dev = NULL;
+//	T* outData_dev = NULL;
+//
+//	cudaMalloc((void**)&inData_dev, blocks * sizeof(T));
+//	cudaMalloc((void**)&outData_dev, blocks * sizeof(T));
+//
+//	auto fun = [](T A, T B) { return A + B; };
+//
+//	reduce<T>(size, threads, blocks, fun, inData, outData_dev);
+//	cudaDeviceSynchronize();
+//
+//	int s = blocks;
+//	while (s > cpuFinalThreshold)
+//	{
+//		cudaMemcpy(inData_dev, outData_dev, blocks * sizeof(T), cudaMemcpyDeviceToDevice);
+//
+//		getNumBlocksAndThreads(2, s, maxThreads, blocks, threads);
+//		reduce<T>(s, threads, blocks, fun, inData_dev, outData_dev);
+//
+//		s = blocks;
+//	}
+//
+//	T* outData_host;
+//	outData_host = (T*)malloc(s * sizeof(T));
+//	cudaMemcpy(outData_host, outData_dev, s * sizeof(T), cudaMemcpyDeviceToHost);
+//
+//	T result = 0;
+//	for (size_t i = 0; i < s; i++)
+//	{
+//		result = fun(result, outData_host[i]);
+//	}
+//
+//	cudaFree(inData_dev);
+//	cudaFree(outData_dev);
+//	free(outData_host);
+//
+//	return result;
+//}
+
+
+double reductionSum(int size, double* inData)
 {
 	int witchKernel = 5;
 	int cpuFinalThreshold = 256;
@@ -66,36 +119,36 @@ T reductionSum(int size, T* inData)
 	getNumBlocksAndThreads(witchKernel, size, maxThreads, blocks, threads);
 
 
-	T* inData_dev = NULL;
-	T* outData_dev = NULL;
+	double* inData_dev = NULL;
+	double* outData_dev = NULL;
 
-	cudaMalloc((void**)&inData_dev, blocks * sizeof(T));
-	cudaMalloc((void**)&outData_dev, blocks * sizeof(T));
+	cudaMalloc((void**)&inData_dev, blocks * sizeof(double));
+	cudaMalloc((void**)&outData_dev, blocks * sizeof(double));
 
-	T fun = [](T A, T B) { return A + B; };
+	//auto fun = [](double A, double B) { return A + B; };
 
-	reduce_v2<T>(size, threads, blocks, fun, inData, outData_dev);
+	//reduce<double>(size, threads, blocks, fun, inData, outData_dev);
 	cudaDeviceSynchronize();
 
 	int s = blocks;
 	while (s > cpuFinalThreshold)
 	{
-		cudaMemcpy(inData_dev, outData_dev, blocks * sizeof(T), cudaMemcpyDeviceToDevice);
+		cudaMemcpy(inData_dev, outData_dev, blocks * sizeof(double), cudaMemcpyDeviceToDevice);
 
 		getNumBlocksAndThreads(2, s, maxThreads, blocks, threads);
-		reduce(s, threads, blocks, fun, inData_dev, outData_dev);
+		reduce<double>(s, threads, blocks, [](double A, double B) { return A + B; }, inData_dev, outData_dev);
 
 		s = blocks;
 	}
 
-	T* outData_host;
-	outData_host = (T*)malloc(s * sizeof(T));
-	cudaMemcpy(outData_host, outData_dev, s * sizeof(T), cudaMemcpyDeviceToHost);
+	double* outData_host;
+	outData_host = (double*)malloc(s * sizeof(double));
+	cudaMemcpy(outData_host, outData_dev, s * sizeof(double), cudaMemcpyDeviceToHost);
 
-	T result = 0;
+	double result = 0;
 	for (size_t i = 0; i < s; i++)
 	{
-		result = fun(result, outData_host[i]);
+		result = outData_host[i];
 	}
 
 	cudaFree(inData_dev);
