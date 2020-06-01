@@ -66,6 +66,10 @@ public:
 	friend class vector<T>;
 	friend class cudaVectorDev<T>;
 
+	T getSum() {
+		return reductionSum<T>(N, Array);
+	}
+
 private:
 	size_t N;
 	T* Array;

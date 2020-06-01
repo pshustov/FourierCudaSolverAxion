@@ -1,26 +1,19 @@
 #pragma once
 
 #include "stdafx.h"
-//#include "cuda_runtime.h"
-//
-//#include <stdio.h>
-//#include <cstdlib>
-//#include <cooperative_groups.h>
-//#include <ctime>
-//#include <iostream>
-//#include <vector>
-//
 
-#define MAXIMUM 0
-#define SUMMATION 1
-#define MEAN 2
-#define SIGMA2 3
-#define SIGMA4 4
+template <typename T> T reductionSum(int size, T* inData);
 
-//#ifndef MIN
-//#define MIN(x,y) ((x < y) ? x : y)
-//#endif
-//
-//#ifndef MAX
-//#define MAX(x,y) ((x > y) ? x : y)
-//#endif
+
+
+template<typename T>
+using func_t = T(*) (T, T);
+
+template <typename T>
+__host__ __device__ T funSum(T A, T B)
+{
+	return A + B;
+}
+
+template <typename T>
+__device__  func_t<T> p_funSum = funSum<T>;
