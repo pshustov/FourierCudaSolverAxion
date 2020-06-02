@@ -101,12 +101,10 @@ __global__ void kernelReduce(T* g_idata, T* g_odata, unsigned int n, F fun)
 	while (i < n)
 	{
 		result = fun(result, g_idata[i]);
-		//result += g_idata[i];
 
 		// ensure we don't read out of bounds -- this is optimized away for powerOf2 sized arrays
 		if (nIsPow2 || i + blockSize < n)
-			result += g_idata[i + blockSize];
-			//result = fun(result, g_idata[i + blockSize]);
+			result = fun(result, g_idata[i + blockSize]);
 
 		i += gridSize;
 	}
@@ -119,21 +117,21 @@ __global__ void kernelReduce(T* g_idata, T* g_odata, unsigned int n, F fun)
 	// do reduction in shared mem
 	if ((blockSize >= 512) && (tid < 256))
 	{
-		sdata[tid] = result = result + sdata[tid + 256];// fun(result, sdata[tid + 256]);
+		sdata[tid] = result = fun(result, sdata[tid + 256]);
 	}
 
 	cg::sync(cta);
 
 	if ((blockSize >= 256) && (tid < 128))
 	{
-		sdata[tid] = result = result + sdata[tid + 128]; //fun(result, sdata[tid + 128]);
+		sdata[tid] = result = fun(result, sdata[tid + 128]);
 	}
 
 	cg::sync(cta);
 
 	if ((blockSize >= 128) && (tid < 64))
 	{
-		sdata[tid] = result = result + sdata[tid + 64]; //fun(result, sdata[tid + 64]);
+		sdata[tid] = result = fun(result, sdata[tid + 64]);
 	}
 
 	cg::sync(cta);
@@ -143,12 +141,11 @@ __global__ void kernelReduce(T* g_idata, T* g_odata, unsigned int n, F fun)
 	if (cta.thread_rank() < 32)
 	{
 		// Fetch final intermediate sum from 2nd warp
-		if (blockSize >= 64) result = result + sdata[tid + 32]; // fun(result, sdata[tid + 32]);
+		if (blockSize >= 64) result = fun(result, sdata[tid + 32]);
 		// Reduce final warp using shuffle
 		for (int offset = tile32.size() / 2; offset > 0; offset /= 2)
 		{
-			//result = fun(result, tile32.shfl_down(result, offset));
-			result += tile32.shfl_down(result, offset);
+			result = fun(result, tile32.shfl_down(result, offset));
 		}
 	}
 
