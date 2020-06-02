@@ -2,8 +2,47 @@
 
 namespace cg = cooperative_groups;
 
-bool isPow2(unsigned int x);
-unsigned int nextPow2(unsigned int x);
+
+bool isPow2(unsigned int x)
+{
+	return ((x & (x - 1)) == 0);
+}
+
+unsigned int nextPow2(unsigned int x)
+{
+	--x;
+	x |= x >> 1;
+	x |= x >> 2;
+	x |= x >> 4;
+	x |= x >> 8;
+	x |= x >> 16;
+	return ++x;
+}
+
+void getNumBlocksAndThreads(int n, int maxThreads, int& blocks, int& threads)
+{
+	cudaDeviceProp prop;
+	int device;
+	cudaGetDevice(&device);
+	cudaGetDeviceProperties(&prop, device);
+
+	threads = (n < maxThreads * 2) ? nextPow2((n + 1) / 2) : maxThreads;
+	blocks = (n + (threads * 2 - 1)) / (threads * 2);
+
+	if ((float)threads * blocks > (float)prop.maxGridSize[0] * prop.maxThreadsPerBlock)
+	{
+		printf("n is too large, please choose a smaller number!\n");
+	}
+
+	if (blocks > prop.maxGridSize[0])
+	{
+		printf("Grid size <%d> exceeds the device capability <%d>, set block size as %d (original %d)\n",
+			blocks, prop.maxGridSize[0], threads * 2, threads);
+
+		blocks /= 2;
+		threads *= 2;
+	}
+}
 
 // Utility class used to avoid linker errors with extern
 // unsized shared memory arrays with templated type
@@ -41,8 +80,8 @@ struct SharedMemory<double>
 	}
 };
 
-template <class T, unsigned int blockSize, bool nIsPow2>
-__global__ void kernelReduce(T* g_idata, T* g_odata, unsigned int n, T (*fun)(T, T))
+template <typename T, unsigned int blockSize, bool nIsPow2, typename F>
+__global__ void kernelReduce(T* g_idata, T* g_odata, unsigned int n, F fun)
 {
 	// Handle to thread block group
 	cg::thread_block cta = cg::this_thread_block();
@@ -117,8 +156,8 @@ __global__ void kernelReduce(T* g_idata, T* g_odata, unsigned int n, T (*fun)(T,
 	if (cta.thread_rank() == 0) g_odata[blockIdx.x] = result;
 }
 
-template <class T>
-void reduce(int size, int threads, int blocks, T(*fun)(T, T), T* d_idata, T* d_odata)
+template <typename T, typename F>
+void reduce(int size, int threads, int blocks, F fun, T* d_idata, T* d_odata)
 {
 	dim3 dimBlock(threads, 1, 1);
 	dim3 dimGrid(blocks, 1, 1);
@@ -216,7 +255,56 @@ void reduce(int size, int threads, int blocks, T(*fun)(T, T), T* d_idata, T* d_o
         }
     }
 }
-template void reduce<int>(int size, int threads, int blocks, int(*fun)(int, int), int* d_idata, int* d_odata);
-template void reduce<float>(int size, int threads, int blocks, float(*fun)(float, float), float* d_idata, float* d_odata);
-template void reduce<double>(int size, int threads, int blocks, double(*fun)(double, double), double* d_idata, double* d_odata);
-//template void reduce<complex>(int size, int threads, int blocks, complex(*fun)(complex, complex), complex* d_idata, complex* d_odata);
+
+
+template <typename T>
+T reductionSum(int size, T* inData)
+{
+	int cpuFinalThreshold = 256;
+	int maxThreads = 256;
+
+	int blocks = 0, threads = 0;
+	getNumBlocksAndThreads(size, maxThreads, blocks, threads);
+
+	T* inData_dev = NULL;
+	T* outData_dev = NULL;
+
+	cudaMalloc((void**)&inData_dev, blocks * sizeof(T));
+	cudaMalloc((void**)&outData_dev, blocks * sizeof(T));
+
+	auto fun = [] __host__ __device__(T A, T B) { return A + B; };
+
+	reduce(size, threads, blocks, fun, inData, outData_dev);
+	cudaDeviceSynchronize();
+
+	int s = blocks;
+	while (s > cpuFinalThreshold)
+	{
+		cudaMemcpy(inData_dev, outData_dev, blocks * sizeof(T), cudaMemcpyDeviceToDevice);
+
+		getNumBlocksAndThreads(s, maxThreads, blocks, threads);
+		reduce(s, threads, blocks, fun, inData_dev, outData_dev);
+
+		s = blocks;
+	}
+
+	T* outData_host;
+	outData_host = (T*)malloc(s * sizeof(T));
+	cudaMemcpy(outData_host, outData_dev, s * sizeof(T), cudaMemcpyDeviceToHost);
+
+	T result = 0;
+	for (size_t i = 0; i < s; i++)
+	{
+		result = fun(result, outData_host[i]);
+	}
+
+	cudaFree(inData_dev);
+	cudaFree(outData_dev);
+	free(outData_host);
+
+	return result;
+}
+template int reductionSum<int>(int size, int* inData);
+template float reductionSum<float>(int size, float* inData);
+template double reductionSum<double>(int size, double* inData);
+//template complex reductionSum(int size, complex* inData);

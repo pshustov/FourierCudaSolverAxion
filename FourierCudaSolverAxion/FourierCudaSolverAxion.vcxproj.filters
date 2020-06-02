@@ -17,6 +17,9 @@
     <CudaCompile Include="Parallel_Reduction\reduction.cu">
       <Filter>Parallel Reduction</Filter>
     </CudaCompile>
+    <CudaCompile Include="Source\fourierCudaSolverAxion.cpp">
+      <Filter>Source</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Distribution">
@@ -75,14 +78,8 @@
     <ClCompile Include="Source\system.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Source\fourierCudaSolverAxion.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="Distribution\distribution.cpp">
       <Filter>Distribution</Filter>
-    </ClCompile>
-    <ClCompile Include="Parallel_Reduction\reduction.cpp">
-      <Filter>Parallel Reduction</Filter>
     </ClCompile>
     <ClCompile Include="testClass\testClass.cpp" />
   </ItemGroup>
