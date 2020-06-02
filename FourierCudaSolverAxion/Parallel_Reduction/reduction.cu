@@ -426,6 +426,7 @@ void reduce2(int size, int threads, int blocks, F fun, T* d_idata, T* d_odata)
 }
 
 
+
 template <typename T>
 T reductionSum(int size, T* inData)
 {
@@ -476,8 +477,6 @@ T reductionSum(int size, T* inData)
 template int reductionSum<int>(int size, int* inData);
 template float reductionSum<float>(int size, float* inData);
 template double reductionSum<double>(int size, double* inData);
-//template complex reductionSum(int size, complex* inData);
-
 
 template <>
 complex reductionSum<complex>(int size, complex* inData)
