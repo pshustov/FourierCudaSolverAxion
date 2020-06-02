@@ -16,7 +16,7 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	set_sizes();
 
 	// set q p
-	RVector3 RHost;
+	RVector3 RHost(N1, N2, N3);
 	for (size_t i = 0; i < N1*N2*N3; i++) {
 		in >> RHost(i);
 	}
@@ -47,6 +47,14 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 
 	//fft
 	fft();
+
+	//CVector3 CHost(N1, N2, N3red);
+	//for (size_t i = 0; i < N1 * N2 * N3red; i++) {
+	//	CHost(i) = 1;
+	//}
+	//Q = CHost;
+	//P = CHost;
+
 
 	std::cout << "First FFT have been done\n";
 
@@ -155,42 +163,57 @@ void cudaGrid_3D::set_xk()
 }
 
 
-//__global__ void kernelEnergyQuad(cudaRVector3Dev kSqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
-//{
-//	int i = blockIdx.x * blockDim.x + threadIdx.x;
-//	size_t j = blockIdx.y * blockDim.y + threadIdx.y;
-//	size_t k = blockIdx.z * blockDim.z + threadIdx.z;
-//
-//	size_t N1 = kSqr.getN1(), N2 = kSqr.getN2(), N3 = kSqr.getN3();
-//
-//	size_t ind = (i * N2 + j) * N3 + k;
-//
-//	if (i < N1 && j < N2 && k < N3)
-//	{
-//		if (k == 0)
-//			T(ind) = (P(ind).absSqr() + (1 + kSqr(ind)) * Q(ind).absSqr()) / 2.0;
-//		else
-//			T(ind) = (P(ind).absSqr() + (1 + kSqr(ind)) * Q(ind).absSqr());
-//	}
-//}
+__global__ void kernelEnergyQuad(cudaRVector3Dev kSqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
+{
+	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+	size_t j = blockIdx.y * blockDim.y + threadIdx.y;
+	size_t k = blockIdx.z * blockDim.z + threadIdx.z;
+
+	size_t N1 = kSqr.getN1(), N2 = kSqr.getN2(), N3 = kSqr.getN3();
+
+	size_t ind = (i * N2 + j) * N3 + k;
+
+	if (i < N1 && j < N2 && k < N3)
+	{
+		if (k == 0) {
+			T(ind) = (P(ind).absSqr() + (1 + kSqr(ind)) * Q(ind).absSqr()) / 2.0;
+		}
+		else {
+			T(ind) = (P(ind).absSqr() + (1 + kSqr(ind)) * Q(ind).absSqr());
+
+		}
+	}
+}
+
+__global__ void kernelEnergyNonLin(size_t N, double lam, double g, cudaRVector3Dev q, cudaRVector3Dev t)
+{
+	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+	double f = q(i);
+	if (i < N)
+	{
+		t(i) = (lam / 4.0 + g / 6.0 * f * f) * f * f * f * f;
+	}
+}
 
 double cudaGrid_3D::getEnergy()
 {
 	if (!isEnergyCalculateted)
 	{
-
-		size_t Bx = 16, By = 8, Bz = 1;
+		int Bx = 16, By = 8, Bz = 1;
 		dim3 block(Bx, By, Bz);
-		dim3 grid((N1 + Bx - 1) / Bx, (N2 + By - 1) / By, (N3 + Bz - 1) / Bz);
+		dim3 grid((N1 + Bx - 1) / Bx, (N2 + By - 1) / By, (N3red + Bz - 1) / Bz);
+		kernelEnergyQuad<<<grid, block>>>(k_sqr, Q, P, T);
+		cudaDeviceSynchronize();
+		energy = T.getSum().real() / getVolume();
+		
+		ifft();
 
-		////kernelEnergyQuad<<<grid, block>>>(k_sqr, Q, P, T);
-		//cudaDeviceSynchronize();
+		block = dim3(BLOCK_SIZE);
+		grid = dim3( (size() + BLOCK_SIZE - 1) / BLOCK_SIZE );
+		kernelEnergyNonLin<<<grid, block>>>(size(), lambda, g, q, t);
+		cudaDeviceSynchronize();
+		energy += t.getSum() * getVolume() / size();
 
-		double* a = new double[10];
-		//energy = reductionSum<double>(10, a);
-		//energy = reductionSum<double>(10, a);
-
-		//energy = 0;
 		isEnergyCalculateted = true;
 	}
 	return energy;

@@ -54,21 +54,21 @@ public:
 	}
 
 	__host__ size_t getN() const { return N; }
+	
 	__host__ void set(const size_t _N)
 	{
 		N = _N;
 		cudaFree(Array);
 		cudaMalloc(&Array, N * sizeof(T));
 	}
-
+	
 	__host__ T* getArray() { return Array; }
+	
+	__host__ T getSum() { return reductionSum<T>(N, Array); }
 
 	friend class vector<T>;
 	friend class cudaVectorDev<T>;
 
-	T getSum() {
-		return reductionSum<T>(N, Array);
-	}
 
 private:
 	size_t N;
@@ -172,7 +172,10 @@ public:
 		N3 = _N3;
 		cudaMalloc(&Array, N1*N2*N3 * sizeof(T));
 	}
+	
 	__host__ T* getArray() { return Array; }
+	
+	__host__ T getSum() { return reductionSum<T>(size(), Array); }
 	
 	friend class vector3<T>;
 	friend class cudaVector3Dev<T>;

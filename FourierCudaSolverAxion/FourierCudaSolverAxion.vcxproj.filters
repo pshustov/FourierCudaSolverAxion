@@ -13,7 +13,6 @@
     <CudaCompile Include="FFT\FFT_implication.cu">
       <Filter>FFT</Filter>
     </CudaCompile>
-    <CudaCompile Include="testClass\testClass.cu" />
     <CudaCompile Include="Parallel_Reduction\reduction.cu">
       <Filter>Parallel Reduction</Filter>
     </CudaCompile>
@@ -69,7 +68,6 @@
     <ClInclude Include="Headers\kbhit.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="testClass\testClass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\system.cpp">
@@ -78,7 +76,6 @@
     <ClCompile Include="Distribution\distribution.cpp">
       <Filter>Distribution</Filter>
     </ClCompile>
-    <ClCompile Include="testClass\testClass.cpp" />
     <ClCompile Include="Source\fourierCudaSolverAxion.cpp">
       <Filter>Source</Filter>
     </ClCompile>
