@@ -110,7 +110,7 @@ public:
 	}
 	void set_sizes();
 	void set_xk();
-	void timestep(double dt) { current_time += dt; }
+	void timestep(double dt) { setSmthChanged();  current_time += dt; }
 	double getEnergy();
 
 private:

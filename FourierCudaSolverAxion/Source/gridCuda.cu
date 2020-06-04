@@ -48,14 +48,6 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	//fft
 	fft();
 
-	//CVector3 CHost(N1, N2, N3red);
-	//for (size_t i = 0; i < N1 * N2 * N3red; i++) {
-	//	CHost(i) = 1;
-	//}
-	//Q = CHost;
-	//P = CHost;
-
-
 	std::cout << "First FFT have been done\n";
 
 	isIFFTsync = true;
