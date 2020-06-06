@@ -100,6 +100,7 @@ void equationsAxionSymplectic_3D::getNonlin_Phi4_Phi6(cudaGrid_3D & Grid)
 
 	Grid.ifftQ();
 	kernel_Phi4_Phi6<<<grid, block>>>(N, Grid.get_t_ptr(), Grid.get_q_ptr(), Grid.get_lambda(), Grid.get_g());
+	//kernel_Phi4_Phi6_v2<<<grid, block>>>(N, Grid.get_lambda(), Grid.get_g(), Grid.get_q(), Grid.get_t());
 	cudaDeviceSynchronize();
 	Grid.doFFT_t2T();
 }

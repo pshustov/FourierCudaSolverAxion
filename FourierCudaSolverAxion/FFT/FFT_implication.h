@@ -21,6 +21,21 @@ public:
 		n = new int[dim];
 		L = 1;
 		N = 1;
+		
+		BATCH = 1;
+
+		if (cufftPlan1d(&planZ2Z, 1, CUFFT_Z2Z, BATCH) != CUFFT_SUCCESS) {
+			fprintf(stderr, "CUFFT error: Plan creation failed");
+			return;
+		}
+		if (cufftPlan1d(&planD2Z, 1, CUFFT_D2Z, BATCH) != CUFFT_SUCCESS) {
+			fprintf(stderr, "CUFFT error: Plan creation failed");
+			return;
+		}
+		if (cufftPlan1d(&planZ2D, 1, CUFFT_Z2D, BATCH) != CUFFT_SUCCESS) {
+			fprintf(stderr, "CUFFT error: Plan creation failed");
+			return;
+		}
 	}
 	cuFFT(const int dim, const int *_n, const int _BATCH = 1);
 	~cuFFT();
@@ -34,8 +49,8 @@ public:
 	
 	void forward(cudaCVector3 &f, cudaCVector3 &F);
 	void forward(cudaRVector3 &f, cudaCVector3 &F);
-	void inverce(cudaCVector3 &F, cudaCVector3 &f, bool isNormed);
-	void inverce(cudaCVector3 &F, cudaRVector3 &f, bool isNormed);
+	void inverce(cudaCVector3 &F, cudaCVector3 &f, bool isNormed = true);
+	void inverce(cudaCVector3 &F, cudaRVector3 &f, bool isNormed = true);
 
 
 private:

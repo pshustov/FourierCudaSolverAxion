@@ -60,12 +60,14 @@ __global__ void kernel_Phi4_Phi6(const int N, double *t, double *q, const double
 	}
 }
 
-__global__ void kernel_Phi4_Phi6_v2(const int N, double* t, double* q, const double lambda, const double g)
+__global__ void kernel_Phi4_Phi6_v2(const int N, const double lambda, const double g, cudaRVector3Dev q, cudaRVector3Dev t)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < N)
 	{
-		t[i] = q[i] * q[i] * q[i] * (lambda + g * q[i] * q[i]);
+		//double f = q(i);
+		//t(i) = f * f * f * (lambda + g * f * f);
+		t(i) = q(i) * q(i) * q(i) * (lambda + g * q(i) * q(i));
 	}
 }
 
