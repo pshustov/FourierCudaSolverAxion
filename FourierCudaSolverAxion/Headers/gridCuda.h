@@ -10,8 +10,8 @@ public:
 
 	void fft();
 	void ifft();
-	void ifftQ(bool isNormed = true);
-	void ifftP(bool isNormed = true);
+	void ifftQ();
+	void ifftP();
 
 	void save(std::ofstream & fileSave)
 	{		
