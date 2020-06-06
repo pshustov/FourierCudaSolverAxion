@@ -101,7 +101,8 @@ public:
 	void set_g(const double _g) { g = _g; }
 	void setSmthChanged() { 
 		isEnergyCalculateted = false; 
-		isIFFTsync = false;
+		isIFFTsyncQ = false;
+		isIFFTsyncP = false;
 	}
 
 
@@ -129,7 +130,7 @@ private:
 
 	double lambda, g;
 	double current_time;
-	bool isIFFTsync, isEnergyCalculateted;
+	bool isIFFTsyncQ, isIFFTsyncP, isEnergyCalculateted;
 
 	double energy;
 
