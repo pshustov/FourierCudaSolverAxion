@@ -50,8 +50,7 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 
 	std::cout << "First FFT have been done\n";
 
-	isIFFTsyncQ = true;
-	isIFFTsyncP = true;
+	isIFFTsync = true;
 	isEnergyCalculateted = false;
 }
 
@@ -67,29 +66,13 @@ void cudaGrid_3D::fft()
 
 void cudaGrid_3D::ifft()
 {
-	ifftQ();
-	ifftP();
-}
-
-void cudaGrid_3D::ifftQ()
-{
-	if (!isIFFTsyncQ)
+	if (!isIFFTsync)
 	{
 		cufft.inverce(Q, q);
-	}
-	isIFFTsyncQ = true;
-}
-
-void cudaGrid_3D::ifftP()
-{
-	if (!isIFFTsyncP)
-	{
 		cufft.inverce(P, p);
 	}
-	isIFFTsyncP = true;
+	isIFFTsync = true;
 }
-
-
 
 void cudaGrid_3D::set_sizes()
 {

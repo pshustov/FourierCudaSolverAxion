@@ -10,8 +10,6 @@ public:
 
 	void fft();
 	void ifft();
-	void ifftQ();
-	void ifftP();
 
 	void save(std::ofstream & fileSave)
 	{		
@@ -99,10 +97,9 @@ public:
 	/// Sets 
 	void set_lambda(const double _lambda) { lambda = _lambda; }
 	void set_g(const double _g) { g = _g; }
-	void setSmthChanged() {
+	void setSmthChanged() { 
 		isEnergyCalculateted = false; 
-		isIFFTsyncQ = false;
-		isIFFTsyncP = false;
+		isIFFTsync = false;
 	}
 
 
@@ -130,7 +127,7 @@ private:
 
 	double lambda, g;
 	double current_time;
-	bool isEnergyCalculateted, isIFFTsyncQ, isIFFTsyncP;
+	bool isIFFTsync, isEnergyCalculateted;
 
 	double energy;
 

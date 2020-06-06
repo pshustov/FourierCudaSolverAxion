@@ -60,15 +60,6 @@ __global__ void kernel_Phi4_Phi6(const int N, double *t, double *q, const double
 	}
 }
 
-__global__ void kernel_Phi4_Phi6_v2(const int N, double* t, double* q, const double lambda, const double g)
-{
-	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < N)
-	{
-		t[i] = q[i] * q[i] * q[i] * (lambda + g * q[i] * q[i]);
-	}
-}
-
 
 __global__ void kernelAddMullSqr(const int N, double* S, double* A, double m)
 {

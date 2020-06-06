@@ -89,16 +89,17 @@ void equationsAxionSymplectic_3D::equationCuda(const double dt, cudaGrid_3D& Gri
 
 void equationsAxionSymplectic_3D::getNonlin_Phi4_Phi6(cudaGrid_3D & Grid)
 {
-	size_t N1 = Grid.getN1();
-	size_t N2 = Grid.getN2();
-	size_t N3 = Grid.getN3();
-	size_t N = N1 * N2 * N3;
+	int N1 = (int)Grid.getN1();
+	int N2 = (int)Grid.getN2();
+	int N3 = (int)Grid.getN3();
+	int N3red = (int)Grid.getN3red();
+	int N = N1 * N2 * N3;
 
 
 	dim3 block(BLOCK_SIZE);
-	dim3 grid((N + BLOCK_SIZE + 1) / BLOCK_SIZE);
+	dim3 grid((unsigned int)ceil((double)N / (double)BLOCK_SIZE));
 
-	Grid.ifftQ();
+	Grid.ifft();
 	kernel_Phi4_Phi6<<<grid, block>>>(N, Grid.get_t_ptr(), Grid.get_q_ptr(), Grid.get_lambda(), Grid.get_g());
 	cudaDeviceSynchronize();
 	Grid.doFFT_t2T();
