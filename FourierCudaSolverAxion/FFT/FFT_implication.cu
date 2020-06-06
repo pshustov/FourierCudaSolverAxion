@@ -112,20 +112,22 @@ void cuFFT::inverce(cudaCVector &F, cudaRVector &f)
 	kernelInverseNorm<<<grid, block>>>(f.getN(), N, L, f.getArray());
 	cudaDeviceSynchronize();
 }
-void cuFFT::inverce(cudaCVector3 &F, cudaCVector3 &f)
+void cuFFT::inverce(cudaCVector3 &F, cudaCVector3 &f, bool isNormed)
 {
 	if (cufftExecZ2Z(planZ2Z, (cufftDoubleComplex*)F.getArray(), (cufftDoubleComplex*)f.getArray(), CUFFT_INVERSE) != CUFFT_SUCCESS) {
 		fprintf(stderr, "CUFFT error: 3D ExecZ2Z Inverce failed");
 		return;
 	}
 	cudaDeviceSynchronize();
-
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((unsigned int)ceil((double)f.size() / (double)BLOCK_SIZE));
-	kernelInverseNorm<<<grid, block>>>(f.size(), N, L, f.getArray());
-	cudaDeviceSynchronize();
+	
+	if (isNormed) {
+		dim3 block(BLOCK_SIZE);
+		dim3 grid((unsigned int)ceil((double)f.size() / (double)BLOCK_SIZE));
+		kernelInverseNorm<<<grid, block>>>(f.size(), N, L, f.getArray());
+		cudaDeviceSynchronize();
+	}
 }
-void cuFFT::inverce(cudaCVector3 &F, cudaRVector3 &f)
+void cuFFT::inverce(cudaCVector3 &F, cudaRVector3 &f, bool isNormed)
 {
 	if (cufftExecZ2D(planZ2D, (cufftDoubleComplex*)F.getArray(), (cufftDoubleReal*)f.getArray()) != CUFFT_SUCCESS) {
 		fprintf(stderr, "CUFFT error: 3D ExecZ2Z Inverce failed");
