@@ -49,6 +49,9 @@ Distribution::Distribution(cudaGrid_3D & Grid)
 
 	time = Grid.get_time();
 
+
+	Q = Grid.get_Q();
+	P = Grid.get_P();
 	rhoK.set_size_erase(N1, N2, N3red);
 	omega.set_size_erase(N1, N2, N3red);
 
@@ -138,6 +141,19 @@ void Distribution::setDistributionFunction(const complex* rhoKcuda, const double
 			}
 		}
 	}
+
+	printDistr();
+
+}
+
+
+
+void Distribution::setDistributionFunction_v2()
+{
+	for (int i = 0; i < f.getN(); i++)
+		f(i) = 0;
+
+
 
 	printDistr();
 
