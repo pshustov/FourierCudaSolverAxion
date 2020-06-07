@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 
-using namespace std;
+//using namespace std;
 using namespace std::chrono;
 
 class Distribution
@@ -12,7 +12,7 @@ public:
 
 	bool isDistributionFunctionReady()
 	{
-		return distributionFunctionFuture.wait_for(seconds(0)) == future_status::ready;
+		return distributionFunctionFuture.wait_for(seconds(0)) == std::future_status::ready;
 	}
 
 	void calculateNumberAndMomentum();
@@ -37,8 +37,8 @@ private:
 
 	double lam, g;
 	double f2mean;
-	RVector3 k_sqr;
-	CVector3 Q, P;
+	cudaRVector3 k_sqr;
+	cudaCVector3 Q, P;
 
 	std::ofstream outFile;
 	double numberOfParticles, meanMomentum;
