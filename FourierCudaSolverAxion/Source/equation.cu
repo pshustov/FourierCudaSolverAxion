@@ -1,6 +1,54 @@
 ﻿#include "stdafx.h"
 
 
+__global__ void kernalStepSymplectic41_v2(const double dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < Q.size())
+	{
+		P(i) -= 0.67560359597982881702384390448573 * ((1 + k_sqr(i)) * Q(i) + T(i)) * dt;
+		Q(i) += 1.3512071919596576340476878089715 * P(i) * dt;
+	}
+}
+__global__ void kernalStepSymplectic42_v2(const double dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < Q.size())
+	{
+		P(i) -= -0.17560359597982881702384390448573 * ((1 + k_sqr(i)) * Q(i) + T(i)) * dt;
+		Q(i) += -1.702414383919315268095375617943 * P(i) * dt;
+	}
+}
+__global__ void kernalStepSymplectic43_v2(const double dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < Q.size())
+	{
+		P(i) -= -0.17560359597982881702384390448573 * ((1 + k_sqr(i)) * Q(i) + T(i)) * dt;
+		Q(i) += 1.3512071919596576340476878089715 * P(i) * dt;
+	}
+}
+__global__ void kernalStepSymplectic44_v2(const double dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < Q.size())
+	{
+		P(i) -= 0.67560359597982881702384390448573 * ((1 + k_sqr(i)) * Q(i) + T(i)) * dt;
+	}
+}
+
+
+__global__ void kernel_Phi4_Phi6_v2(const int N, const double lambda, const double g, cudaRVector3Dev q, cudaRVector3Dev t)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < N)
+	{
+		t(i) = q(i) * q(i) * q(i) * (lambda + g * q(i) * q(i));
+	}
+}
+
+
+
 equationsAxionSymplectic_3D::equationsAxionSymplectic_3D()
 {
 	constexpr double twoToOneOverThree = 1.2599210498948731647672106072782;
@@ -61,33 +109,33 @@ void equationsAxionSymplectic_3D::equationCuda(const double dt, cudaGrid_3D& Gri
 	int Nred = N1 * N2 * N3red;
 
 	dim3 block(BLOCK_SIZE);
-	dim3 grid((unsigned int)ceil( (double)Nred / (double)BLOCK_SIZE));
+	dim3 grid((Nred + BLOCK_SIZE + 1) / BLOCK_SIZE);
 
 
 	getNonlin_Phi4_Phi6(Grid);
-	kernalStepSymplectic41<<<grid, block>>>(Nred, dt, Grid.get_k_sqr_ptr(), Grid.get_Q_ptr(), Grid.get_P_ptr(), Grid.get_T_ptr());
+	kernalStepSymplectic41_v2<<<grid, block>>>(dt, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
 	Grid.setSmthChanged();
 	cudaDeviceSynchronize();
 
 	getNonlin_Phi4_Phi6(Grid);
-	kernalStepSymplectic42<<<grid, block>>>(Nred, dt, Grid.get_k_sqr_ptr(), Grid.get_Q_ptr(), Grid.get_P_ptr(), Grid.get_T_ptr());
+	kernalStepSymplectic42_v2<<<grid, block>>>(dt, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
 	Grid.setSmthChanged();
 	cudaDeviceSynchronize();
 
 	getNonlin_Phi4_Phi6(Grid);
-	kernalStepSymplectic43<<<grid, block>>>(Nred, dt, Grid.get_k_sqr_ptr(), Grid.get_Q_ptr(), Grid.get_P_ptr(), Grid.get_T_ptr());
+	kernalStepSymplectic43_v2<<<grid, block>>>(dt, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
 	Grid.setSmthChanged();
 	cudaDeviceSynchronize();
 
 	getNonlin_Phi4_Phi6(Grid);
-	kernalStepSymplectic44<<<grid, block>>>(Nred, dt, Grid.get_k_sqr_ptr(), Grid.get_Q_ptr(), Grid.get_P_ptr(), Grid.get_T_ptr());
+	kernalStepSymplectic44_v2<<<grid, block>>>(dt, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
 	Grid.setSmthChanged();
 	cudaDeviceSynchronize();
 
 	Grid.timestep(dt);
 }
 
-void equationsAxionSymplectic_3D::getNonlin_Phi4_Phi6(cudaGrid_3D & Grid)
+void equationsAxionSymplectic_3D::getNonlin_Phi4_Phi6(cudaGrid_3D& Grid)
 {
 	int N1 = (int)Grid.getN1();
 	int N2 = (int)Grid.getN2();
@@ -95,13 +143,11 @@ void equationsAxionSymplectic_3D::getNonlin_Phi4_Phi6(cudaGrid_3D & Grid)
 	int N3red = (int)Grid.getN3red();
 	int N = N1 * N2 * N3;
 
-
 	dim3 block(BLOCK_SIZE);
-	dim3 grid((unsigned int)ceil((double)N / (double)BLOCK_SIZE));
+	dim3 grid((N + BLOCK_SIZE + 1) / BLOCK_SIZE);
 
-	Grid.ifft();
-	kernel_Phi4_Phi6<<<grid, block>>>(N, Grid.get_t_ptr(), Grid.get_q_ptr(), Grid.get_lambda(), Grid.get_g());
-	//kernel_Phi4_Phi6_v2<<<grid, block>>>(N, Grid.get_lambda(), Grid.get_g(), Grid.get_q(), Grid.get_t());
+	Grid.ifftQ();
+	kernel_Phi4_Phi6_v2<<<grid, block>>>(N, Grid.get_lambda(), Grid.get_g(), Grid.get_q(), Grid.get_t());
 	cudaDeviceSynchronize();
 	Grid.doFFT_t2T();
 }

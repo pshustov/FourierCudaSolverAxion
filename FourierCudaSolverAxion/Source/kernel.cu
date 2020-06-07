@@ -14,8 +14,6 @@ __global__ void kernalStepSymplectic41(const int N, const double dt,
 		Q[i] += 1.3512071919596576340476878089715 * P[i] * dt;
 	}
 }
-
-
 __global__ void kernalStepSymplectic42(const int N, const double dt,
 	double *k_sqr, complex *Q, complex *P, complex *T)
 {
@@ -26,8 +24,6 @@ __global__ void kernalStepSymplectic42(const int N, const double dt,
 		Q[i] += -1.702414383919315268095375617943 * P[i] * dt;
 	}
 }
-
-
 __global__ void kernalStepSymplectic43(const int N, const double dt,
 	double *k_sqr, complex *Q, complex *P, complex *T)
 {
@@ -38,8 +34,6 @@ __global__ void kernalStepSymplectic43(const int N, const double dt,
 		Q[i] += 1.3512071919596576340476878089715 * P[i] * dt;
 	}
 }
-
-
 __global__ void kernalStepSymplectic44(const int N, const double dt,
 	double *k_sqr, complex *Q, complex *P, complex *T)
 {
@@ -60,16 +54,6 @@ __global__ void kernel_Phi4_Phi6(const int N, double *t, double *q, const double
 	}
 }
 
-__global__ void kernel_Phi4_Phi6_v2(const int N, const double lambda, const double g, cudaRVector3Dev q, cudaRVector3Dev t)
-{
-	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < N)
-	{
-		//double f = q(i);
-		//t(i) = f * f * f * (lambda + g * f * f);
-		t(i) = q(i) * q(i) * q(i) * (lambda + g * q(i) * q(i));
-	}
-}
 
 
 __global__ void kernelAddMullSqr(const int N, double* S, double* A, double m)

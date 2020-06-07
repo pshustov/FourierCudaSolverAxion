@@ -20,3 +20,5 @@ private:
 	double *Cdev;
 	double *Ddev;
 };
+
+

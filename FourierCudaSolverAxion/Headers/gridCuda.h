@@ -55,14 +55,14 @@ public:
 	cudaRVector3 get_k1() const { return k1; }
 	cudaRVector3 get_k2() const { return k2; }
 	cudaRVector3 get_k3() const { return k3; }
-	cudaRVector3 get_k_sqr() const { return k_sqr; }
+	cudaRVector3& get_k_sqr() { return k_sqr; }
 
-	cudaRVector3 get_q() const { return q; }
+	cudaRVector3& get_q() { return q; }
 	cudaRVector3 get_p() const { return p; }
-	cudaRVector3 get_t() const { return t; }
-	cudaCVector3 get_Q() const { return Q; }
-	cudaCVector3 get_P() const { return P; }
-	cudaCVector3 get_T() const { return T; }
+	cudaRVector3& get_t() { return t; }
+	cudaCVector3& get_Q() { return Q; }
+	cudaCVector3& get_P() { return P; }
+	cudaCVector3& get_T() { return T; }
 
 	double get_time() const { return current_time; }
 	double get_lambda() const { return lambda; }
