@@ -1,5 +1,49 @@
 #include "stdafx.h"
 
+__device__ double getOmega(double lam, double g, double f2mean, double k_sqr)
+{
+	return sqrt(1 + k_sqr + 3 * lam * f2mean + 15 * g * f2mean * f2mean);
+}
+
+__global__ void kernelPrepare(cudaCVector3Dev Q)
+{
+	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+	size_t j = blockIdx.y * blockDim.y + threadIdx.y;
+	size_t k = blockIdx.z * blockDim.z + threadIdx.z;
+	
+	size_t N1 = Q.getN1(), N2 = Q.getN2(), N3 = Q.getN3();
+
+	if (i < N1 && j < N2 && k < N3 && k != 0)
+	{
+		size_t ind = (i * N2 + j) * N3 + k;
+		Q(ind) *= 2;
+	}
+}
+
+__global__ void kernelSetDistributionFunction(double lam, double g, double f2mean, cudaRVector3Dev kSqr, cudaCVector3Dev Q, cudaCVector3Dev P) 
+{
+	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+	size_t j = blockIdx.y * blockDim.y + threadIdx.y;
+	size_t k = blockIdx.z * blockDim.z + threadIdx.z;
+
+	size_t N1 = kSqr.getN1(), N2 = kSqr.getN2(), N3 = kSqr.getN3();
+	
+	if (i < N1 && j < N2 && k < N3)
+	{
+		size_t ind = (i * N2 + j) * N3 + k;
+		double omega = getOmega(lam, g, f2mean, kSqr(ind));
+		if (k == 0) {
+			double m = 1 + kSqr(ind) + 1.5 * f2mean + 5 * g * f2mean * f2mean;
+			P(ind) = 0.5 * (P(ind) + m * Q(ind)) / omega;
+		}
+		else {
+			double m = 1 + kSqr(ind) + 1.5 * f2mean + 5 * g * f2mean * f2mean;
+			P(ind) = (P(ind) + m * Q(ind)) / omega;
+		}
+	}
+}
+
+
 int inWhichInterval(const unsigned int N, const unsigned leftPowN, const double a, const double* b)
 {
 	if (a >= b[N] || a < b[0]) {
@@ -37,125 +81,30 @@ int inWhichInterval(const unsigned int N, const unsigned leftPowN, const double 
 	throw;
 }
 
+
 Distribution::Distribution(cudaGrid_3D & Grid)
 {
-	f.set_size_erase(Nf);
-	fDistrOut.open("fDistr.txt");
+	outFile.open("outNumberAndMomentum.txt");
 
-	int N1 = (int) Grid.getN1();
-	int N2 = (int) Grid.getN2();
-	int N3 = (int) Grid.getN3();
-	int N3red = (int) Grid.getN3red();
-
-	time = Grid.get_time();
-
-
-	Q = Grid.get_Q();
-	P = Grid.get_P();
-	rhoK.set_size_erase(N1, N2, N3red);
-	omega.set_size_erase(N1, N2, N3red);
-
-	double L1 = Grid.getL1();
-	double L2 = Grid.getL2();
-	double L3 = Grid.getL3();
-
-	if (N1 == N2 && N1 == N3) { N = N1; }
-	else { throw; }
-
-	if (abs(L1 - L2) / L1 < 1e-10 && abs(L1 - L3) / L1 < 1e-10) { kappa = 2 * Ma_PI / L1; }
-	else { throw; }
-
-	double d = double(N) / 2.0 / double(Nf);
-	for (int i = 0; i < Nf + 1; i++) {
-		boundariesSqr[i] = d * i * d * i;
-	}
-
-	fDistrOut << Nf << "\t";
-	for (int i = 0; i < Nf - 1; i++) {
-		fDistrOut << kappa * d * (i + 0.5) << "\t";
-	}
-	fDistrOut << kappa * d * (Nf - 0.5) << std::endl;
-}
-
-void Distribution::setDistributionFunction(const complex* rhoKcuda, const double* omegaCuda)
-{
-	rhoK.copyFromCudaPtr(rhoKcuda);
-	omega.copyFromCudaPtr(omegaCuda);
-
-
-	for (int i = 0; i < f.getN(); i++)
-	{
-		f(i) = 0;
-	}
-
-	int ind = 0;
-	double rsqr, r1sqr, r2sqr, r3sqr;
-	for (int i = 0; i < N; i++)
-	{
-		(i <= N / 2) ? r1sqr = i * i : r1sqr = (i - N) * (i - N);
-		for (int j = 0; j < N; j++)
-		{
-			(j <= N / 2) ? r2sqr = j * j : r2sqr = (j - N) * (j - N);
-			for (int k = 0; k < N; k++)
-			{
-				if (k <= N / 2)
-				{
-					r3sqr = k * k;
-					rsqr = r1sqr + r2sqr + r3sqr;
-
-					ind = inWhichInterval(Nf, powNf, rsqr, boundariesSqr);
-					if (ind > 0) {
-						if (i != 0 || j != 0 || k != 0)
-						{
-							f(ind) += rhoK(i, j, k) / omega(i, j, k);
-						}
-					}
-				}
-				else
-				{
-					r3sqr = (k - N) * (k - N);
-					rsqr = r1sqr + r2sqr + r3sqr;
-
-					ind = inWhichInterval(Nf, powNf, rsqr, boundariesSqr);
-					if (ind > 0) {
-						if (i == 0 && j == 0)
-						{
-							f(ind) += rhoK(0, 0, N - k).get_conj() / omega(0, 0, N - k);
-						}
-						else if (i == 0)
-						{
-							f(ind) += rhoK(0, N - j, N - k).get_conj() / omega(0, N - j, N - k);
-						}
-						else if (j == 0)
-						{
-							f(ind) += rhoK(N - i, 0, N - k).get_conj() / omega(N - i, 0, N - k);
-						}
-						else
-						{
-							f(ind) += rhoK(N - i, N - j, N - k).get_conj() / omega(N - i, N - j, N - k);
-						}
-					}
-				}
-
-
-			}
-		}
-	}
-
-	printDistr();
-
+	time	= Grid.get_time();
+	lam		= Grid.get_lambda();
+	g		= Grid.get_g();
+	f2mean	= 0;
+	k_sqr	= Grid.get_k_sqr();
+	Q		= Grid.get_Q();
+	P		= Grid.get_P();
 }
 
 
-
-void Distribution::setDistributionFunction_v2()
+void Distribution::calculateNumberAndMomentum()
 {
-	for (int i = 0; i < f.getN(); i++)
-		f(i) = 0;
+	size_t Bx = 16, By = 8, Bz = 1;
+	dim3 block(Bx, By, Bz);
+	dim3 grid((Q.getN1() + Bx - 1) / Bx, (Q.getN2() + By - 1) / By, (Q.getN3() + Bz - 1) / Bz);
 
+	kernelPrepare<<<grid,block>>>(Q);
+	cudaDeviceSynchronize();
 
-
-	printDistr();
-
+	//kernelSetDistributionFunction(lam, g, )
 }
 

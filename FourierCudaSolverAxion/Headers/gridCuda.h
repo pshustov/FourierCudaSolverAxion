@@ -58,7 +58,7 @@ public:
 	cudaRVector3& get_k_sqr() { return k_sqr; }
 
 	cudaRVector3& get_q() { return q; }
-	cudaRVector3 get_p() const { return p; }
+	cudaRVector3& get_p() { return p; }
 	cudaRVector3& get_t() { return t; }
 	cudaCVector3& get_Q() { return Q; }
 	cudaCVector3& get_P() { return P; }
