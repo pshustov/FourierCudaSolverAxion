@@ -47,8 +47,8 @@ public:
 	void inverce(cudaCVector &F, cudaCVector &f);
 	void inverce(cudaCVector &F, cudaRVector &f);
 	
-	void forward(cudaCVector3 &f, cudaCVector3 &F);
-	void forward(cudaRVector3 &f, cudaCVector3 &F);
+	void forward(cudaCVector3 &f, cudaCVector3 &F, bool isNormed = true);
+	void forward(cudaRVector3 &f, cudaCVector3 &F, bool isNormed = true);
 	void inverce(cudaCVector3 &F, cudaCVector3 &f, bool isNormed = true);
 	void inverce(cudaCVector3 &F, cudaRVector3 &f, bool isNormed = true);
 
