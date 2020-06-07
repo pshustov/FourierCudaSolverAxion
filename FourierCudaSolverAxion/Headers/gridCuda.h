@@ -57,9 +57,9 @@ public:
 	cudaRVector3 get_k3() const { return k3; }
 	cudaRVector3 get_k_sqr() const { return k_sqr; }
 
-	cudaRVector3 get_q() const { return q; }
-	cudaRVector3 get_p() const { return p; }
-	cudaRVector3 get_t() const { return t; }
+	cudaRVector3& get_q() { return q; }
+	cudaRVector3& get_p() { return p; }
+	cudaRVector3& get_t() { return t; }
 	cudaCVector3 get_Q() const { return Q; }
 	cudaCVector3 get_P() const { return P; }
 	cudaCVector3 get_T() const { return T; }
@@ -116,6 +116,7 @@ public:
 	void timestep(double dt) { setSmthChanged();  current_time += dt; }
 	double getEnergy();
 
+	cudaRVector3 q, p, t;
 private:
 	size_t N1, N2, N3, N3red;
 	double L1, L2, L3;
@@ -123,7 +124,6 @@ private:
 	cudaRVector x1, x2, x3;
 	cudaRVector3 k1, k2, k3;
 	cudaRVector3 k_sqr;
-	cudaRVector3 q, p, t;
 	cudaCVector3 Q, P, T;
 
 	cuFFT cufft;
