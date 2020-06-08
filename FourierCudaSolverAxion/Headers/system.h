@@ -21,7 +21,16 @@ public:
 
 		out_maxVal.open("out_maxVal.txt");
 		out_maxVal.precision(14);
+
+		streams = new cudaStream_t[cudaNumberStreams];
+		for (int i = 0; i < cudaNumberStreams; i++)
+		{
+			cudaStreamCreate(&streams[i]);
+		}
+		Equation.setCudaStream(streams[0]);
+		Grid.setcCUFFTstream(streams[0]);
 	}
+
 	~systemEquCuda_3D() {
 		out_maxVal.close();
 	}
@@ -43,7 +52,6 @@ public:
 		fsave << Grid.get_g() << "\n" << Grid.get_lambda() << std::endl;
 
 		fsave.close();
-
 	}
 	void loadParams(std::string filename = "saveParams.asv")
 	{
@@ -68,6 +76,9 @@ private:
 	cudaGrid_3D Grid;
 	equationsAxionSymplectic_3D Equation;
 	Distribution distr;
+
+	int cudaNumberStreams = 2;
+	cudaStream_t* streams;
 
 	double energy0, energy;
 

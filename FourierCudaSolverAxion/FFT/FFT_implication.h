@@ -52,6 +52,11 @@ public:
 	void inverce(cudaCVector3 &F, cudaCVector3 &f, bool isNormed = true);
 	void inverce(cudaCVector3 &F, cudaRVector3 &f, bool isNormed = true);
 
+	void setStreamAll(cudaStream_t stream) {
+		cufftSetStream(planZ2Z, stream);
+		cufftSetStream(planD2Z, stream);
+		cufftSetStream(planZ2D, stream);
+	}
 
 private:
 	int dim;

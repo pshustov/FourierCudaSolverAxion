@@ -116,6 +116,8 @@ public:
 	void timestep(double dt) { setSmthChanged();  current_time += dt; }
 	double getEnergy();
 
+	void setcCUFFTstream(cudaStream_t stream) { cufft.setStreamAll(stream); }
+
 private:
 	size_t N1, N2, N3, N3red;
 	double L1, L2, L3;
