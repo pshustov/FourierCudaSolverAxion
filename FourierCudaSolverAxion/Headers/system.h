@@ -17,7 +17,6 @@ public:
 			Grid.set_lambda(_lambda);
 			Grid.set_g(_g);
 		}
-		isEnergyCalculated = false;
 		energy0 = get_energy();
 
 		out_maxVal.open("out_maxVal.txt");
@@ -60,8 +59,8 @@ public:
 	}
 
 	double get_time() { return Grid.get_time(); }
-	double get_energy();
-	double get_delta() { return (energy - energy0) / energy0; }
+	double get_energy() { return energy = Grid.getEnergy(); }
+	double get_delta() { return (get_energy() - energy0) / energy0; }
 
 private:
 	double precision;
@@ -71,7 +70,6 @@ private:
 	Distribution distr;
 
 	double energy0, energy;
-	bool isEnergyCalculated;
 
 	std::ofstream out_maxVal;
 

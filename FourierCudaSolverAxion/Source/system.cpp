@@ -1,8 +1,5 @@
 #include "stdafx.h"
 
-double reductionMax(int size, double *inData);
-double reductionSum(int size, double *inData);
-
 void systemEquCuda_3D::evaluate()
 {
 	double t = tau, dt;
@@ -30,12 +27,4 @@ void systemEquCuda_3D::evaluate()
 
 	//distr.waitUntilAsyncEnd();
 
-	isEnergyCalculated = false;
 }
-
-
-double systemEquCuda_3D::get_energy()
-{
-	return Grid.getEnergy();
-}
-
