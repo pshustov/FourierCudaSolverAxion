@@ -46,7 +46,7 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename, cudaStream_t& _stream)
 	n_fft[0] = (int)N1;
 	n_fft[1] = (int)N2;
 	n_fft[2] = (int)N3;
-	cufft.reset(3, n_fft, getVolume(), 1, mainStream);
+	cufft.reset(3, n_fft, getVolume(), 1);
 
 	//fft
 	fft();
