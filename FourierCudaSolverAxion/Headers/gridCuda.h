@@ -5,7 +5,7 @@
 class cudaGrid_3D
 {
 public:
-	cudaGrid_3D(const std::string filename);
+	cudaGrid_3D(const std::string filename, cudaStream_t& _stream);
 	~cudaGrid_3D();
 
 	void fft();
@@ -69,27 +69,24 @@ public:
 	double get_g() const { return g; }
 
 	/// Gets ptr
-	double* get_x1_ptr() { return x1.getArray(); }
-	double* get_x2_ptr() { return x2.getArray(); }
-	double* get_x3_ptr() { return x3.getArray(); }
-	double* get_k1_ptr() { return k1.getArray(); }
-	double* get_k2_ptr() { return k2.getArray(); }
-	double* get_k3_ptr() { return k3.getArray(); }
+	//double* get_x1_ptr() { return x1.getArray(); }
+	//double* get_x2_ptr() { return x2.getArray(); }
+	//double* get_x3_ptr() { return x3.getArray(); }
+	//double* get_k1_ptr() { return k1.getArray(); }
+	//double* get_k2_ptr() { return k2.getArray(); }
+	//double* get_k3_ptr() { return k3.getArray(); }
 
-	double* get_k_sqr_ptr() { return k_sqr.getArray(); }
+	//double* get_k_sqr_ptr() { return k_sqr.getArray(); }
 
-	double* get_q_ptr() { return q.getArray(); }
-	double* get_p_ptr() { return p.getArray(); }
-	double* get_t_ptr() { return t.getArray(); }
-	complex* get_Q_ptr() { return Q.getArray(); }
-	complex* get_P_ptr() { return P.getArray(); }
-	complex* get_T_ptr() { return T.getArray(); }
+	//double* get_q_ptr() { return q.getArray(); }
+	//double* get_p_ptr() { return p.getArray(); }
+	//double* get_t_ptr() { return t.getArray(); }
+	//complex* get_Q_ptr() { return Q.getArray(); }
+	//complex* get_P_ptr() { return P.getArray(); }
+	//complex* get_T_ptr() { return T.getArray(); }
 
 
 	/// FFT and IFFT
-	void doFFT_t2T() { doFFTforward(t, T); }
-	void doFFT_T2t() { doFFTinverce(T, t); };
-
 	void doFFTforward(cudaCVector3 &f, cudaCVector3 &F, bool isNormed = true) { cufft.forward(f, F, isNormed); }
 	void doFFTforward(cudaRVector3 &f, cudaCVector3 &F, bool isNormed = true) { cufft.forward(f, F, isNormed); }
 	void doFFTinverce(cudaCVector3 &F, cudaCVector3 &f, bool isNormed = true) { cufft.inverce(F, f, isNormed); }
@@ -116,8 +113,6 @@ public:
 	void timestep(double dt) { setSmthChanged();  current_time += dt; }
 	double getEnergy();
 
-	void setcCUFFTstream(cudaStream_t stream) { cufft.setStreamAll(stream); }
-
 private:
 	size_t N1, N2, N3, N3red;
 	double L1, L2, L3;
@@ -136,5 +131,6 @@ private:
 
 	double energy;
 
+	cudaStream_t mainStream;
 };
 

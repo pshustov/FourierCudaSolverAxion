@@ -6,14 +6,12 @@ class systemEquCuda_3D
 {
 public:
 	systemEquCuda_3D(std::string filename, double _precision, double _tau, double _lambda = 0, double _g = 0, bool isLoadParams = false)
-		: precision(_precision), tau(_tau), Grid(filename), distr(Grid)
+		: precision(_precision), tau(_tau), Grid(filename, streams[0]), distr(Grid), Equation(Grid, streams[0])
 	{
-		if (isLoadParams)
-		{
+		if (isLoadParams) {
 			loadParams();
 		}
-		else
-		{
+		else {
 			Grid.set_lambda(_lambda);
 			Grid.set_g(_g);
 		}
@@ -21,13 +19,6 @@ public:
 
 		out_maxVal.open("out_maxVal.txt");
 		out_maxVal.precision(14);
-
-		streams = new cudaStream_t[cudaNumberStreams];
-		for (int i = 0; i < cudaNumberStreams; i++)
-		{
-			cudaStreamCreate(&streams[i]);
-		}
-		Equation.setCudaStream(streams[0]);
 	}
 
 	~systemEquCuda_3D() {
@@ -67,25 +58,29 @@ public:
 
 	double get_time() { return Grid.get_time(); }
 	double get_energy() { return energy = Grid.getEnergy(); }
-	double get_delta() { return (get_energy() - energy0) / energy0; }
+	double get_delta() { 
+		double tt = (get_energy() - energy0) / energy0; 
+		//energy0 = get_energy();
+		return tt;
+	}
 
 private:
 	double precision;
 	double tau;
+	double energy0, energy;
+
+	cudaStream_t streams[2];
+
 	cudaGrid_3D Grid;
 	equationsAxionSymplectic_3D Equation;
 	Distribution distr;
 
-	int cudaNumberStreams = 2;
-	cudaStream_t* streams;
-
-	double energy0, energy;
 
 	std::ofstream out_maxVal;
 
 	void evlulate_step(const double _dt)
 	{
-		Equation.equationCuda(_dt, Grid);
+		Equation.equationCuda(_dt);
 	}
 
 };

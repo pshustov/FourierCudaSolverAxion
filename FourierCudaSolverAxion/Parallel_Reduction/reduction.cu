@@ -234,7 +234,7 @@ __global__ void kernelReduce2(T* g_idata, T* g_odata, unsigned int n, F fun)
 
 
 template <typename T, typename F>
-void reduce(int size, int threads, int blocks, F fun, T* d_idata, T* d_odata)
+void reduce(int size, int threads, int blocks, F fun, T* d_idata, T* d_odata, cudaStream_t stream)
 {
 	dim3 dimBlock(threads, 1, 1);
 	dim3 dimGrid(blocks, 1, 1);
@@ -246,43 +246,43 @@ void reduce(int size, int threads, int blocks, F fun, T* d_idata, T* d_odata)
         switch (threads)
         {
             case 512:
-				kernelReduce<T, 512, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T, 512, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 256:
-				kernelReduce<T, 256, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T, 256, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 128:
-				kernelReduce<T, 128, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T, 128, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 64:
-				kernelReduce<T,  64, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T,  64, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 32:
-				kernelReduce<T,  32, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T,  32, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 16:
-				kernelReduce<T,  16, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T,  16, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case  8:
-				kernelReduce<T,   8, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T,   8, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case  4:
-				kernelReduce<T,   4, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T,   4, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case  2:
-				kernelReduce<T,   2, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T,   2, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case  1:
-				kernelReduce<T,   1, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T,   1, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
         }
     }
@@ -291,50 +291,50 @@ void reduce(int size, int threads, int blocks, F fun, T* d_idata, T* d_odata)
         switch (threads)
         {
             case 512:
-				kernelReduce<T, 512, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T, 512, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 256:
-				kernelReduce<T, 256, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T, 256, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 128:
-				kernelReduce<T, 128, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T, 128, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 64:
-				kernelReduce<T,  64, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T,  64, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 32:
-				kernelReduce<T,  32, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T,  32, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 16:
-				kernelReduce<T,  16, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T,  16, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case  8:
-				kernelReduce<T,   8, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T,   8, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case  4:
-				kernelReduce<T,   4, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T,   4, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case  2:
-				kernelReduce<T,   2, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T,   2, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case  1:
-				kernelReduce<T,   1, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce<T,   1, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
         }
     }
 }
 
 template <typename T, typename F>
-void reduce2(int size, int threads, int blocks, F fun, T* d_idata, T* d_odata)
+void reduce2(int size, int threads, int blocks, F fun, T* d_idata, T* d_odata, cudaStream_t stream)
 {
 	dim3 dimBlock(threads, 1, 1);
 	dim3 dimGrid(blocks, 1, 1);
@@ -346,39 +346,39 @@ void reduce2(int size, int threads, int blocks, F fun, T* d_idata, T* d_odata)
         switch (threads)
         {
             case 512:
-				kernelReduce2<T, 512, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T, 512, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 256:
-				kernelReduce2<T, 256, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T, 256, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 128:
-				kernelReduce2<T, 128, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T, 128, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 64:
-				kernelReduce2<T,  64, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T,  64, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 32:
-				kernelReduce2<T,  32, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T,  32, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 16:
-				kernelReduce2<T,  16, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T,  16, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case  8:
-				kernelReduce2<T,   8, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T,   8, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case  4:
-				kernelReduce2<T,   4, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T,   4, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case  2:
-				kernelReduce2<T,   2, true><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T,   2, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
         }
     }
@@ -387,39 +387,39 @@ void reduce2(int size, int threads, int blocks, F fun, T* d_idata, T* d_odata)
         switch (threads)
         {
             case 512:
-				kernelReduce2<T, 512, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T, 512, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 256:
-				kernelReduce2<T, 256, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T, 256, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 128:
-				kernelReduce2<T, 128, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T, 128, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 64:
-				kernelReduce2<T,  64, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T,  64, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 32:
-				kernelReduce2<T,  32, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T,  32, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case 16:
-				kernelReduce2<T,  16, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T,  16, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case  8:
-				kernelReduce2<T,   8, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T,   8, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case  4:
-				kernelReduce2<T,   4, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T,   4, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
 
             case  2:
-				kernelReduce2<T,   2, false><<< dimGrid, dimBlock, smemSize >>>(d_idata, d_odata, size, fun);
+				kernelReduce2<T,   2, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
         }
     }
@@ -428,7 +428,7 @@ void reduce2(int size, int threads, int blocks, F fun, T* d_idata, T* d_odata)
 
 
 template <typename T>
-T reductionSum(int size, T* inData)
+T reductionSum(int size, T* inData, cudaStream_t& stream)
 {
 	int cpuFinalThreshold = 256;
 	int maxThreads = 256;
@@ -444,23 +444,23 @@ T reductionSum(int size, T* inData)
 
 	auto fun = [] __host__ __device__(T A, T B) { return A + B; };
 
-	reduce(size, threads, blocks, fun, inData, outData_dev);
-	cudaDeviceSynchronize();
+	reduce(size, threads, blocks, fun, inData, outData_dev, stream);
+	//cudaStreamSynchronize(stream);
 
 	int s = blocks;
 	while (s > cpuFinalThreshold)
 	{
-		cudaMemcpy(inData_dev, outData_dev, blocks * sizeof(T), cudaMemcpyDeviceToDevice);
+		cudaMemcpyAsync(inData_dev, outData_dev, blocks * sizeof(T), cudaMemcpyDeviceToDevice, stream);
 
 		getNumBlocksAndThreads(s, maxThreads, blocks, threads);
-		reduce(s, threads, blocks, fun, inData_dev, outData_dev);
+		reduce(s, threads, blocks, fun, inData_dev, outData_dev, stream);
 
 		s = blocks;
 	}
 
 	T* outData_host;
 	outData_host = (T*)malloc(s * sizeof(T));
-	cudaMemcpy(outData_host, outData_dev, s * sizeof(T), cudaMemcpyDeviceToHost);
+	cudaMemcpyAsync(outData_host, outData_dev, s * sizeof(T), cudaMemcpyDeviceToHost, stream);
 
 	T result = 0;
 	for (size_t i = 0; i < s; i++)
@@ -474,12 +474,12 @@ T reductionSum(int size, T* inData)
 
 	return result;
 }
-template int reductionSum<int>(int size, int* inData);
-template float reductionSum<float>(int size, float* inData);
-template double reductionSum<double>(int size, double* inData);
+template int reductionSum<int>(int size, int* inData, cudaStream_t& stream);
+template float reductionSum<float>(int size, float* inData, cudaStream_t& stream);
+template double reductionSum<double>(int size, double* inData, cudaStream_t& stream);
 
 template <>
-complex reductionSum<complex>(int size, complex* inData)
+complex reductionSum<complex>(int size, complex* inData, cudaStream_t& stream)
 {
 	int cpuFinalThreshold = 1;
 	int maxThreads = 16;
@@ -496,23 +496,25 @@ complex reductionSum<complex>(int size, complex* inData)
 	auto fun = [] __host__ (complex A, complex B) { return A + B; };
 	auto funDub = [] __device__(double A, double B) { return A + B; };
 
-	reduce2(2*size, 2*threads, blocks, funDub, (double*)inData, (double*)outData_dev);
-	cudaDeviceSynchronize();
+	reduce2(2*size, 2*threads, blocks, funDub, (double*)inData, (double*)outData_dev, stream);
+	cudaStreamSynchronize(stream);
 
 	int s = blocks;
 	while (s > cpuFinalThreshold)
 	{
-		cudaMemcpy(inData_dev, outData_dev, blocks * sizeof(complex), cudaMemcpyDeviceToDevice);
+		cudaMemcpyAsync(inData_dev, outData_dev, blocks * sizeof(complex), cudaMemcpyDeviceToDevice, stream);
+		cudaStreamSynchronize(stream);
 
 		getNumBlocksAndThreads(s, maxThreads, blocks, threads);
-		reduce2(2*s, 2*threads, blocks, funDub, (double*)inData_dev, (double*)outData_dev);
+		reduce2(2*s, 2*threads, blocks, funDub, (double*)inData_dev, (double*)outData_dev, stream);
+		cudaStreamSynchronize(stream);
 
 		s = blocks;
 	}
 
 	complex* outData_host;
 	outData_host = (complex*)malloc(s * sizeof(complex));
-	cudaMemcpy(outData_host, outData_dev, s * sizeof(complex), cudaMemcpyDeviceToHost);
+	cudaMemcpyAsync(outData_host, outData_dev, s * sizeof(complex), cudaMemcpyDeviceToHost, stream);
 
 	complex result = 0;
 	for (size_t i = 0; i < s; i++)

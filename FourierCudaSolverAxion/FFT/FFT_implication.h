@@ -15,7 +15,7 @@ void cuifft(cudaCVector3 &F, cudaRVector3 &f);
 class cuFFT
 {
 public:
-	cuFFT() 
+	cuFFT(cudaStream_t _stream = cudaStreamLegacy) 
 	{
 		dim = 1;
 		n = new int[dim];
@@ -36,11 +36,13 @@ public:
 			fprintf(stderr, "CUFFT error: Plan creation failed");
 			return;
 		}
+
+		setStreamAll(_stream);
 	}
 	cuFFT(const int dim, const int *_n, const int _BATCH = 1);
 	~cuFFT();
 
-	void reset(const int dim, const int *_n, double _L, const int _BATCH = 1);
+	void reset(const int dim, const int *_n, double _L, const int _BATCH = 1, cudaStream_t _stream = cudaStreamLegacy);
 
 	void forward(cudaCVector &f, cudaCVector &F);
 	void forward(cudaRVector &f, cudaCVector &F);
@@ -52,10 +54,10 @@ public:
 	void inverce(cudaCVector3 &F, cudaCVector3 &f, bool isNormed = true);
 	void inverce(cudaCVector3 &F, cudaRVector3 &f, bool isNormed = true);
 
-	void setStreamAll(cudaStream_t stream) {
-		cufftSetStream(planZ2Z, stream);
-		cufftSetStream(planD2Z, stream);
-		cufftSetStream(planZ2D, stream);
+	void setStreamAll(cudaStream_t _stream) {
+		cufftSetStream(planZ2Z, _stream);
+		cufftSetStream(planD2Z, _stream);
+		cufftSetStream(planZ2D, _stream);
 	}
 
 private:
@@ -65,4 +67,6 @@ private:
 	cufftHandle planZ2Z, planD2Z, planZ2D;
 	double L;
 	int N;
+
+	cudaStream_t stream;
 };
