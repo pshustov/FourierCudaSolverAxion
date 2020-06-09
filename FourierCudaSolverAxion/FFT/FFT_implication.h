@@ -15,31 +15,15 @@ void cuifft(cudaCVector3 &F, cudaRVector3 &f);
 class cuFFT
 {
 public:
-	cuFFT(cudaStream_t _stream = cudaStreamLegacy) 
+	cuFFT()
 	{
 		dim = 1;
 		n = new int[dim];
-		L = 1;
-		N = 1;
-		
 		BATCH = 1;
-
-		if (cufftPlan1d(&planZ2Z, 1, CUFFT_Z2Z, BATCH) != CUFFT_SUCCESS) {
-			fprintf(stderr, "CUFFT error: Plan creation failed");
-			return;
-		}
-		if (cufftPlan1d(&planD2Z, 1, CUFFT_D2Z, BATCH) != CUFFT_SUCCESS) {
-			fprintf(stderr, "CUFFT error: Plan creation failed");
-			return;
-		}
-		if (cufftPlan1d(&planZ2D, 1, CUFFT_Z2D, BATCH) != CUFFT_SUCCESS) {
-			fprintf(stderr, "CUFFT error: Plan creation failed");
-			return;
-		}
-
-		setStreamAll(_stream);
+		L = 0;
+		N = 0;
 	}
-	cuFFT(const int dim, const int *_n, const int _BATCH = 1);
+	cuFFT(const int dim, const int* _n, const int _BATCH = 1, cudaStream_t _stream = cudaStreamLegacy);
 	~cuFFT();
 
 	void reset(const int dim, const int *_n, double _L, const int _BATCH = 1, cudaStream_t _stream = cudaStreamLegacy);
@@ -65,6 +49,7 @@ private:
 	int *n;
 	int BATCH;
 	cufftHandle planZ2Z, planD2Z, planZ2D;
+	
 	double L;
 	int N;
 
