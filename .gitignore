@@ -263,3 +263,4 @@ __pycache__/
 /FourierCudaSolverAxion/saveGrid.asv
 /FourierCudaSolverAxion/saveParams.asv
 /FourierCudaSolverAxion/in32Small.txt
+*.txt

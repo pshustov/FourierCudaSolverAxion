@@ -566,7 +566,7 @@ public:
 		delete[] Array;
 	}
 
-	vector3(const cudaVector3<T>& _V) : N1(_V.N1()), N2(_V.N2()), N3(_V.N3())
+	vector3(const cudaVector3<T>& _V) : N1(_V.getN1()), N2(_V.getN2()), N3(_V.getN3())
 	{
 		Array = new T[N1*N2*N3]();
 		cudaMemcpy(Array, _V.Array, N1*N2*N3 * sizeof(T), cudaMemcpyDeviceToHost);
