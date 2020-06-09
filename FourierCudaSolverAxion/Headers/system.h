@@ -28,7 +28,6 @@ public:
 			cudaStreamCreate(&streams[i]);
 		}
 		Equation.setCudaStream(streams[0]);
-		Grid.setcCUFFTstream(streams[0]);
 	}
 
 	~systemEquCuda_3D() {

@@ -14,6 +14,8 @@ public:
 
 	void setCudaStream(cudaStream_t& _stream) { stream = _stream; }
 
+	void makeGraph();
+
 private:
 	cudaStream_t stream;
 	cudaGraph_t graph;

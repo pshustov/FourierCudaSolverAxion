@@ -99,9 +99,9 @@ equationsAxionSymplectic_3D::equationsAxionSymplectic_3D(cudaStream_t _stream)
 	cudaMalloc(&Ddev, N_sympectic * sizeof(double));
 	cudaMemcpy(Ddev, &D, N_sympectic * sizeof(double), cudaMemcpyHostToDevice);
 }
+
 void equationsAxionSymplectic_3D::equationCuda(const double dt, cudaGrid_3D& Grid)
 {
-
 	int N1 = (int)Grid.getN1();
 	int N2 = (int)Grid.getN2();
 	int N3red = (int)Grid.getN3red();
@@ -111,30 +111,27 @@ void equationsAxionSymplectic_3D::equationCuda(const double dt, cudaGrid_3D& Gri
 	dim3 grid((Nred + BLOCK_SIZE + 1) / BLOCK_SIZE);
 
 	double normT = Grid.getVolume() / Grid.size();
-
+	
 	Grid.setcCUFFTstream(stream);
 
 	//cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal);
 
 	getNonlin_Phi4_Phi6(Grid);
 	kernalStepSymplectic41_v2<<<grid, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
-	Grid.setSmthChanged();
-	cudaStreamSynchronize(stream);
 		
 	getNonlin_Phi4_Phi6(Grid);
 	kernalStepSymplectic42_v2<<<grid, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
-	Grid.setSmthChanged();
-	cudaStreamSynchronize(stream);
-
+	
 	getNonlin_Phi4_Phi6(Grid);
 	kernalStepSymplectic43_v2<<<grid, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
-	Grid.setSmthChanged();
-	cudaStreamSynchronize(stream);
-
+	
 	getNonlin_Phi4_Phi6(Grid);
 	kernalStepSymplectic44_v2<<<grid, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
-	Grid.setSmthChanged();
+	
 	cudaStreamSynchronize(stream);
+	Grid.setSmthChanged();
+	
+	Grid.setcCUFFTstream(cudaStreamLegacy);
 
 	//cudaStreamEndCapture(stream, &graph);
 
@@ -153,8 +150,7 @@ void equationsAxionSymplectic_3D::getNonlin_Phi4_Phi6(cudaGrid_3D& Grid)
 	dim3 grid((N + BLOCK_SIZE + 1) / BLOCK_SIZE);
 
 	bool isNormed = false;
-	Grid.ifftQ(isNormed);
+	Grid.ifftQ(isNormed, true);
 	kernel_Phi4_Phi6_v2<<<grid, block, 0, stream>>>(N, Grid.getVolume(), Grid.get_lambda(), Grid.get_g(), Grid.get_q(), Grid.get_t());
-	cudaStreamSynchronize(stream);
 	Grid.doFFTforward(Grid.get_t(), Grid.get_T(), false);
 }
