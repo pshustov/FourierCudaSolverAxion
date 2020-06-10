@@ -461,6 +461,7 @@ T reductionSum(int size, T* inData, cudaStream_t stream)
 	T* outData_host;
 	outData_host = (T*)malloc(s * sizeof(T));
 	cudaMemcpyAsync(outData_host, outData_dev, s * sizeof(T), cudaMemcpyDeviceToHost, stream);
+	cudaStreamSynchronize(stream);
 
 	T result = 0;
 	for (size_t i = 0; i < s; i++)
@@ -513,6 +514,7 @@ complex reductionSum<complex>(int size, complex* inData, cudaStream_t stream)
 	complex* outData_host;
 	outData_host = (complex*)malloc(s * sizeof(complex));
 	cudaMemcpyAsync(outData_host, outData_dev, s * sizeof(complex), cudaMemcpyDeviceToHost, stream);
+	cudaStreamSynchronize(stream);
 
 	complex result = 0;
 	for (size_t i = 0; i < s; i++)

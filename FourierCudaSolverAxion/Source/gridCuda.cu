@@ -2,7 +2,7 @@
 
 cudaGrid_3D::cudaGrid_3D(const std::string filename)
 {
-	mainStream = cudaStreamLegacy;
+	mainStream = cudaStreamDefault;
 	//cudaStreamCreate(&mainStream);
 
 	current_time = 0;
@@ -214,7 +214,7 @@ double cudaGrid_3D::getEnergy()
 		dim3 grid((N1 + Bx - 1) / Bx, (N2 + By - 1) / By, (N3red + Bz - 1) / Bz);
 		kernelEnergyQuad<<<grid, block, 0, mainStream>>>(k_sqr, Q, P, T);
 		cudaStreamSynchronize(mainStream);
-		energy = T.getSum().real() / getVolume();
+		energy = T.getSum(mainStream).real() / getVolume();
 		
 		ifft();
 
@@ -222,7 +222,7 @@ double cudaGrid_3D::getEnergy()
 		grid = dim3( (size() + BLOCK_SIZE - 1) / BLOCK_SIZE );
 		kernelEnergyNonLin<<<grid, block, 0, mainStream>>>(size(), lambda, g, q, t);
 		cudaStreamSynchronize(mainStream);
-		energy += t.getSum() * getVolume() / size();
+		energy += t.getSum(mainStream) * getVolume() / size();
 
 		isEnergyCalculateted = true;
 	}

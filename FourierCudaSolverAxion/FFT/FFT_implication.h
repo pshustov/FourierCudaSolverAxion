@@ -15,7 +15,7 @@ void cuifft(cudaCVector3 &F, cudaRVector3 &f);
 class cuFFT
 {
 public:
-	cuFFT(cudaStream_t _stream = cudaStreamLegacy) : stream(_stream)
+	cuFFT(cudaStream_t _stream = cudaStreamDefault) : stream(_stream)
 	{
 		dim = 1;
 		n = new int[dim];
@@ -38,10 +38,10 @@ public:
 		}
 		setStream(stream);
 	}
-	cuFFT(const int dim, const int *_n, const int _BATCH = 1, cudaStream_t _stream = cudaStreamLegacy);
+	cuFFT(const int dim, const int *_n, const int _BATCH = 1, cudaStream_t _stream = cudaStreamDefault);
 	~cuFFT();
 
-	void reset(const int dim, const int *_n, double _L, const int _BATCH = 1, cudaStream_t _stream = cudaStreamLegacy);
+	void reset(const int dim, const int *_n, double _L, const int _BATCH = 1, cudaStream_t _stream = cudaStreamDefault);
 	
 	void forward(cudaCVector3 &f, cudaCVector3 &F, bool isNormed = true);
 	void forward(cudaRVector3 &f, cudaCVector3 &F, bool isNormed = true);

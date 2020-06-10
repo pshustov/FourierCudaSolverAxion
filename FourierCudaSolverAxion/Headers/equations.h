@@ -6,7 +6,7 @@
 class equationsAxionSymplectic_3D
 {
 public:
-	equationsAxionSymplectic_3D(cudaStream_t _stream = cudaStreamLegacy);
+	equationsAxionSymplectic_3D(cudaStream_t _stream = cudaStreamDefault);
 	~equationsAxionSymplectic_3D() { cudaStreamDestroy(stream); }
 
 	void equationCuda(const double dt, cudaGrid_3D & Grid);
