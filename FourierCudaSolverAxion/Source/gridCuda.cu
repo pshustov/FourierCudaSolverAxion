@@ -2,8 +2,8 @@
 
 cudaGrid_3D::cudaGrid_3D(const std::string filename)
 {
-	//mainStream = cudaStreamDefault;
-	cudaStreamCreate(&mainStream);
+	mainStream = cudaStreamDefault;
+	//cudaStreamCreate(&mainStream);
 
 	current_time = 0;
 

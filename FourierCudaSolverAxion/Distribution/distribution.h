@@ -40,9 +40,12 @@ private:
 	cudaRVector3 k_sqr;
 	cudaCVector3 Q, P;
 
+	double volume;
+
 	std::ofstream outFile;
 	double numberOfParticles, meanMomentum;
 
 	std::future<void> distributionFunctionFuture;
 
+	//cudaStream_t streamDistrib;
 };
