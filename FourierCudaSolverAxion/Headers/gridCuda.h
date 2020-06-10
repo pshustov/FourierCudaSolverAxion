@@ -134,5 +134,6 @@ private:
 
 	double energy;
 
+	cudaStream_t mainStream;
 };
 
