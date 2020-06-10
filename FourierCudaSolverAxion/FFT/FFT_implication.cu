@@ -154,15 +154,12 @@ cuFFT::~cuFFT()
 {
 	if (cufftDestroy(planD2Z) != CUFFT_SUCCESS) {
 		fprintf(stderr, "CUFFT error: The plan parameter is not a valid handle.");
-		throw;
 	}
 	if (cufftDestroy(planZ2D) != CUFFT_SUCCESS) {
 		fprintf(stderr, "CUFFT error: The plan parameter is not a valid handle.");
-		throw;
 	}
 	if (cufftDestroy(planZ2Z) != CUFFT_SUCCESS) {
 		fprintf(stderr, "CUFFT error: The plan parameter is not a valid handle.");
-		throw;
 	}
 	delete[] n;
 }
