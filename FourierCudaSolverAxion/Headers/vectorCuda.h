@@ -175,7 +175,7 @@ public:
 	
 	__host__ T* getArray() { return Array; }
 	
-	__host__ T getSum(cudaStream_t& stream) { return reductionSum<T>(size(), Array, stream); }
+	__host__ T getSum(cudaStream_t& stream) { return reductionSum<T>(size(), Array); }
 	
 	friend class vector3<T>;
 	friend class cudaVector3Dev<T>;
