@@ -51,15 +51,15 @@ public:
 	void setStream(cudaStream_t stream) {
 		if (cufftSetStream(planZ2Z, stream) != CUFFT_SUCCESS) {
 			fprintf(stderr, "CUFFT error: Set stream failed");
-			return;
+			throw;
 		}
 		if (cufftSetStream(planD2Z, stream) != CUFFT_SUCCESS) {
 			fprintf(stderr, "CUFFT error: Set stream failed");
-			return;
+			throw;
 		}
 		if (cufftSetStream(planZ2D, stream) != CUFFT_SUCCESS) {
 			fprintf(stderr, "CUFFT error: Set stream failed");
-			return;
+			throw;
 		}
 	}
 

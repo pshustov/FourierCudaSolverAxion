@@ -152,9 +152,18 @@ cuFFT::cuFFT(const int _dim, const int *_n, const int _BATCH, cudaStream_t _stre
 }
 cuFFT::~cuFFT()
 {
-	cufftDestroy(planD2Z);
-	cufftDestroy(planZ2D);
-	cufftDestroy(planZ2Z);
+	if (cufftDestroy(planD2Z) != CUFFT_SUCCESS) {
+		fprintf(stderr, "CUFFT error: The plan parameter is not a valid handle.");
+		throw;
+	}
+	if (cufftDestroy(planZ2D) != CUFFT_SUCCESS) {
+		fprintf(stderr, "CUFFT error: The plan parameter is not a valid handle.");
+		throw;
+	}
+	if (cufftDestroy(planZ2Z) != CUFFT_SUCCESS) {
+		fprintf(stderr, "CUFFT error: The plan parameter is not a valid handle.");
+		throw;
+	}
 	delete[] n;
 }
 void cuFFT::reset(const int _dim, const int *_n, double _L, const int _BATCH, cudaStream_t _stream)
@@ -163,9 +172,18 @@ void cuFFT::reset(const int _dim, const int *_n, double _L, const int _BATCH, cu
 	BATCH = _BATCH;
 	L = _L;
 
-	cufftDestroy(planD2Z);
-	cufftDestroy(planZ2D);
-	cufftDestroy(planZ2Z);
+	if (cufftDestroy(planD2Z) != CUFFT_SUCCESS) {
+		fprintf(stderr, "CUFFT error: The plan parameter is not a valid handle.");
+		throw;
+	}
+	if (cufftDestroy(planZ2D) != CUFFT_SUCCESS) {
+		fprintf(stderr, "CUFFT error: The plan parameter is not a valid handle.");
+		throw;
+	}
+	if (cufftDestroy(planZ2Z) != CUFFT_SUCCESS) {
+		fprintf(stderr, "CUFFT error: The plan parameter is not a valid handle.");
+		throw;
+	}
 	
 	delete[] n;
 	n = new int[dim];
@@ -173,9 +191,6 @@ void cuFFT::reset(const int _dim, const int *_n, double _L, const int _BATCH, cu
 		n[i] = _n[i];
 
 	int NX, NY, NZ;
-
-	stream = _stream;
-	setStream(stream);
 
 	switch (dim)
 	{
@@ -221,4 +236,7 @@ void cuFFT::reset(const int _dim, const int *_n, double _L, const int _BATCH, cu
 	default:
 		throw;
 	}
+
+	stream = _stream;
+	setStream(stream);
 }
