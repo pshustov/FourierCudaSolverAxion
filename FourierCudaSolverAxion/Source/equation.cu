@@ -90,5 +90,5 @@ void equationsAxionSymplectic_3D::getNonlin_Phi4_Phi6()
 	bool isNormed = false;
 	Grid.ifftQ(isNormed, true);
 	kernel_Phi4_Phi6_v2<<<grid, block, 0, stream>>>(N, Grid.getVolume(), Grid.get_lambda(), Grid.get_g(), Grid.get_q(), Grid.get_t());
-	Grid.doFFTforward(Grid.get_t(), Grid.get_T(), false);
+	Grid.doFFTforward(Grid.get_t(), Grid.get_T(), isNormed);
 }

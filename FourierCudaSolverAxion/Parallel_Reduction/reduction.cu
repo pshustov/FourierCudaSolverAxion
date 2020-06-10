@@ -445,7 +445,6 @@ T reductionSum(int size, T* inData, cudaStream_t stream)
 	auto fun = [] __host__ __device__(T A, T B) { return A + B; };
 
 	reduce(size, threads, blocks, fun, inData, outData_dev, stream);
-	cudaStreamSynchronize(stream);
 
 	int s = blocks;
 	while (s > cpuFinalThreshold)
@@ -498,7 +497,6 @@ complex reductionSum<complex>(int size, complex* inData, cudaStream_t stream)
 	auto funDub = [] __device__(double A, double B) { return A + B; };
 
 	reduce2(2*size, 2*threads, blocks, funDub, (double*)inData, (double*)outData_dev, stream);
-	cudaStreamSynchronize(stream);
 
 	int s = blocks;
 	while (s > cpuFinalThreshold)
