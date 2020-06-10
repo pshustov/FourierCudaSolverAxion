@@ -59,37 +59,6 @@ void cuFFT::forward(cudaRVector &f, cudaCVector &F)
 	kernelForwardNorm<<<grid, block>>>(F.getN(), N, L, F.getArray());
 	cudaDeviceSynchronize();
 }
-void cuFFT::forward(cudaCVector3 &f, cudaCVector3 &F, bool isNormed)
-{
-	if (cufftExecZ2Z(planZ2Z, (cufftDoubleComplex*)f.getArray(), (cufftDoubleComplex*)F.getArray(), CUFFT_FORWARD) != CUFFT_SUCCESS) {
-		fprintf(stderr, "CUFFT error: 3D ExecZ2Z Forward failed");
-		return;
-	}
-	cudaDeviceSynchronize();
-
-	if (isNormed) {
-		dim3 block(BLOCK_SIZE);
-		dim3 grid((unsigned int)ceil((double)F.size() / (double)BLOCK_SIZE));
-		kernelForwardNorm<<<grid, block>>>(F.size(), N, L, F.getArray());
-		cudaDeviceSynchronize();
-	}
-}
-void cuFFT::forward(cudaRVector3 &f, cudaCVector3 &F, bool isNormed)
-{
-	if (cufftExecD2Z(planD2Z, (cufftDoubleReal*)f.getArray(), (cufftDoubleComplex*)F.getArray()) != CUFFT_SUCCESS) {
-		fprintf(stderr, "CUFFT error: 3D ExecD2Z Forward failed");
-		return;
-	}
-	cudaDeviceSynchronize();
-
-	if (isNormed) {
-		dim3 block(BLOCK_SIZE);
-		dim3 grid((unsigned int)ceil((double)F.size() / (double)BLOCK_SIZE));
-		kernelForwardNorm<<<grid, block>>>(F.size(), N, L, F.getArray());
-		cudaDeviceSynchronize();
-	}
-}
-
 void cuFFT::inverce(cudaCVector &F, cudaCVector &f)
 {
 	if (cufftExecZ2Z(planZ2Z, (cufftDoubleComplex*)F.getArray(), (cufftDoubleComplex*)f.getArray(), CUFFT_INVERSE) != CUFFT_SUCCESS) {
@@ -116,19 +85,51 @@ void cuFFT::inverce(cudaCVector &F, cudaRVector &f)
 	kernelInverseNorm<<<grid, block>>>(f.getN(), N, L, f.getArray());
 	cudaDeviceSynchronize();
 }
+
+
+void cuFFT::forward(cudaCVector3& f, cudaCVector3& F, bool isNormed)
+{
+	if (cufftExecZ2Z(planZ2Z, (cufftDoubleComplex*)f.getArray(), (cufftDoubleComplex*)F.getArray(), CUFFT_FORWARD) != CUFFT_SUCCESS) {
+		fprintf(stderr, "CUFFT error: 3D ExecZ2Z Forward failed");
+		return;
+	}
+	cudaStreamSynchronize(stream);
+
+	if (isNormed) {
+		dim3 block(BLOCK_SIZE);
+		dim3 grid((F.size() + BLOCK_SIZE + 1) / BLOCK_SIZE);
+		kernelForwardNorm<<<grid, block, 0, stream>>>(F.size(), N, L, F.getArray());
+		cudaStreamSynchronize(stream);
+	}
+}
+void cuFFT::forward(cudaRVector3& f, cudaCVector3& F, bool isNormed)
+{
+	if (cufftExecD2Z(planD2Z, (cufftDoubleReal*)f.getArray(), (cufftDoubleComplex*)F.getArray()) != CUFFT_SUCCESS) {
+		fprintf(stderr, "CUFFT error: 3D ExecD2Z Forward failed");
+		return;
+	}
+	cudaStreamSynchronize(stream);
+
+	if (isNormed) {
+		dim3 block(BLOCK_SIZE);
+		dim3 grid((F.size() + BLOCK_SIZE + 1) / BLOCK_SIZE);
+		kernelForwardNorm<<<grid, block, 0, stream>>>(F.size(), N, L, F.getArray());
+		cudaStreamSynchronize(stream);
+	}
+}
 void cuFFT::inverce(cudaCVector3 &F, cudaCVector3 &f, bool isNormed)
 {
 	if (cufftExecZ2Z(planZ2Z, (cufftDoubleComplex*)F.getArray(), (cufftDoubleComplex*)f.getArray(), CUFFT_INVERSE) != CUFFT_SUCCESS) {
 		fprintf(stderr, "CUFFT error: 3D ExecZ2Z Inverce failed");
 		return;
 	}
-	cudaDeviceSynchronize();
+	cudaStreamSynchronize(stream);
 	
 	if (isNormed) {
 		dim3 block(BLOCK_SIZE);
-		dim3 grid((unsigned int)ceil((double)f.size() / (double)BLOCK_SIZE));
-		kernelInverseNorm<<<grid, block>>>(f.size(), N, L, f.getArray());
-		cudaDeviceSynchronize();
+		dim3 grid((f.size() + BLOCK_SIZE + 1) / BLOCK_SIZE);
+		kernelInverseNorm<<<grid, block, 0, stream>>>(f.size(), N, L, f.getArray());
+		cudaStreamSynchronize(stream);
 	}
 }
 void cuFFT::inverce(cudaCVector3 &F, cudaRVector3 &f, bool isNormed)
@@ -137,17 +138,17 @@ void cuFFT::inverce(cudaCVector3 &F, cudaRVector3 &f, bool isNormed)
 		fprintf(stderr, "CUFFT error: 3D ExecZ2Z Inverce failed");
 		return;
 	}
-	cudaDeviceSynchronize();
+	cudaStreamSynchronize(stream);
 
 	if (isNormed) {
 		dim3 block(BLOCK_SIZE);
-		dim3 grid((unsigned int)ceil((double)f.size() / (double)BLOCK_SIZE));
-		kernelInverseNorm<<<grid, block>>>(f.size(), N, L, f.getArray());
-		cudaDeviceSynchronize();
+		dim3 grid((f.size() + BLOCK_SIZE + 1) / BLOCK_SIZE);
+		kernelInverseNorm<<<grid, block, 0, stream>>>(f.size(), N, L, f.getArray());
+		cudaStreamSynchronize(stream);
 	}
 }
 
-cuFFT::cuFFT(const int _dim, const int *_n, const int _BATCH) : dim(_dim), BATCH(_BATCH)
+cuFFT::cuFFT(const int _dim, const int *_n, const int _BATCH, cudaStream_t _stream) : dim(_dim), BATCH(_BATCH), stream(_stream)
 {
 	n = new int[dim];
 	for (size_t i = 0; i < dim; i++)
@@ -155,6 +156,8 @@ cuFFT::cuFFT(const int _dim, const int *_n, const int _BATCH) : dim(_dim), BATCH
 
 	int NX, NY, NZ;
 	L = 1;
+
+	setStream(stream);
 
 	switch (dim)
 	{
@@ -208,7 +211,7 @@ cuFFT::~cuFFT()
 	cufftDestroy(planZ2Z);
 	delete[] n;
 }
-void cuFFT::reset(const int _dim, const int *_n, double _L, const int _BATCH)
+void cuFFT::reset(const int _dim, const int *_n, double _L, const int _BATCH, cudaStream_t _stream)
 {
 	dim = _dim;
 	BATCH = _BATCH;
@@ -217,12 +220,16 @@ void cuFFT::reset(const int _dim, const int *_n, double _L, const int _BATCH)
 	cufftDestroy(planD2Z);
 	cufftDestroy(planZ2D);
 	cufftDestroy(planZ2Z);
+	
 	delete[] n;
 	n = new int[dim];
 	for (size_t i = 0; i < dim; i++)
 		n[i] = _n[i];
 
 	int NX, NY, NZ;
+
+	stream = _stream;
+	setStream(stream);
 
 	switch (dim)
 	{

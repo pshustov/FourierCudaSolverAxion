@@ -50,54 +50,6 @@ __global__ void kernel_Phi4_Phi6_v2(const int N, const double L, const double la
 equationsAxionSymplectic_3D::equationsAxionSymplectic_3D(cudaStream_t _stream)
 {
 	stream = _stream;
-	constexpr double twoToOneOverThree = 1.2599210498948731647672106072782;
-	switch (N_sympectic)
-	{
-	case 1:
-		C[0] = 1.0;
-		D[0] = 1.0;
-		break;
-
-	case 2:
-		C[0] = 0.0;
-		C[1] = 1.0;
-
-		D[0] = 0.5;
-		D[1] = 0.5;
-		break;
-
-	case 3:
-		C[0] = 1.0;
-		C[1] = -2.0 / 3.0;
-		C[2] = 2.0 / 3.0;
-
-		D[0] = -1.0 / 24.0;
-		D[1] = 3.0 / 4.0;
-		D[2] = 7.0 / 24.0;
-		break;
-
-	case 4:
-
-		C[0] = 1.0 / (2.0 * (2.0 - twoToOneOverThree));
-		C[1] = (1.0 - twoToOneOverThree) / (2.0 * (2.0 - twoToOneOverThree));
-		C[2] = C[1];
-		C[3] = C[0];
-
-		D[0] = 1.0 / (2.0 - twoToOneOverThree);
-		D[1] = -twoToOneOverThree / (2.0 - twoToOneOverThree);
-		D[2] = D[0];
-		D[3] = 0;
-		break;
-
-	default:
-		break;
-	}
-
-	cudaMalloc(&Cdev, N_sympectic * sizeof(double));
-	cudaMemcpy(Cdev, &C, N_sympectic * sizeof(double), cudaMemcpyHostToDevice);
-
-	cudaMalloc(&Ddev, N_sympectic * sizeof(double));
-	cudaMemcpy(Ddev, &D, N_sympectic * sizeof(double), cudaMemcpyHostToDevice);
 }
 
 void equationsAxionSymplectic_3D::equationCuda(const double dt, cudaGrid_3D& Grid)
@@ -112,10 +64,6 @@ void equationsAxionSymplectic_3D::equationCuda(const double dt, cudaGrid_3D& Gri
 
 	double normT = Grid.getVolume() / Grid.size();
 	
-	Grid.setcCUFFTstream(stream);
-
-	//cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal);
-
 	getNonlin_Phi4_Phi6(Grid);
 	kernalStepSymplectic41_v2<<<grid, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
 		
@@ -131,10 +79,6 @@ void equationsAxionSymplectic_3D::equationCuda(const double dt, cudaGrid_3D& Gri
 	cudaStreamSynchronize(stream);
 	Grid.setSmthChanged();
 	
-	Grid.setcCUFFTstream(cudaStreamLegacy);
-
-	//cudaStreamEndCapture(stream, &graph);
-
 	Grid.timestep(dt);
 }
 

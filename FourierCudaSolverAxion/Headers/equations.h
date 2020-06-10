@@ -14,17 +14,8 @@ public:
 
 	void setCudaStream(cudaStream_t& _stream) { stream = _stream; }
 
-	void makeGraph();
-
 private:
 	cudaStream_t stream;
-	cudaGraph_t graph;
-
-	const size_t N_sympectic = 4;
-	double C[4];
-	double D[4];
-	double *Cdev;
-	double *Ddev;
 };
 
 

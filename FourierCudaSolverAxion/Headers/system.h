@@ -22,12 +22,12 @@ public:
 		out_maxVal.open("out_maxVal.txt");
 		out_maxVal.precision(14);
 
-		streams = new cudaStream_t[cudaNumberStreams];
-		for (int i = 0; i < cudaNumberStreams; i++)
-		{
-			cudaStreamCreate(&streams[i]);
-		}
-		Equation.setCudaStream(streams[0]);
+		//streams = new cudaStream_t[cudaNumberStreams];
+		//for (int i = 0; i < cudaNumberStreams; i++)
+		//{
+		//	cudaStreamCreate(&streams[i]);
+		//}
+		//Equation.setCudaStream(streams[0]);
 	}
 
 	~systemEquCuda_3D() {
@@ -76,8 +76,8 @@ private:
 	equationsAxionSymplectic_3D Equation;
 	Distribution distr;
 
-	int cudaNumberStreams = 2;
-	cudaStream_t* streams;
+	//int cudaNumberStreams = 2;
+	//cudaStream_t* streams;
 
 	double energy0, energy;
 
