@@ -33,60 +33,6 @@ __global__ void kernelInverseNorm(const size_t size, const size_t N, const doubl
 	}
 }
 
-void cuFFT::forward(cudaCVector &f, cudaCVector &F)
-{
-	if (cufftExecZ2Z(planZ2Z, (cufftDoubleComplex*)f.getArray(), (cufftDoubleComplex*)F.getArray(), CUFFT_FORWARD) != CUFFT_SUCCESS) {
-		fprintf(stderr, "CUFFT error: ExecZ2Z Forward failed");
-		return;
-	}
-	cudaDeviceSynchronize();
-	
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((unsigned int)ceil((double)F.getN() / (double)BLOCK_SIZE));
-	kernelForwardNorm<<<grid, block>>>(F.getN(), N, L, F.getArray());
-	cudaDeviceSynchronize();
-}
-void cuFFT::forward(cudaRVector &f, cudaCVector &F)
-{
-	if (cufftExecD2Z(planD2Z, (cufftDoubleReal*)f.getArray(), (cufftDoubleComplex*)F.getArray()) != CUFFT_SUCCESS) {
-		fprintf(stderr, "CUFFT error: ExecD2Z Forward failed");
-		return;
-	}
-	cudaDeviceSynchronize();
-	
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((unsigned int)ceil((double)F.getN() / (double)BLOCK_SIZE));
-	kernelForwardNorm<<<grid, block>>>(F.getN(), N, L, F.getArray());
-	cudaDeviceSynchronize();
-}
-void cuFFT::inverce(cudaCVector &F, cudaCVector &f)
-{
-	if (cufftExecZ2Z(planZ2Z, (cufftDoubleComplex*)F.getArray(), (cufftDoubleComplex*)f.getArray(), CUFFT_INVERSE) != CUFFT_SUCCESS) {
-		fprintf(stderr, "CUFFT error: ExecZ2Z Inverce failed");
-		return;
-	}
-	cudaDeviceSynchronize();
-
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((unsigned int)ceil((double)f.getN() / (double)BLOCK_SIZE));
-	kernelInverseNorm<<<grid, block>>>(f.getN(), N, L, f.getArray());
-	cudaDeviceSynchronize();
-}
-void cuFFT::inverce(cudaCVector &F, cudaRVector &f)
-{
-	if (cufftExecZ2D(planZ2D, (cufftDoubleComplex*)F.getArray(), (cufftDoubleReal*)f.getArray()) != CUFFT_SUCCESS) {
-		fprintf(stderr, "CUFFT error: ExecZ2Z Inverce failed");
-		return;
-	}
-	cudaDeviceSynchronize();
-
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((unsigned int)ceil((double)f.getN() / (double)BLOCK_SIZE));
-	kernelInverseNorm<<<grid, block>>>(f.getN(), N, L, f.getArray());
-	cudaDeviceSynchronize();
-}
-
-
 void cuFFT::forward(cudaCVector3& f, cudaCVector3& F, bool isNormed)
 {
 	if (cufftExecZ2Z(planZ2Z, (cufftDoubleComplex*)f.getArray(), (cufftDoubleComplex*)F.getArray(), CUFFT_FORWARD) != CUFFT_SUCCESS) {
@@ -97,7 +43,7 @@ void cuFFT::forward(cudaCVector3& f, cudaCVector3& F, bool isNormed)
 
 	if (isNormed) {
 		dim3 block(BLOCK_SIZE);
-		dim3 grid((F.size() + BLOCK_SIZE + 1) / BLOCK_SIZE);
+		dim3 grid((F.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);
 		kernelForwardNorm<<<grid, block, 0, stream>>>(F.size(), N, L, F.getArray());
 		cudaStreamSynchronize(stream);
 	}
@@ -112,7 +58,7 @@ void cuFFT::forward(cudaRVector3& f, cudaCVector3& F, bool isNormed)
 
 	if (isNormed) {
 		dim3 block(BLOCK_SIZE);
-		dim3 grid((F.size() + BLOCK_SIZE + 1) / BLOCK_SIZE);
+		dim3 grid((F.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);
 		kernelForwardNorm<<<grid, block, 0, stream>>>(F.size(), N, L, F.getArray());
 		cudaStreamSynchronize(stream);
 	}
@@ -127,7 +73,7 @@ void cuFFT::inverce(cudaCVector3 &F, cudaCVector3 &f, bool isNormed)
 	
 	if (isNormed) {
 		dim3 block(BLOCK_SIZE);
-		dim3 grid((f.size() + BLOCK_SIZE + 1) / BLOCK_SIZE);
+		dim3 grid((f.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);
 		kernelInverseNorm<<<grid, block, 0, stream>>>(f.size(), N, L, f.getArray());
 		cudaStreamSynchronize(stream);
 	}
@@ -142,7 +88,7 @@ void cuFFT::inverce(cudaCVector3 &F, cudaRVector3 &f, bool isNormed)
 
 	if (isNormed) {
 		dim3 block(BLOCK_SIZE);
-		dim3 grid((f.size() + BLOCK_SIZE + 1) / BLOCK_SIZE);
+		dim3 grid((f.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);
 		kernelInverseNorm<<<grid, block, 0, stream>>>(f.size(), N, L, f.getArray());
 		cudaStreamSynchronize(stream);
 	}

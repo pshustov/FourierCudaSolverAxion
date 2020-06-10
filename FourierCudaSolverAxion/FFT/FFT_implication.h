@@ -42,11 +42,6 @@ public:
 	~cuFFT();
 
 	void reset(const int dim, const int *_n, double _L, const int _BATCH = 1, cudaStream_t _stream = cudaStreamLegacy);
-
-	void forward(cudaCVector &f, cudaCVector &F);
-	void forward(cudaRVector &f, cudaCVector &F);
-	void inverce(cudaCVector &F, cudaCVector &f);
-	void inverce(cudaCVector &F, cudaRVector &f);
 	
 	void forward(cudaCVector3 &f, cudaCVector3 &F, bool isNormed = true);
 	void forward(cudaRVector3 &f, cudaCVector3 &F, bool isNormed = true);
