@@ -6,7 +6,7 @@ class systemEquCuda_3D
 {
 public:
 	systemEquCuda_3D(std::string filename, double _precision, double _tau, double _lambda = 0, double _g = 0, bool isLoadParams = false)
-		: precision(_precision), tau(_tau), Grid(filename), distr(Grid)
+		: precision(_precision), tau(_tau), Grid(filename), Equation(Grid.get_mainStream()), distr(Grid)
 	{
 		if (isLoadParams)
 		{

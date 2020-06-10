@@ -60,7 +60,7 @@ void equationsAxionSymplectic_3D::equationCuda(const double dt, cudaGrid_3D& Gri
 	int Nred = N1 * N2 * N3red;
 
 	dim3 block(BLOCK_SIZE);
-	dim3 grid((Nred + BLOCK_SIZE + 1) / BLOCK_SIZE);
+	dim3 grid((Nred + BLOCK_SIZE - 1) / BLOCK_SIZE);
 
 	double normT = Grid.getVolume() / Grid.size();
 	
@@ -91,7 +91,7 @@ void equationsAxionSymplectic_3D::getNonlin_Phi4_Phi6(cudaGrid_3D& Grid)
 	int N = N1 * N2 * N3;
 
 	dim3 block(BLOCK_SIZE);
-	dim3 grid((N + BLOCK_SIZE + 1) / BLOCK_SIZE);
+	dim3 grid((N + BLOCK_SIZE - 1) / BLOCK_SIZE);
 
 	bool isNormed = false;
 	Grid.ifftQ(isNormed, true);
