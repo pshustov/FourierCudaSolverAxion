@@ -6,7 +6,7 @@ class systemEquCuda_3D
 {
 public:
 	systemEquCuda_3D(std::string filename, double _precision, double _tau, double _lambda = 0, double _g = 0, bool isLoadParams = false)
-		: precision(_precision), tau(_tau), Grid(filename), Equation(Grid.get_mainStream()), distr(Grid)
+		: precision(_precision), tau(_tau), Grid(filename), Equation(Grid), distr(Grid)
 	{
 		if (isLoadParams)
 		{
@@ -22,6 +22,7 @@ public:
 		out_maxVal.open("out_maxVal.txt");
 		out_maxVal.precision(14);
 
+		Grid.setFlag(12);
 		//streams = new cudaStream_t[cudaNumberStreams];
 		//for (int i = 0; i < cudaNumberStreams; i++)
 		//{
@@ -85,7 +86,7 @@ private:
 
 	void evlulate_step(const double _dt)
 	{
-		Equation.equationCuda(_dt, Grid);
+		Equation.equationCuda(_dt);
 	}
 
 };

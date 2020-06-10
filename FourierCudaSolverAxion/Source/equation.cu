@@ -47,34 +47,37 @@ __global__ void kernel_Phi4_Phi6_v2(const int N, const double L, const double la
 	}
 }
 
-equationsAxionSymplectic_3D::equationsAxionSymplectic_3D(cudaStream_t _stream)
+equationsAxionSymplectic_3D::equationsAxionSymplectic_3D(cudaGrid_3D& _Grid) : Grid(_Grid)
 {
-	stream = _stream;
+	stream = Grid.get_mainStream();
+
+	N1		= (int)Grid.getN1();
+	N2		= (int)Grid.getN2();
+	N3		= (int)Grid.getN3();
+	N3red	= (int)Grid.getN3red();
+	N		= N1 * N2 * N3;
+	Nred	= N1 * N2 * N3red;
+	
+	block	= dim3(BLOCK_SIZE);
+	grid	= dim3((N + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	gridRed = dim3((Nred + BLOCK_SIZE - 1) / BLOCK_SIZE);
+
+	normT	= Grid.getVolume() / Grid.size();
 }
 
-void equationsAxionSymplectic_3D::equationCuda(const double dt, cudaGrid_3D& Grid)
+void equationsAxionSymplectic_3D::equationCuda(const double dt)
 {
-	int N1 = (int)Grid.getN1();
-	int N2 = (int)Grid.getN2();
-	int N3red = (int)Grid.getN3red();
-	int Nred = N1 * N2 * N3red;
-
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((Nred + BLOCK_SIZE - 1) / BLOCK_SIZE);
-
-	double normT = Grid.getVolume() / Grid.size();
-	
-	getNonlin_Phi4_Phi6(Grid);
-	kernalStepSymplectic41_v2<<<grid, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+	getNonlin_Phi4_Phi6();
+	kernalStepSymplectic41_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
 		
-	getNonlin_Phi4_Phi6(Grid);
-	kernalStepSymplectic42_v2<<<grid, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+	getNonlin_Phi4_Phi6();
+	kernalStepSymplectic42_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
 	
-	getNonlin_Phi4_Phi6(Grid);
-	kernalStepSymplectic43_v2<<<grid, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+	getNonlin_Phi4_Phi6();
+	kernalStepSymplectic43_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
 	
-	getNonlin_Phi4_Phi6(Grid);
-	kernalStepSymplectic44_v2<<<grid, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+	getNonlin_Phi4_Phi6();
+	kernalStepSymplectic44_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
 	
 	cudaStreamSynchronize(stream);
 	Grid.setSmthChanged();
@@ -82,17 +85,8 @@ void equationsAxionSymplectic_3D::equationCuda(const double dt, cudaGrid_3D& Gri
 	Grid.timestep(dt);
 }
 
-void equationsAxionSymplectic_3D::getNonlin_Phi4_Phi6(cudaGrid_3D& Grid)
+void equationsAxionSymplectic_3D::getNonlin_Phi4_Phi6()
 {
-	int N1 = (int)Grid.getN1();
-	int N2 = (int)Grid.getN2();
-	int N3 = (int)Grid.getN3();
-	int N3red = (int)Grid.getN3red();
-	int N = N1 * N2 * N3;
-
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((N + BLOCK_SIZE - 1) / BLOCK_SIZE);
-
 	bool isNormed = false;
 	Grid.ifftQ(isNormed, true);
 	kernel_Phi4_Phi6_v2<<<grid, block, 0, stream>>>(N, Grid.getVolume(), Grid.get_lambda(), Grid.get_g(), Grid.get_q(), Grid.get_t());
