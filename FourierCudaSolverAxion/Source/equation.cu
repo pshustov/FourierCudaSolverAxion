@@ -47,107 +47,48 @@ __global__ void kernel_Phi4_Phi6_v2(const int N, const double L, const double la
 	}
 }
 
-equationsAxionSymplectic_3D::equationsAxionSymplectic_3D()
+equationsAxionSymplectic_3D::equationsAxionSymplectic_3D(cudaGrid_3D& _Grid) : Grid(_Grid)
 {
-	constexpr double twoToOneOverThree = 1.2599210498948731647672106072782;
-	switch (N_sympectic)
-	{
-	case 1:
-		C[0] = 1.0;
-		D[0] = 1.0;
-		break;
+	stream = Grid.get_mainStream();
 
-	case 2:
-		C[0] = 0.0;
-		C[1] = 1.0;
+	N1		= (int)Grid.getN1();
+	N2		= (int)Grid.getN2();
+	N3		= (int)Grid.getN3();
+	N3red	= (int)Grid.getN3red();
+	N		= N1 * N2 * N3;
+	Nred	= N1 * N2 * N3red;
+	
+	block	= dim3(BLOCK_SIZE);
+	grid	= dim3((N + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	gridRed = dim3((Nred + BLOCK_SIZE - 1) / BLOCK_SIZE);
 
-		D[0] = 0.5;
-		D[1] = 0.5;
-		break;
-
-	case 3:
-		C[0] = 1.0;
-		C[1] = -2.0 / 3.0;
-		C[2] = 2.0 / 3.0;
-
-		D[0] = -1.0 / 24.0;
-		D[1] = 3.0 / 4.0;
-		D[2] = 7.0 / 24.0;
-		break;
-
-	case 4:
-
-		C[0] = 1.0 / (2.0 * (2.0 - twoToOneOverThree));
-		C[1] = (1.0 - twoToOneOverThree) / (2.0 * (2.0 - twoToOneOverThree));
-		C[2] = C[1];
-		C[3] = C[0];
-
-		D[0] = 1.0 / (2.0 - twoToOneOverThree);
-		D[1] = -twoToOneOverThree / (2.0 - twoToOneOverThree);
-		D[2] = D[0];
-		D[3] = 0;
-		break;
-
-	default:
-		break;
-	}
-
-	cudaMalloc(&Cdev, N_sympectic * sizeof(double));
-	cudaMemcpy(Cdev, &C, N_sympectic * sizeof(double), cudaMemcpyHostToDevice);
-
-	cudaMalloc(&Ddev, N_sympectic * sizeof(double));
-	cudaMemcpy(Ddev, &D, N_sympectic * sizeof(double), cudaMemcpyHostToDevice);
+	normT	= Grid.getVolume() / Grid.size();
 }
-void equationsAxionSymplectic_3D::equationCuda(const double dt, cudaGrid_3D& Grid)
+
+void equationsAxionSymplectic_3D::equationCuda(const double dt)
 {
-
-	int N1 = (int)Grid.getN1();
-	int N2 = (int)Grid.getN2();
-	int N3red = (int)Grid.getN3red();
-	int Nred = N1 * N2 * N3red;
-
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((Nred + BLOCK_SIZE + 1) / BLOCK_SIZE);
-
-	double normT = Grid.getVolume() / Grid.size();
-
-	getNonlin_Phi4_Phi6(Grid);
-	kernalStepSymplectic41_v2<<<grid, block>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+	getNonlin_Phi4_Phi6();
+	kernalStepSymplectic41_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+		
+	getNonlin_Phi4_Phi6();
+	kernalStepSymplectic42_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+	
+	getNonlin_Phi4_Phi6();
+	kernalStepSymplectic43_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+	
+	getNonlin_Phi4_Phi6();
+	kernalStepSymplectic44_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+	
+	cudaStreamSynchronize(stream);
 	Grid.setSmthChanged();
-	cudaDeviceSynchronize();
-
-	getNonlin_Phi4_Phi6(Grid);
-	kernalStepSymplectic42_v2<<<grid, block>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
-	Grid.setSmthChanged();
-	cudaDeviceSynchronize();
-
-	getNonlin_Phi4_Phi6(Grid);
-	kernalStepSymplectic43_v2<<<grid, block>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
-	Grid.setSmthChanged();
-	cudaDeviceSynchronize();
-
-	getNonlin_Phi4_Phi6(Grid);
-	kernalStepSymplectic44_v2<<<grid, block>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
-	Grid.setSmthChanged();
-	cudaDeviceSynchronize();
-
+	
 	Grid.timestep(dt);
 }
 
-void equationsAxionSymplectic_3D::getNonlin_Phi4_Phi6(cudaGrid_3D& Grid)
+void equationsAxionSymplectic_3D::getNonlin_Phi4_Phi6()
 {
-	int N1 = (int)Grid.getN1();
-	int N2 = (int)Grid.getN2();
-	int N3 = (int)Grid.getN3();
-	int N3red = (int)Grid.getN3red();
-	int N = N1 * N2 * N3;
-
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((N + BLOCK_SIZE + 1) / BLOCK_SIZE);
-
 	bool isNormed = false;
-	Grid.ifftQ(isNormed);
-	kernel_Phi4_Phi6_v2<<<grid, block>>>(N, Grid.getVolume(), Grid.get_lambda(), Grid.get_g(), Grid.get_q(), Grid.get_t());
-	cudaDeviceSynchronize();
-	Grid.doFFTforward(Grid.get_t(), Grid.get_T(), false);
+	Grid.ifftQ(isNormed, true);
+	kernel_Phi4_Phi6_v2<<<grid, block, 0, stream>>>(N, Grid.getVolume(), Grid.get_lambda(), Grid.get_g(), Grid.get_q(), Grid.get_t());
+	Grid.doFFTforward(Grid.get_t(), Grid.get_T(), isNormed);
 }

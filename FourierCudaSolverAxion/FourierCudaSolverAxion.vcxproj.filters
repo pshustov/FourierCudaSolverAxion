@@ -19,6 +19,9 @@
     <CudaCompile Include="Distribution\distribution.cpp">
       <Filter>Distribution</Filter>
     </CudaCompile>
+    <CudaCompile Include="Source\fourierCudaSolverAxion.cpp">
+      <Filter>Source</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Distribution">
@@ -74,9 +77,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\system.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\fourierCudaSolverAxion.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

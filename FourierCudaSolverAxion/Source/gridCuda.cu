@@ -2,6 +2,9 @@
 
 cudaGrid_3D::cudaGrid_3D(const std::string filename)
 {
+	//mainStream = cudaStreamDefault;
+	cudaStreamCreate(&mainStream);
+
 	current_time = 0;
 
 	std::ifstream in(filename);
@@ -43,7 +46,7 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	n_fft[0] = (int)N1;
 	n_fft[1] = (int)N2;
 	n_fft[2] = (int)N3;
-	cufft.reset(3, n_fft, getVolume());
+	cufft.reset(3, n_fft, getVolume(), 1, mainStream);
 
 	//fft
 	fft();
@@ -71,18 +74,18 @@ void cudaGrid_3D::ifft()
 	ifftP();
 }
 
-void cudaGrid_3D::ifftQ(bool isNormed)
+void cudaGrid_3D::ifftQ(bool isNormed, bool isForced)
 {
-	if (!isIFFTsyncQ)
+	if (isForced || !isIFFTsyncQ)
 	{
 		cufft.inverce(Q, q, isNormed);
 	}
 	isIFFTsyncQ = true;
 }
 
-void cudaGrid_3D::ifftP(bool isNormed)
+void cudaGrid_3D::ifftP(bool isNormed, bool isForced)
 {
-	if (!isIFFTsyncP)
+	if (isForced || !isIFFTsyncP)
 	{
 		cufft.inverce(P, p);
 	}
@@ -209,17 +212,17 @@ double cudaGrid_3D::getEnergy()
 		int Bx = 16, By = 8, Bz = 1;
 		dim3 block(Bx, By, Bz);
 		dim3 grid((N1 + Bx - 1) / Bx, (N2 + By - 1) / By, (N3red + Bz - 1) / Bz);
-		kernelEnergyQuad<<<grid, block>>>(k_sqr, Q, P, T);
-		cudaDeviceSynchronize();
-		energy = T.getSum().real() / getVolume();
+		kernelEnergyQuad<<<grid, block, 0, mainStream>>>(k_sqr, Q, P, T);
+		cudaStreamSynchronize(mainStream);
+		energy = T.getSum(mainStream).real() / getVolume();
 		
 		ifft();
 
 		block = dim3(BLOCK_SIZE);
 		grid = dim3( (size() + BLOCK_SIZE - 1) / BLOCK_SIZE );
-		kernelEnergyNonLin<<<grid, block>>>(size(), lambda, g, q, t);
-		cudaDeviceSynchronize();
-		energy += t.getSum() * getVolume() / size();
+		kernelEnergyNonLin<<<grid, block, 0, mainStream>>>(size(), lambda, g, q, t);
+		cudaStreamSynchronize(mainStream);
+		energy += t.getSum(mainStream) * getVolume() / size();
 
 		isEnergyCalculateted = true;
 	}
