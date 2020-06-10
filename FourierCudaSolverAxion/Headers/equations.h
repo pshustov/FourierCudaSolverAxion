@@ -21,8 +21,10 @@ private:
 	dim3 block, grid, gridRed;
 
 	cudaStream_t& stream;
-	cudaGraph_t graph;
 	cudaGrid_3D &Grid;
+
+	cudaGraph_t graph;
+	cudaGraphExec_t instance;
 };
 
 

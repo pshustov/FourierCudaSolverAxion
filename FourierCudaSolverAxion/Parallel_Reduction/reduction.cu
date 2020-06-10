@@ -430,7 +430,7 @@ void reduce2(int size, int threads, int blocks, F fun, T* d_idata, T* d_odata, c
 template <typename T>
 T reductionSum(int size, T* inData, cudaStream_t& stream)
 {
-	int cpuFinalThreshold = 256;
+	int cpuFinalThreshold = 64;
 	int maxThreads = 256;
 
 	int blocks = 0, threads = 0;
@@ -445,15 +445,17 @@ T reductionSum(int size, T* inData, cudaStream_t& stream)
 	auto fun = [] __host__ __device__(T A, T B) { return A + B; };
 
 	reduce(size, threads, blocks, fun, inData, outData_dev, stream);
-	//cudaStreamSynchronize(stream);
+	cudaStreamSynchronize(stream);
 
 	int s = blocks;
 	while (s > cpuFinalThreshold)
 	{
 		cudaMemcpyAsync(inData_dev, outData_dev, blocks * sizeof(T), cudaMemcpyDeviceToDevice, stream);
+		cudaStreamSynchronize(stream);
 
 		getNumBlocksAndThreads(s, maxThreads, blocks, threads);
 		reduce(s, threads, blocks, fun, inData_dev, outData_dev, stream);
+		cudaStreamSynchronize(stream);
 
 		s = blocks;
 	}
@@ -481,8 +483,8 @@ template double reductionSum<double>(int size, double* inData, cudaStream_t& str
 template <>
 complex reductionSum<complex>(int size, complex* inData, cudaStream_t& stream)
 {
-	int cpuFinalThreshold = 1;
-	int maxThreads = 16;
+	int cpuFinalThreshold = 64;
+	int maxThreads = 256;
 
 	int blocks = 0, threads = 0;
 	getNumBlocksAndThreads(size, maxThreads, blocks, threads);
@@ -515,6 +517,7 @@ complex reductionSum<complex>(int size, complex* inData, cudaStream_t& stream)
 	complex* outData_host;
 	outData_host = (complex*)malloc(s * sizeof(complex));
 	cudaMemcpyAsync(outData_host, outData_dev, s * sizeof(complex), cudaMemcpyDeviceToHost, stream);
+	cudaStreamSynchronize(stream);
 
 	complex result = 0;
 	for (size_t i = 0; i < s; i++)

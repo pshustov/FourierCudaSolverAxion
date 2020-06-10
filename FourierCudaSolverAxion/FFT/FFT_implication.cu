@@ -65,13 +65,13 @@ void cuFFT::forward(cudaCVector3 &f, cudaCVector3 &F, bool isNormed)
 		fprintf(stderr, "CUFFT error: 3D ExecZ2Z Forward failed");
 		return;
 	}
-	cudaDeviceSynchronize();
+	cudaStreamSynchronize(stream);
 
 	if (isNormed) {
 		dim3 block(BLOCK_SIZE);
 		dim3 grid((f.size() + BLOCK_SIZE + 1) / BLOCK_SIZE);
 		kernelForwardNorm<<<grid, block, 0, stream>>>(F.size(), N, L, F.getArray());
-		cudaDeviceSynchronize();
+		cudaStreamSynchronize(stream);
 	}
 }
 void cuFFT::forward(cudaRVector3 &f, cudaCVector3 &F, bool isNormed)
@@ -122,13 +122,13 @@ void cuFFT::inverce(cudaCVector3 &F, cudaCVector3 &f, bool isNormed)
 		fprintf(stderr, "CUFFT error: 3D ExecZ2Z Inverce failed");
 		return;
 	}
-	cudaDeviceSynchronize();
+	cudaStreamSynchronize(stream);
 	
 	if (isNormed) {
 		dim3 block(BLOCK_SIZE);
 		dim3 grid((f.size() + BLOCK_SIZE + 1) / BLOCK_SIZE);
 		kernelInverseNorm<<<grid, block, 0, stream>>>(f.size(), N, L, f.getArray());
-		cudaDeviceSynchronize();
+		cudaStreamSynchronize(stream);
 	}
 }
 void cuFFT::inverce(cudaCVector3 &F, cudaRVector3 &f, bool isNormed)
