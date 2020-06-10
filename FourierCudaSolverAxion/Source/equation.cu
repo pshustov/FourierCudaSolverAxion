@@ -69,12 +69,15 @@ void equationsAxionSymplectic_3D::equationCuda(const double dt)
 {
 	getNonlin_Phi4_Phi6();
 	kernalStepSymplectic41_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+	Grid.setSmthChanged();
 		
 	getNonlin_Phi4_Phi6();
 	kernalStepSymplectic42_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+	Grid.setSmthChanged();
 	
 	getNonlin_Phi4_Phi6();
 	kernalStepSymplectic43_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+	Grid.setSmthChanged();
 	
 	getNonlin_Phi4_Phi6();
 	kernalStepSymplectic44_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
@@ -88,7 +91,7 @@ void equationsAxionSymplectic_3D::equationCuda(const double dt)
 void equationsAxionSymplectic_3D::getNonlin_Phi4_Phi6()
 {
 	bool isNormed = false;
-	Grid.ifftQ(isNormed, true);
+	Grid.ifftQ(isNormed);
 	kernel_Phi4_Phi6_v2<<<grid, block, 0, stream>>>(N, Grid.getVolume(), Grid.get_lambda(), Grid.get_g(), Grid.get_q(), Grid.get_t());
 	Grid.doFFTforward(Grid.get_t(), Grid.get_T(), isNormed);
 }

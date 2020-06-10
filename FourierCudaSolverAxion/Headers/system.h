@@ -22,7 +22,6 @@ public:
 		out_maxVal.open("out_maxVal.txt");
 		out_maxVal.precision(14);
 
-		Grid.setFlag(12);
 		//streams = new cudaStream_t[cudaNumberStreams];
 		//for (int i = 0; i < cudaNumberStreams; i++)
 		//{

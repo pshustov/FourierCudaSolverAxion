@@ -10,8 +10,8 @@ public:
 
 	void fft();
 	void ifft();
-	void ifftQ(bool isNormed = true, bool isForced = false);
-	void ifftP(bool isNormed = true, bool isForced = false);
+	void ifftQ(bool isNormed = true);
+	void ifftP(bool isNormed = true);
 
 	void save(std::ofstream & fileSave)
 	{		
@@ -70,9 +70,6 @@ public:
 	cudaStream_t get_mainStream() const { return mainStream; }
 
 	/// FFT and IFFT
-	void doFFT_t2T() { doFFTforward(t, T); }
-	void doFFT_T2t() { doFFTinverce(T, t); };
-
 	void doFFTforward(cudaCVector3 &f, cudaCVector3 &F, bool isNormed = true) { cufft.forward(f, F, isNormed); }
 	void doFFTforward(cudaRVector3 &f, cudaCVector3 &F, bool isNormed = true) { cufft.forward(f, F, isNormed); }
 	void doFFTinverce(cudaCVector3 &F, cudaCVector3 &f, bool isNormed = true) { cufft.inverce(F, f, isNormed); }
@@ -99,9 +96,6 @@ public:
 	void timestep(double dt) { setSmthChanged();  current_time += dt; }
 	double getEnergy();
 
-	void setFlag(int _flag) { flag = _flag; }
-	int getFlag() { return flag; }
-
 private:
 	size_t N1, N2, N3, N3red;
 	double L1, L2, L3;
@@ -121,7 +115,5 @@ private:
 	double energy;
 
 	cudaStream_t mainStream;
-
-	int flag;
 };
 

@@ -74,18 +74,18 @@ void cudaGrid_3D::ifft()
 	ifftP();
 }
 
-void cudaGrid_3D::ifftQ(bool isNormed, bool isForced)
+void cudaGrid_3D::ifftQ(bool isNormed)
 {
-	if (isForced || !isIFFTsyncQ)
+	if (!isIFFTsyncQ)
 	{
 		cufft.inverce(Q, q, isNormed);
 	}
 	isIFFTsyncQ = true;
 }
 
-void cudaGrid_3D::ifftP(bool isNormed, bool isForced)
+void cudaGrid_3D::ifftP(bool isNormed)
 {
-	if (isForced || !isIFFTsyncP)
+	if (!isIFFTsyncP)
 	{
 		cufft.inverce(P, p);
 	}
