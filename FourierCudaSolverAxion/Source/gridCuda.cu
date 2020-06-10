@@ -195,11 +195,11 @@ __global__ void kernelEnergyQuad(cudaRVector3Dev kSqr, cudaCVector3Dev Q, cudaCV
 	}
 }
 
-__global__ void kernelEnergyNonLin(size_t N, double lam, double g, cudaRVector3Dev q, cudaRVector3Dev t)
+__global__ void kernelEnergyNonLin(double lam, double g, cudaRVector3Dev q, cudaRVector3Dev t)
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 	double f = q(i);
-	if (i < N)
+	if (i < q.size())
 	{
 		t(i) = (lam / 4.0 + g / 6.0 * f * f) * f * f * f * f;
 	}
@@ -222,8 +222,7 @@ double cudaGrid_3D::getEnergy()
 
 		block = dim3(BLOCK_SIZE);
 		grid = dim3( (size() + BLOCK_SIZE - 1) / BLOCK_SIZE );
-		kernelEnergyNonLin<<<grid, block, 0, mainStream >>>(size(), lambda, g, q, t);
-		cudaStreamSynchronize(mainStream);
+		kernelEnergyNonLin<<<grid, block, 0, mainStream >>>(lambda, g, q, t);
 		energy += t.getSum(mainStream) * getVolume() / size();
 		
 		cudaStreamSynchronize(mainStream);

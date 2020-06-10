@@ -37,10 +37,10 @@ __global__ void kernalStepSymplectic44_v2(const double dt, const double normT, c
 	}
 }
 
-__global__ void kernel_Phi4_Phi6_v2(const double L, const double lambda, const double g, cudaRVector3Dev q, cudaRVector3Dev t)
+__global__ void kernel_Phi4_Phi6_v2(const double Vol, const double lambda, const double g, cudaRVector3Dev q, cudaRVector3Dev t)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	double f = q(i);// / L;
+	double f = q(i) / Vol;
 	if (i < q.size())
 	{
 		t(i) = f * f * f * (lambda + g * f * f);
@@ -60,7 +60,7 @@ equationsAxionSymplectic_3D::equationsAxionSymplectic_3D(cudaGrid_3D& _Grid, cud
 	grid = dim3((N + BLOCK_SIZE + 1) / BLOCK_SIZE);
 	gridRed = dim3((Nred + BLOCK_SIZE + 1) / BLOCK_SIZE);
 	
-	normT = 1;// Grid.getVolume() / Grid.size();
+	normT = Grid.getVolume() / Grid.size();
 
 	/*double dt = 0.001;
 
@@ -90,8 +90,6 @@ equationsAxionSymplectic_3D::equationsAxionSymplectic_3D(cudaGrid_3D& _Grid, cud
 
 void equationsAxionSymplectic_3D::equationCuda(const double dt)
 {
-	//cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal);
-
 	getNonlin_Phi4_Phi6();
 	kernalStepSymplectic41_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
 	cudaStreamSynchronize(stream);
@@ -113,23 +111,15 @@ void equationsAxionSymplectic_3D::equationCuda(const double dt)
 	Grid.setSmthChanged();
 	
 	Grid.timestep(dt);
-
-	//cudaStreamEndCapture(stream, &graph);
-
-	//cudaGraphLaunch(instance, stream);
-	//cudaStreamSynchronize(stream);
-
 }
 
 void equationsAxionSymplectic_3D::getNonlin_Phi4_Phi6()
 {
-	bool isNormed = true;
+	bool isNormed = false;
 	Grid.ifftQ(isNormed, true);
-	cudaStreamSynchronize(stream);
 	kernel_Phi4_Phi6_v2<<<grid, block, 0, stream>>>(Grid.getVolume(), Grid.get_lambda(), Grid.get_g(), Grid.get_q(), Grid.get_t());
 	cudaStreamSynchronize(stream);
 	Grid.doFFTforward(Grid.get_t(), Grid.get_T(), isNormed);
-	cudaStreamSynchronize(stream);
 }
 
 void equationsAxionSymplectic_3D::makeGraph()
