@@ -7,8 +7,8 @@ using namespace std::chrono;
 class Distribution
 {
 public:
-	Distribution() { }
-	~Distribution() { outFile.close(); }
+	Distribution() {}
+	~Distribution() { outFile.close(); cudaStreamDestroy(streamDistrib); }
 
 	void setDistribution(cudaGrid_3D& Grid);
 
@@ -44,6 +44,14 @@ public:
 
 	double getNumberOfParticles() const { return numberOfParticles; }
 	double getMeanMomentum() const { return meanMomentum; }
+	double getTau() const {
+		constexpr double C = 64. / (3. * 3.1415926535897932384626433832795);
+		double p3 = meanMomentum * meanMomentum * meanMomentum;
+		double L6 = volume * volume;
+		double lam2 = lam * lam;
+		double N2 = numberOfParticles * numberOfParticles;
+		return C * p3 * L6 / (lam2 * N2);
+	}
 
 private:
 	double time;
@@ -60,5 +68,7 @@ private:
 
 	std::future<void> distributionFunctionFuture;
 
-	//cudaStream_t streamDistrib;
+	bool isAlarmed = false;
+
+	cudaStream_t streamDistrib;
 };

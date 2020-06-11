@@ -52,44 +52,6 @@ __global__ void kernelSetDistributionFunction(double lam, double g, double f2mea
 }
 
 
-int inWhichInterval(const unsigned int N, const unsigned leftPowN, const double a, const double* b)
-{
-	if (a >= b[N] || a < b[0]) {
-		return -1;
-	}
-
-	int k = N;
-	int l = N;
-
-	for (unsigned int i = 0; i < leftPowN; i++)
-	{
-		l >>= 1;
-		if (N & (1 << i))
-		{
-			if (a < b[k - l])
-			{
-				if (a < b[k - l - 1])
-				{
-					k -= l + 1;
-				}
-				else
-				{
-					return k - l - 1;
-				}
-			}
-		}
-		else
-		{
-			if (a < b[k - l])
-			{
-				k -= l;
-			}
-		}
-	}
-	throw;
-}
-
-
 void Distribution::setDistribution(cudaGrid_3D& Grid)
 {
 	outFile.open("outNumberAndMomentum.txt");
@@ -102,6 +64,8 @@ void Distribution::setDistribution(cudaGrid_3D& Grid)
 	k_sqr = Grid.get_k_sqr();
 	Q = Grid.get_Q();
 	P = Grid.get_P();
+
+	cudaStreamCreate(&streamDistrib);
 }
 
 
@@ -115,27 +79,32 @@ void Distribution::calculateNumberAndMomentum()
 	dim3 grid((k_sqr.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);
 
 
-	setQquad<<< grid3Red, block3, 0, cudaStreamDefault >>>(Q);
-	cudaStreamSynchronize(cudaStreamDefault);
+	setQquad<<< grid3Red, block3, 0, streamDistrib >>>(Q);
+	cudaStreamSynchronize(streamDistrib);
 
-	complex f2m = Q.getSum(cudaStreamDefault).real() / (volume * volume);
+	complex f2m = Q.getSum(streamDistrib).real() / (volume * volume);
 	f2mean = f2m.real();
 
-	double w2 = 1 + 3 * lam * f2mean + 15 * g * f2mean * f2mean;
-	if (w2 < 0) {
-		outFile << time << '\t' << -1 << '\t' << -1 << std::endl;
-		std::cout << "!!! Unstable condition !!!" << std::endl;
+	if ((1 + 3 * lam * f2mean + 15 * g * f2mean * f2mean) < 0) {
+		numberOfParticles = -1;
+		meanMomentum = -1;
+
+		if (!isAlarmed) {
+			std::cout << "!!! Unstable condition !!!" << std::endl;
+			isAlarmed = true;
+		}
 	}
 	else
 	{
-		kernelSetDistributionFunction << < grid, block, 0, cudaStreamDefault >> > (lam, g, f2mean, k_sqr, Q, P);
-		cudaStreamSynchronize(cudaStreamDefault);
+		kernelSetDistributionFunction<<< grid, block, 0, streamDistrib >>>(lam, g, f2mean, k_sqr, Q, P);
+		cudaStreamSynchronize(streamDistrib);
 
-		numberOfParticles = P.getSum(cudaStreamDefault).real() / volume;
-		meanMomentum = Q.getSum(cudaStreamDefault).real() / volume;
+		numberOfParticles = P.getSum(streamDistrib).real() / volume;
+		meanMomentum = Q.getSum(streamDistrib).real() / volume;
 
-		outFile << time << '\t' << numberOfParticles << '\t' << meanMomentum << std::endl;
+		isAlarmed = false;
 	}
 
+	outFile << time << '\t' << numberOfParticles << '\t' << meanMomentum << std::endl;
 }
 

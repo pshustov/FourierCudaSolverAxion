@@ -4,18 +4,18 @@ void systemEquCuda_3D::evaluate()
 {
 	double t = tau, dt;
 
-	//distr.calculateNumberAndMomentumAsync(Grid);
+	distr.calculateNumberAndMomentumAsync(Grid);
 
 	int countIn = 0, countOut = 0;
 
 	while (t >= (dt = Grid.get_dt(precision)) ) {
 		evlulate_step(dt);
 		++countOut;
-		/*if (distr.isDistributionFunctionReady())
+		if (distr.isDistributionFunctionReady())
 		{
 			++countIn;
 			distr.calculateNumberAndMomentumAsync(Grid);
-		}*/
+		}
 
 		t -= dt;
 	}
@@ -24,5 +24,6 @@ void systemEquCuda_3D::evaluate()
 		evlulate_step(t);
 	}
 
-	//std::cout << "Current n = " << distr.getNumberOfParticles() << ", p = " << distr.getMeanMomentum() << ", cIn/cOut = " << (double)countIn / (double)countOut << std::endl;
+	std::cout << "Current n = " << distr.getNumberOfParticles() << ", p = " << distr.getMeanMomentum() << ", tau = " << distr.getTau() << ", cIn/cOut = " << (double)countIn / (double)countOut << std::endl;
 }
+
