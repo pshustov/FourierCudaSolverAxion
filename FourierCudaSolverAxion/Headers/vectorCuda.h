@@ -64,7 +64,8 @@ public:
 	
 	__host__ T* getArray() { return Array; }
 	
-	__host__ T getSum() { return reductionSum<T>(N, Array); }
+	__host__ T getSum(cudaStream_t stream) { return reductionSum<T>(N, Array, stream); }
+	__host__ T getMax(cudaStream_t stream) { return reductionMax<T>(N, Array, stream); }
 
 	friend class vector<T>;
 	friend class cudaVectorDev<T>;
@@ -176,6 +177,7 @@ public:
 	__host__ T* getArray() { return Array; }
 	
 	__host__ T getSum(cudaStream_t stream) { return reductionSum<T>(size(), Array, stream); }
+	__host__ T getMax(cudaStream_t stream) { return reductionMax<T>(size(), Array, stream); }
 	
 	friend class vector3<T>;
 	friend class cudaVector3Dev<T>;

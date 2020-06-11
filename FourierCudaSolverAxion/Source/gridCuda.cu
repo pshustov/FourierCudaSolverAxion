@@ -56,6 +56,7 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	isIFFTsyncQ = true;
 	isIFFTsyncP = true;
 	isEnergyCalculateted = false;
+	isQSqrCalculated = false;
 }
 
 cudaGrid_3D::~cudaGrid_3D()
@@ -74,22 +75,22 @@ void cudaGrid_3D::ifft()
 	ifftP();
 }
 
-void cudaGrid_3D::ifftQ(bool isNormed)
+void cudaGrid_3D::ifftQ()
 {
 	if (!isIFFTsyncQ)
 	{
-		cufft.inverce(Q, q, isNormed);
+		cufft.inverce(Q, q);
+		isIFFTsyncQ = true;
 	}
-	isIFFTsyncQ = true;
 }
 
-void cudaGrid_3D::ifftP(bool isNormed)
+void cudaGrid_3D::ifftP()
 {
 	if (!isIFFTsyncP)
 	{
 		cufft.inverce(P, p);
+		isIFFTsyncP = true;
 	}
-	isIFFTsyncP = true;
 }
 
 void cudaGrid_3D::set_sizes()
@@ -173,6 +174,7 @@ void cudaGrid_3D::set_xk()
 }
 
 
+
 __global__ void kernelEnergyQuad(cudaRVector3Dev kSqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -195,11 +197,11 @@ __global__ void kernelEnergyQuad(cudaRVector3Dev kSqr, cudaCVector3Dev Q, cudaCV
 	}
 }
 
-__global__ void kernelEnergyNonLin(size_t N, double lam, double g, cudaRVector3Dev q, cudaRVector3Dev t)
+__global__ void kernelEnergyNonLin(double lam, double g, double V, cudaRVector3Dev q, cudaRVector3Dev t)
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 	double f = q(i);
-	if (i < N)
+	if (i < q.size())
 	{
 		t(i) = (lam / 4.0 + g / 6.0 * f * f) * f * f * f * f;
 	}
@@ -216,15 +218,44 @@ double cudaGrid_3D::getEnergy()
 		cudaStreamSynchronize(mainStream);
 		energy = T.getSum(mainStream).real() / getVolume();
 		
-		ifft();
+		ifftQ();
+
+		double V = getVolume();
 
 		block = dim3(BLOCK_SIZE);
-		grid = dim3( (size() + BLOCK_SIZE - 1) / BLOCK_SIZE );
-		kernelEnergyNonLin<<<grid, block, 0, mainStream>>>(size(), lambda, g, q, t);
+		grid = dim3((size() + BLOCK_SIZE - 1) / BLOCK_SIZE);
+		kernelEnergyNonLin<<<grid, block, 0, mainStream>>>(lambda, g, getVolume(), q, t);
 		cudaStreamSynchronize(mainStream);
 		energy += t.getSum(mainStream) * getVolume() / size();
 
 		isEnergyCalculateted = true;
 	}
 	return energy;
+}
+
+
+__global__ void kernelSqr(cudaRVector3Dev in, cudaRVector3Dev out)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < in.size()) { out(i) = in(i) * in(i); }
+}
+
+void cudaGrid_3D::calculateQsqr()
+{
+	if (!isQSqrCalculated)
+	{
+		dim3 block(BLOCK_SIZE);
+		dim3 grid((q.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);	
+
+		ifftQ();
+		kernelSqr<<< grid, block, 0, mainStream >>>(q, qSqr);
+		cudaStreamSynchronize(mainStream);
+		isQSqrCalculated = true;
+	}
+}
+
+double cudaGrid_3D::getMaxValQsqr()
+{
+	calculateQsqr();
+	return qSqr.getMax(mainStream) / getVolume();
 }

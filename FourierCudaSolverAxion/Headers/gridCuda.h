@@ -10,8 +10,8 @@ public:
 
 	void fft();
 	void ifft();
-	void ifftQ(bool isNormed = true);
-	void ifftP(bool isNormed = true);
+	void ifftQ();
+	void ifftP();
 
 	void save(std::ofstream & fileSave)
 	{		
@@ -65,12 +65,8 @@ public:
 	cudaCVector3& get_T() { return T; }
 
 	double get_time() const { return current_time; }
-	double get_lambda() const {
-		return lambda; 
-	}
-	double get_g() const { 
-		return g; 
-	}
+	double get_lambda() const { return lambda; }
+	double get_g() const { return g; }
 	cudaStream_t get_mainStream() const { return mainStream; }
 
 	/// FFT and IFFT
@@ -81,19 +77,14 @@ public:
 
 
 	/// Sets 
-	void set_lambda(const double _lambda) { 
-		lambda = _lambda; 
-	}
-	void set_g(const double _g) 
-	{ 
-		g = _g; 
-	}
+	void set_lambda(const double _lambda) { lambda = _lambda; }
+	void set_g(const double _g) { g = _g; }
 	void setSmthChanged() { 
 		isEnergyCalculateted = false; 
 		isIFFTsyncQ = false;
 		isIFFTsyncP = false;
+		isQSqrCalculated = false;
 	}
-
 
 	/// Other methods 
 	double get_dt(const double precision) const
@@ -105,6 +96,9 @@ public:
 	void timestep(double dt) { setSmthChanged();  current_time += dt; }
 	double getEnergy();
 
+	void calculateQsqr();
+	double getMaxValQsqr();
+
 private:
 	size_t N1, N2, N3, N3red;
 	double L1, L2, L3;
@@ -112,14 +106,14 @@ private:
 	cudaRVector x1, x2, x3;
 	cudaRVector3 k1, k2, k3;
 	cudaRVector3 k_sqr;
-	cudaRVector3 q, p, t;
+	cudaRVector3 q, p, t, qSqr;
 	cudaCVector3 Q, P, T;
 
 	cuFFT cufft;
 
 	double lambda, g;
 	double current_time;
-	bool isIFFTsyncQ, isIFFTsyncP, isEnergyCalculateted;
+	bool isIFFTsyncQ, isIFFTsyncP, isEnergyCalculateted, isQSqrCalculated;
 
 	double energy;
 

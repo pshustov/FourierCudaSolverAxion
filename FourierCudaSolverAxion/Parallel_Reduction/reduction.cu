@@ -430,7 +430,7 @@ void reduce2(int size, int threads, int blocks, F fun, T* d_idata, T* d_odata, c
 template <typename T>
 T reductionSum(int size, T* inData, cudaStream_t stream)
 {
-	int cpuFinalThreshold = 256;
+	int cpuFinalThreshold = 64;
 	int maxThreads = 256;
 
 	int blocks = 0, threads = 0;
@@ -477,12 +477,11 @@ T reductionSum(int size, T* inData, cudaStream_t stream)
 template int reductionSum<int>(int size, int* inData, cudaStream_t stream);
 template float reductionSum<float>(int size, float* inData, cudaStream_t stream);
 template double reductionSum<double>(int size, double* inData, cudaStream_t stream);
-
-template <>
-complex reductionSum<complex>(int size, complex* inData, cudaStream_t stream)
+template <> complex reductionSum<complex>(int size, complex* inData, cudaStream_t stream)
 {
-	int cpuFinalThreshold = 1;
-	int maxThreads = 16;
+	int cpuFinalThreshold = 64;
+	int maxThreads = 512;
+	maxThreads = maxThreads / 2;
 
 	int blocks = 0, threads = 0;
 	getNumBlocksAndThreads(size, maxThreads, blocks, threads);
@@ -526,3 +525,56 @@ complex reductionSum<complex>(int size, complex* inData, cudaStream_t stream)
 
 	return result;
 }
+
+
+
+template <typename T>
+T reductionMax(int size, T* inData, cudaStream_t stream)
+{
+	int cpuFinalThreshold = 64;
+	int maxThreads = 512;
+
+	int blocks = 0, threads = 0;
+	getNumBlocksAndThreads(size, maxThreads, blocks, threads);
+
+	T* inData_dev = NULL;
+	T* outData_dev = NULL;
+
+	cudaMalloc((void**)&inData_dev, blocks * sizeof(T));
+	cudaMalloc((void**)&outData_dev, blocks * sizeof(T));
+
+	auto fun = [] __host__ __device__(T A, T B) { return (A > B) ? A : B; };
+
+	reduce(size, threads, blocks, fun, inData, outData_dev, stream);
+
+	int s = blocks;
+	while (s > cpuFinalThreshold)
+	{
+		cudaMemcpyAsync(inData_dev, outData_dev, blocks * sizeof(T), cudaMemcpyDeviceToDevice, stream);
+
+		getNumBlocksAndThreads(s, maxThreads, blocks, threads);
+		reduce(s, threads, blocks, fun, inData_dev, outData_dev, stream);
+
+		s = blocks;
+	}
+
+	T* outData_host;
+	outData_host = (T*)malloc(s * sizeof(T));
+	cudaMemcpyAsync(outData_host, outData_dev, s * sizeof(T), cudaMemcpyDeviceToHost, stream);
+	cudaStreamSynchronize(stream);
+
+	T result = 0;
+	for (size_t i = 0; i < s; i++)
+	{
+		result = fun(result, outData_host[i]);
+	}
+
+	cudaFree(inData_dev);
+	cudaFree(outData_dev);
+	free(outData_host);
+
+	return result;
+}
+template int reductionMax<int>(int size, int* inData, cudaStream_t stream);
+template float reductionMax<float>(int size, float* inData, cudaStream_t stream);
+template double reductionMax<double>(int size, double* inData, cudaStream_t stream);

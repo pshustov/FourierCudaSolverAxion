@@ -17,16 +17,16 @@ public:
 			Grid.set_lambda(_lambda);
 			Grid.set_g(_g);
 		}
-		energy0 = get_energy();
+		energy0 = getEnergy();
 
-		out_maxVal.open("outMaxVal.txt");
-		out_maxVal.precision(14);
+		outMaxVal.open("outMaxVal.txt");
+		outMaxVal.precision(14);
 
 		distr.setDistribution(Grid);
 	}
 
 	~systemEquCuda_3D() {
-		out_maxVal.close();
+		outMaxVal.close();
 	}
 
 	void evaluate();
@@ -60,9 +60,12 @@ public:
 		Grid.set_g(_g);
 	}
 
-	double get_time() { return Grid.get_time(); }
-	double get_energy() { return energy = Grid.getEnergy(); }
-	double get_delta() { return (get_energy() - energy0) / energy0; }
+	void printingVTK();
+	void printingMaxVal();
+
+	double getTime() { return Grid.get_time(); }
+	double getEnergy() { return energy = Grid.getEnergy(); }
+	double getDelta() { return (getEnergy() - energy0) / energy0; }
 
 private:
 	double precision;
@@ -73,7 +76,8 @@ private:
 
 	double energy0, energy;
 
-	std::ofstream out_maxVal;
+	std::ofstream outMaxVal;
+
 
 	void evlulate_step(const double _dt)
 	{
