@@ -98,6 +98,8 @@ public:
 
 	void calculateQsqr();
 	double getMaxValQsqr();
+	
+	void printingVTK(std::ofstream& outVTK);
 
 private:
 	size_t N1, N2, N3, N3red;
@@ -109,6 +111,11 @@ private:
 	cudaRVector3 q, p, t, qSqr;
 	cudaCVector3 Q, P, T;
 
+	RVector3 buferOutHost;
+	cudaRVector3 buferOutDev;
+	size_t N1buf = 32, N2buf = 32, N3buf = 32;
+	bool isBuferising;
+
 	cuFFT cufft;
 
 	double lambda, g;
@@ -117,6 +124,6 @@ private:
 
 	double energy;
 
-	cudaStream_t mainStream;
+	cudaStream_t mainStream, printStream;
 };
 

@@ -66,7 +66,7 @@ public:
 
 	size_t getN() const { return N; }
 
-	void set_size_erase(const size_t _N) {
+	void set(const size_t _N) {
 		delete[] Array;
 		N = _N;
 		Array = new T[N]();
@@ -629,7 +629,7 @@ public:
 	size_t size() const { return N1*N2*N3; }
 
 	//reshape and flash
-	void set_size_erase(const size_t _N1, const size_t _N2, const size_t _N3) {
+	void set(const size_t _N1, const size_t _N2, const size_t _N3) {
 		delete[] Array;
 		N1 = _N1;
 		N2 = _N2;

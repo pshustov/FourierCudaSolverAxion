@@ -4,6 +4,7 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 {
 	mainStream = cudaStreamDefault;
 	//cudaStreamCreate(&mainStream);
+	cudaStreamCreate(&printStream);
 
 	current_time = 0;
 
@@ -13,7 +14,7 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	in >> L1;	in >> L2;	in >> L3;
 
 	//check N1 N2 N3
-	if (N1 % N_MIN != 0 || N2 % N_MIN != 0 || N3 % N_MIN != 0) { throw; }
+	if (N1 / N_MIN == 0 || N2 / N_MIN == 0 || N3 / N_MIN == 0) { throw; }
 
 	//malloc for all varibles 
 	set_sizes();
@@ -110,9 +111,15 @@ void cudaGrid_3D::set_sizes()
 	q.set(N1, N2, N3);
 	p.set(N1, N2, N3);
 	t.set(N1, N2, N3);
+	qSqr.set(N1, N2, N3);
 	Q.set(N1, N2, N3red);
 	P.set(N1, N2, N3red);
 	T.set(N1, N2, N3red);
+
+	buferOutHost.set(N1buf, N2buf, N3buf);
+	buferOutDev.set(N1buf, N2buf, N3buf);
+	if (N1 / N1buf > 1 || N2 / N2buf > 1 || N3 / N3buf > 1) { isBuferising = true; }
+	else { isBuferising = false; }
 }
 
 void cudaGrid_3D::set_xk()
@@ -257,5 +264,32 @@ void cudaGrid_3D::calculateQsqr()
 double cudaGrid_3D::getMaxValQsqr()
 {
 	calculateQsqr();
-	return qSqr.getMax(mainStream) / getVolume();
+	return qSqr.getMax(printStream) / getVolume();
+}
+
+
+
+void cudaGrid_3D::printingVTK(std::ofstream& outVTK)
+{
+	calculateQsqr();
+	if (isBuferising)
+	{
+		int factor1 = (N1 + N1buf - 1) / N1buf, factor2 = (N2 + N2buf - 1) / N2buf, factor3 = (N3 + N3buf - 1) / N3buf;
+
+		dim3 grid(N1buf, N2buf, N3buf);
+		dim3 block(factor1, factor2, factor3);
+		
+		kernelSyncBuf<<< grid, block, factor1 * factor2 * factor3 * sizeof(double), printStream >>>(buferOutDev.getArray(), qSqr.getArray());
+		cudaStreamSynchronize(printStream);
+		buferOutHost = buferOutDev;
+	}
+	else
+	{
+		buferOutHost = qSqr;
+	}
+
+	for (size_t i = 0; i < buferOutHost.size(); i++) {
+		outVTK << buferOutHost(i) << '\n';
+	}
+	outVTK << std::flush;
 }
