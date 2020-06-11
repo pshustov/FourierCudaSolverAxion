@@ -19,17 +19,10 @@ public:
 		}
 		energy0 = get_energy();
 
-		out_maxVal.open("out_maxVal.txt");
+		out_maxVal.open("outMaxVal.txt");
 		out_maxVal.precision(14);
 
 		distr.setDistribution(Grid);
-
-		//streams = new cudaStream_t[cudaNumberStreams];
-		//for (int i = 0; i < cudaNumberStreams; i++)
-		//{
-		//	cudaStreamCreate(&streams[i]);
-		//}
-		//Equation.setCudaStream(streams[0]);
 	}
 
 	~systemEquCuda_3D() {
@@ -77,9 +70,6 @@ private:
 	cudaGrid_3D Grid;
 	equationsAxionSymplectic_3D Equation;
 	Distribution distr;
-
-	//int cudaNumberStreams = 2;
-	//cudaStream_t* streams;
 
 	double energy0, energy;
 

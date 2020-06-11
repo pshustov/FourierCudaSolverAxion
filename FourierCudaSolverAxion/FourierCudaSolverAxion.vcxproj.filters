@@ -16,11 +16,11 @@
     <CudaCompile Include="Parallel_Reduction\reduction.cu">
       <Filter>Parallel Reduction</Filter>
     </CudaCompile>
-    <CudaCompile Include="Distribution\distribution.cpp">
-      <Filter>Distribution</Filter>
-    </CudaCompile>
     <CudaCompile Include="Source\fourierCudaSolverAxion.cpp">
       <Filter>Source</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Distribution\distribution.cu">
+      <Filter>Distribution</Filter>
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
