@@ -86,7 +86,7 @@ public:
 		isEnergyCalculateted = false; 
 		isIFFTsyncQ = false;
 		isIFFTsyncP = false;
-		isQSqrCalculated = false;
+		isQPsqrCalculated = false;
 	}
 
 	/// Other methods 
@@ -99,7 +99,7 @@ public:
 	void timestep(double dt) { setSmthChanged();  current_time += dt; }
 	double getEnergy();
 
-	void calculateQsqr();
+	void calculateQPsqr();
 	double getMaxValQsqr();
 	
 	void printingVTK(std::ofstream& outVTK);
@@ -111,7 +111,7 @@ private:
 	cudaRVector x1, x2, x3;
 	cudaRVector3 k1, k2, k3;
 	cudaRVector3 k_sqr;
-	cudaRVector3 q, p, t, qSqr;
+	cudaRVector3 q, p, t, qpSqr;
 	cudaCVector3 Q, P, T;
 
 	RVector3 buferOutHost;
@@ -123,7 +123,7 @@ private:
 
 	double lambda, g;
 	double current_time;
-	bool isIFFTsyncQ, isIFFTsyncP, isEnergyCalculateted, isQSqrCalculated;
+	bool isIFFTsyncQ, isIFFTsyncP, isEnergyCalculateted, isQPsqrCalculated;
 
 	double energy;
 

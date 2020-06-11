@@ -71,4 +71,8 @@ private:
 	bool isAlarmed = false;
 
 	cudaStream_t streamDistrib;
+
+	dim3 block3;
+	dim3 grid3Red;
+
 };

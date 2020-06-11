@@ -41,7 +41,7 @@ void systemEquCuda_3D::printingVTK()
 	double time = getTime();
 
 	char buf[100];
-	sprintf(buf, "dataQsqr/data_%010d.vtk", (unsigned int)time * 1000);
+	sprintf(buf, "dataQsqr/data_%010.0f.vtk", round(time * 1000));
 	outVTK.open(buf, std::ofstream::out);
 	outVTK.precision(5);
 

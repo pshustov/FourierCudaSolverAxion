@@ -43,12 +43,10 @@ __global__ void kernelSetDistributionFunction(double lam, double g, double f2mea
 
 		if (k == 0) {
 			P(ind) = 0.5 * (P(ind).absSqr() + m * Q(ind)) / omega;
-			//P(ind) = 0;
 			Q(ind) = sqrt(kSqr(ind))* P(ind);
 		}
 		else {
 			P(ind) = (P(ind).absSqr() + m * Q(ind)) / omega;
-			//P(ind) = 0;
 			Q(ind) = sqrt(kSqr(ind))* P(ind);
 		}
 	}
@@ -68,20 +66,17 @@ void Distribution::setDistribution(cudaGrid_3D& Grid)
 	Q = Grid.get_Q();
 	P = Grid.get_P();
 
+	size_t Bx = 16, By = 16, Bz = 1;
+	block3 = dim3(Bx, By, Bz);
+	grid3Red = dim3((Q.getN1() + Bx - 1) / Bx, (Q.getN2() + By - 1) / By, (Q.getN3() + Bz - 1) / Bz);
+
+
 	cudaStreamCreate(&streamDistrib);
 }
 
 
 void Distribution::calculateNumberAndMomentum()
 {
-	size_t Bx = 16, By = 8, Bz = 1;
-	dim3 block3(Bx, By, Bz);
-	dim3 grid3Red((Q.getN1() + Bx - 1) / Bx, (Q.getN2() + By - 1) / By, (Q.getN3() + Bz - 1) / Bz);
-
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((k_sqr.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);
-
-
 	setQquad<<< grid3Red, block3, 0, streamDistrib >>>(Q);
 	cudaStreamSynchronize(streamDistrib);
 

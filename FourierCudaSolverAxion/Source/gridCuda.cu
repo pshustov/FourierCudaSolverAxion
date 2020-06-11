@@ -57,7 +57,7 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	isIFFTsyncQ = true;
 	isIFFTsyncP = true;
 	isEnergyCalculateted = false;
-	isQSqrCalculated = false;
+	isQPsqrCalculated = false;
 }
 
 cudaGrid_3D::~cudaGrid_3D()
@@ -111,7 +111,7 @@ void cudaGrid_3D::set_sizes()
 	q.set(N1, N2, N3);
 	p.set(N1, N2, N3);
 	t.set(N1, N2, N3);
-	qSqr.set(N1, N2, N3);
+	qpSqr.set(N1, N2, N3);
 	Q.set(N1, N2, N3red);
 	P.set(N1, N2, N3red);
 	T.set(N1, N2, N3red);
@@ -241,37 +241,36 @@ double cudaGrid_3D::getEnergy()
 }
 
 
-__global__ void kernelSqr(cudaRVector3Dev in, cudaRVector3Dev out)
+__global__ void kernelQPsqr(cudaRVector3Dev q, cudaRVector3Dev p, cudaRVector3Dev qpSqr)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < in.size()) { out(i) = in(i) * in(i); }
+	if (i < q.size()) { qpSqr(i) = 0.5 * (q(i) * q(i) + p(i) * p(i)); }
 }
 
-void cudaGrid_3D::calculateQsqr()
+void cudaGrid_3D::calculateQPsqr()
 {
-	if (!isQSqrCalculated)
+	if (!isQPsqrCalculated)
 	{
 		dim3 block(BLOCK_SIZE);
 		dim3 grid((q.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);	
 
-		ifftQ();
-		kernelSqr<<< grid, block, 0, mainStream >>>(q, qSqr);
+		ifft();
+		kernelQPsqr<<< grid, block, 0, mainStream >>>(q, p, qpSqr);
 		cudaStreamSynchronize(mainStream);
-		isQSqrCalculated = true;
+		isQPsqrCalculated = true;
 	}
 }
 
 double cudaGrid_3D::getMaxValQsqr()
 {
-	calculateQsqr();
-	return qSqr.getMax(printStream) / getVolume();
+	calculateQPsqr();
+	return qpSqr.getMax(printStream);
 }
-
 
 
 void cudaGrid_3D::printingVTK(std::ofstream& outVTK)
 {
-	calculateQsqr();
+	calculateQPsqr();
 	if (isBuferising)
 	{
 		int factor1 = (N1 + N1buf - 1) / N1buf, factor2 = (N2 + N2buf - 1) / N2buf, factor3 = (N3 + N3buf - 1) / N3buf;
@@ -279,13 +278,13 @@ void cudaGrid_3D::printingVTK(std::ofstream& outVTK)
 		dim3 grid(N1buf, N2buf, N3buf);
 		dim3 block(factor1, factor2, factor3);
 		
-		kernelSyncBuf<<< grid, block, factor1 * factor2 * factor3 * sizeof(double), printStream >>>(buferOutDev.getArray(), qSqr.getArray());
+		kernelSyncBuf<<< grid, block, factor1 * factor2 * factor3 * sizeof(double), printStream >>>(buferOutDev.getArray(), qpSqr.getArray());
 		cudaStreamSynchronize(printStream);
 		buferOutHost = buferOutDev;
 	}
 	else
 	{
-		buferOutHost = qSqr;
+		buferOutHost = qpSqr;
 	}
 
 	for (size_t i = 0; i < buferOutHost.size(); i++) {
