@@ -43,6 +43,9 @@ public:
 	size_t getN2() const { return N2; }
 	size_t getN3() const { return N3; }
 	size_t getN3red() const { return N3red; }
+	size_t getN1buf() const { return N1buf; }
+	size_t getN2buf() const { return N2buf; }
+	size_t getN3buf() const { return N3buf; }
 
 	double getL1() const { return L1; }
 	double getL2() const { return L2; }

@@ -77,6 +77,7 @@ private:
 	double energy0, energy;
 
 	std::ofstream outMaxVal;
+	std::ofstream outVTK;
 
 
 	void evlulate_step(const double _dt)
