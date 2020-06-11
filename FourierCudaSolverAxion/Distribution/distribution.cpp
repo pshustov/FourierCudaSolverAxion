@@ -90,19 +90,18 @@ int inWhichInterval(const unsigned int N, const unsigned leftPowN, const double 
 }
 
 
-Distribution::Distribution(cudaGrid_3D & Grid)
+void Distribution::setDistribution(cudaGrid_3D& Grid)
 {
 	outFile.open("outNumberAndMomentum.txt");
 
-	time	= Grid.get_time();
-	lam		= Grid.get_lambda();
-	g		= Grid.get_g();
-	volume	= Grid.getVolume();
-	f2mean	= 0;
-	k_sqr	= Grid.get_k_sqr();
-	Q		= Grid.get_Q();
-	P		= Grid.get_P();
-
+	time = Grid.get_time();
+	lam = Grid.get_lambda();
+	g = Grid.get_g();
+	volume = Grid.getVolume();
+	f2mean = 0;
+	k_sqr = Grid.get_k_sqr();
+	Q = Grid.get_Q();
+	P = Grid.get_P();
 }
 
 
@@ -122,12 +121,21 @@ void Distribution::calculateNumberAndMomentum()
 	complex f2m = Q.getSum(cudaStreamDefault).real() / (volume * volume);
 	f2mean = f2m.real();
 
-	kernelSetDistributionFunction<<< grid, block, 0, cudaStreamDefault >>>(lam, g, f2mean, k_sqr, Q, P);
-	cudaStreamSynchronize(cudaStreamDefault);
+	double w2 = 1 + 3 * lam * f2mean + 15 * g * f2mean * f2mean;
+	if (w2 < 0) {
+		outFile << time << '\t' << -1 << '\t' << -1 << std::endl;
+		std::cout << "!!! Unstable condition !!!" << std::endl;
+	}
+	else
+	{
+		kernelSetDistributionFunction << < grid, block, 0, cudaStreamDefault >> > (lam, g, f2mean, k_sqr, Q, P);
+		cudaStreamSynchronize(cudaStreamDefault);
 
-	numberOfParticles = P.getSum(cudaStreamDefault).real() / volume;
-	meanMomentum = Q.getSum(cudaStreamDefault).real() / volume;
+		numberOfParticles = P.getSum(cudaStreamDefault).real() / volume;
+		meanMomentum = Q.getSum(cudaStreamDefault).real() / volume;
 
-	outFile << time << '\t' << numberOfParticles << '\t' << meanMomentum << std::endl;
+		outFile << time << '\t' << numberOfParticles << '\t' << meanMomentum << std::endl;
+	}
+
 }
 

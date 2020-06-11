@@ -65,8 +65,12 @@ public:
 	cudaCVector3& get_T() { return T; }
 
 	double get_time() const { return current_time; }
-	double get_lambda() const { return lambda; }
-	double get_g() const { return g; }
+	double get_lambda() const {
+		return lambda; 
+	}
+	double get_g() const { 
+		return g; 
+	}
 	cudaStream_t get_mainStream() const { return mainStream; }
 
 	/// FFT and IFFT
@@ -77,8 +81,13 @@ public:
 
 
 	/// Sets 
-	void set_lambda(const double _lambda) { lambda = _lambda; }
-	void set_g(const double _g) { g = _g; }
+	void set_lambda(const double _lambda) { 
+		lambda = _lambda; 
+	}
+	void set_g(const double _g) 
+	{ 
+		g = _g; 
+	}
 	void setSmthChanged() { 
 		isEnergyCalculateted = false; 
 		isIFFTsyncQ = false;
