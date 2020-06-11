@@ -16,12 +16,13 @@ __global__ void setQquad(cudaCVector3Dev Q)
 	if (i < N1 && j < N2 && k < N3)
 	{
 		size_t ind = (i * N2 + j) * N3 + k;
-		if (k == 0) {
-			Q(ind) *= Q(ind).get_conj();
-		}
-		else {
-			Q(ind) *= 2 * Q(ind).get_conj();
-		}
+		Q(ind) = Q(ind).absSqr();
+		//if (k == 0) {
+		//	Q(ind) *= Q(ind).get_conj();
+		//}
+		//else {
+		//	Q(ind) *= 2 * Q(ind).get_conj();
+		//}
 	}
 
 }
@@ -41,12 +42,14 @@ __global__ void kernelSetDistributionFunction(double lam, double g, double f2mea
 		double m = 1 + kSqr(ind) + 1.5 * lam * f2mean + 5 * g * f2mean * f2mean;
 
 		if (k == 0) {
-			P(ind) = 0.5 * (P(ind) * P(ind).get_conj() + m * Q(ind)) / omega;
-			Q(ind) = sqrt(kSqr(ind)) * P(ind);
+			P(ind) = 0.5 * (P(ind).absSqr() + m * Q(ind)) / omega;
+			//P(ind) = 0;
+			Q(ind) = sqrt(kSqr(ind))* P(ind);
 		}
 		else {
-			P(ind) = 0.5 * (P(ind) * P(ind).get_conj() + m * 0.5 * Q(ind)) / omega;
-			Q(ind) = sqrt(kSqr(ind)) * P(ind);
+			P(ind) = (P(ind).absSqr() + m * Q(ind)) / omega;
+			//P(ind) = 0;
+			Q(ind) = sqrt(kSqr(ind))* P(ind);
 		}
 	}
 }
@@ -96,11 +99,11 @@ void Distribution::calculateNumberAndMomentum()
 	}
 	else
 	{
-		kernelSetDistributionFunction<<< grid, block, 0, streamDistrib >>>(lam, g, f2mean, k_sqr, Q, P);
+		kernelSetDistributionFunction<<< grid3Red, block3, 0, streamDistrib >>>(lam, g, f2mean, k_sqr, Q, P);
 		cudaStreamSynchronize(streamDistrib);
 
 		numberOfParticles = P.getSum(streamDistrib).real() / volume;
-		meanMomentum = Q.getSum(streamDistrib).real() / volume;
+		meanMomentum = Q.getSum(streamDistrib).real() / (volume * numberOfParticles);
 
 		isAlarmed = false;
 	}
