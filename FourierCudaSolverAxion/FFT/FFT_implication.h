@@ -43,6 +43,11 @@ public:
 
 	void reset(const int dim, const int *_n, double _L, const int _BATCH = 1, cudaStream_t _stream = cudaStreamDefault);
 	
+	void forward(cudaCVector& f, cudaCVector& F, bool isNormed = true);
+	void forward(cudaRVector& f, cudaCVector& F, bool isNormed = true);
+	void inverce(cudaCVector& F, cudaCVector& f, bool isNormed = true);
+	void inverce(cudaCVector& F, cudaRVector& f, bool isNormed = true);
+
 	void forward(cudaCVector3 &f, cudaCVector3 &F, bool isNormed = true);
 	void forward(cudaRVector3 &f, cudaCVector3 &F, bool isNormed = true);
 	void inverce(cudaCVector3 &F, cudaCVector3 &f, bool isNormed = true);

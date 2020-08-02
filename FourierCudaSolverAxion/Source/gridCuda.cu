@@ -22,12 +22,14 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	// set q p
 	RVector3 RHost(N1, N2, N3);
 	for (size_t i = 0; i < N1*N2*N3; i++) {
-		in >> RHost(i);
+		//in >> RHost(i);
+		RHost(i) = 10;
 	}
 	q = RHost;
 
 	for (size_t i = 0; i < N1*N2*N3; i++) {
-		in >> RHost(i);
+		//in >> RHost(i);
+		RHost(i) = 10;
 	}
 	p = RHost;
 
@@ -50,7 +52,16 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	cufft.reset(3, n_fft, getVolume(), 1, mainStream);
 
 	//fft
+	//fft
 	fft();
+
+	//ifft();
+	//RHost = q;
+	//std::ofstream ftest("test.txt");
+	//for (int i = 0; i < size(); i++)
+	//{
+	//	ftest << RHost(i) << "\n";
+	//}
 
 	std::cout << "First FFT have been done\n";
 
