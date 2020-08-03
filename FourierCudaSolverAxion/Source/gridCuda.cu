@@ -2,8 +2,8 @@
 
 cudaGrid_3D::cudaGrid_3D(const std::string filename)
 {
-	//mainStream = cudaStreamDefault;
-	cudaStreamCreate(&mainStream);
+	mainStream = cudaStreamDefault;
+	//cudaStreamCreate(&mainStream);
 
 	current_time = 0;
 
@@ -21,12 +21,14 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	// set q p
 	RVector3 RHost(N1, N2, N3);
 	for (size_t i = 0; i < N1*N2*N3; i++) {
-		in >> RHost(i);
+		//in >> RHost(i);
+		RHost(i) = 1e-6;
 	}
 	q = RHost;
 
 	for (size_t i = 0; i < N1*N2*N3; i++) {
-		in >> RHost(i);
+		//in >> RHost(i);
+		RHost(i) = 1e-6;
 	}
 	p = RHost;
 
@@ -76,19 +78,23 @@ void cudaGrid_3D::ifft()
 
 void cudaGrid_3D::ifftQ(bool isNormed, bool isForced)
 {
+	TEST();
 	if (isForced || !isIFFTsyncQ)
 	{
-		cufft.inverce(Q, q, isNormed);
+		cufft.inverce(Q, q, true);
 	}
+	TEST();
 	isIFFTsyncQ = true;
 }
 
 void cudaGrid_3D::ifftP(bool isNormed, bool isForced)
 {
+	TEST();
 	if (isForced || !isIFFTsyncP)
 	{
-		cufft.inverce(P, p);
+		cufft.inverce(P, p, isNormed);
 	}
+	TEST();
 	isIFFTsyncP = true;
 }
 

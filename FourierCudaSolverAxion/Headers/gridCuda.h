@@ -88,6 +88,15 @@ public:
 		isIFFTsyncP = false;
 	}
 
+	void TEST()
+	{
+		double a, b;
+		cudaMemcpy(&a, Q.getArray(), sizeof(double), cudaMemcpyDeviceToHost);
+		cudaMemcpy(&b, Q.getArray() + 64, sizeof(double), cudaMemcpyDeviceToHost);
+
+		std::cout << a << "\t" << b << std::endl;
+	}
+
 
 	/// Other methods 
 	double get_dt(const double precision) const

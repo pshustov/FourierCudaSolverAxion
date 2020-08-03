@@ -67,17 +67,17 @@ equationsAxionSymplectic_3D::equationsAxionSymplectic_3D(cudaGrid_3D& _Grid) : G
 
 void equationsAxionSymplectic_3D::equationCuda(const double dt)
 {
-	getNonlin_Phi4_Phi6();
-	kernalStepSymplectic41_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
-		
-	getNonlin_Phi4_Phi6();
-	kernalStepSymplectic42_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
-	
-	getNonlin_Phi4_Phi6();
-	kernalStepSymplectic43_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
-	
-	getNonlin_Phi4_Phi6();
-	kernalStepSymplectic44_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+	//getNonlin_Phi4_Phi6();
+	//kernalStepSymplectic41_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+	//	
+	//getNonlin_Phi4_Phi6();
+	//kernalStepSymplectic42_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+	//
+	//getNonlin_Phi4_Phi6();
+	//kernalStepSymplectic43_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+	//
+	//getNonlin_Phi4_Phi6();
+	//kernalStepSymplectic44_v2<<<gridRed, block, 0, stream>>>(dt, normT, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
 	
 	cudaStreamSynchronize(stream);
 	Grid.setSmthChanged();

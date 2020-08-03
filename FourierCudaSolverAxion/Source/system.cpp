@@ -12,4 +12,6 @@ void systemEquCuda_3D::evaluate()
 	if (t < dt && t > 0) {
 		evlulate_step(t);
 	}
+
+	Grid.TEST();
 }

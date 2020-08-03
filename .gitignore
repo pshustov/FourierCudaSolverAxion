@@ -265,3 +265,7 @@ __pycache__/
 /FourierCudaSolverAxion/in32Small.txt
 /FourierCudaSolverAxion/outNumberAndMomentum.txt
 /FourierCudaSolverAxion/dataTest.txt
+/FourierCudaSolverAxion/test.txt
+/FourierCudaSolverAxion/outMaxVal.txt
+/FourierCudaSolverAxion/out.txt
+/FourierCudaSolverAxion/fTest1.txt

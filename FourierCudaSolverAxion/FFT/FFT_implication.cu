@@ -80,11 +80,21 @@ void cuFFT::inverce(cudaCVector3 &F, cudaCVector3 &f, bool isNormed)
 }
 void cuFFT::inverce(cudaCVector3 &F, cudaRVector3 &f, bool isNormed)
 {
-	if (cufftExecZ2D(planZ2D, (cufftDoubleComplex*)F.getArray(), (cufftDoubleReal*)f.getArray()) != CUFFT_SUCCESS) {
+	double a, b;
+	cudaMemcpy(&a, F.getArray(), sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(&b, f.getArray(), sizeof(double), cudaMemcpyDeviceToHost);
+	std::cout << "1) " << a << "\t" << b << "\n" << F.getArray() << "\t" << f.getArray() << "\n";
+
+	auto errC = cufftExecZ2D(planZ2D, (cufftDoubleComplex*)F.getArray(), (cufftDoubleReal*)f.getArray());
+	if (errC != CUFFT_SUCCESS) {
 		fprintf(stderr, "CUFFT error: 3D ExecZ2Z Inverce failed");
 		return;
 	}
 	cudaStreamSynchronize(stream);
+
+	cudaMemcpy(&a, F.getArray(), sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(&b, f.getArray(), sizeof(double), cudaMemcpyDeviceToHost);
+	std::cout << "2) " << a << "\t" << b << "\n" << F.getArray() << "\t" << f.getArray() << "\n";
 
 	if (isNormed) {
 		dim3 block(BLOCK_SIZE);
@@ -92,6 +102,22 @@ void cuFFT::inverce(cudaCVector3 &F, cudaRVector3 &f, bool isNormed)
 		kernelInverseNorm<<<grid, block, 0, stream>>>(f.size(), N, L, f.getArray());
 		cudaStreamSynchronize(stream);
 	}
+	cudaMemcpy(&a, F.getArray(), sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(&b, f.getArray(), sizeof(double), cudaMemcpyDeviceToHost);
+	std::cout << "3) " << a << "\t" << b << "\n" << F.getArray() << "\t" << f.getArray() << "\n";
+
+	std::ofstream fout("fTest1.txt", std::ofstream::ate);
+	CVector3 Fh = F;
+	for (int i = 0; i < Fh.size(); i++)
+	{
+		fout << Fh(i) << "\n";
+	}
+	RVector3 fh = f;
+	for (int i = 0; i < fh.size(); i++)
+	{
+		fout << fh(i) << "\n";
+	}
+
 }
 
 cuFFT::cuFFT(const int _dim, const int *_n, const int _BATCH, cudaStream_t _stream) : dim(_dim), BATCH(_BATCH), stream(_stream)
