@@ -259,9 +259,14 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+*.txt
 /FourierCudaSolverAxion/fDistr.txt
 /FourierCudaSolverAxion/saveGrid.asv
 /FourierCudaSolverAxion/saveParams.asv
 /FourierCudaSolverAxion/in32Small.txt
 /FourierCudaSolverAxion/outNumberAndMomentum.txt
 /FourierCudaSolverAxion/dataTest.txt
+/FourierCudaSolverAxion/test.txt
+/FourierCudaSolverAxion/outMaxVal.txt
+/FourierCudaSolverAxion/out.txt
+/FourierCudaSolverAxion/fTest1.txt
