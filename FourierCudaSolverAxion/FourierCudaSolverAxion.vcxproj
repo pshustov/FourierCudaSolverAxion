@@ -59,6 +59,7 @@
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
       <AdditionalOptions>--expt-extended-lambda --default-stream per-thread %(AdditionalOptions)</AdditionalOptions>
+      <CodeGeneration>compute_61,sm_61</CodeGeneration>
     </CudaCompile>
     <Bscmake>
       <PreserveSbr>true</PreserveSbr>
