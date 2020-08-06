@@ -5,7 +5,7 @@ void systemEquCuda_3D::evaluate()
 {
 	double t = tau, dt;
 
-	distr.calculateNumberAndMomentumAsync(Grid);
+	distr.calculateAsync(Grid);
 
 	int countIn = 0, countOut = 0;
 
@@ -15,7 +15,7 @@ void systemEquCuda_3D::evaluate()
 		if (distr.isDistributionFunctionReady())
 		{
 			++countIn;
-			distr.calculateNumberAndMomentumAsync(Grid);
+			distr.calculateAsync(Grid);
 		}
 
 		t -= dt;

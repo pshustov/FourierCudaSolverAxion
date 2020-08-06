@@ -52,6 +52,27 @@ __global__ void kernelSetDistributionFunction(double lam, double g, double f2mea
 	}
 }
 
+__global__ void kernelCalculateDistrLin(cudaRVectorDev kBinsLin, cudaCVectorDev distrLin, cudaCVector3Dev kSqr, cudaCVector3Dev data)
+{
+	extern __shared__ complex distrShared[];
+
+	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+	size_t j = blockIdx.y * blockDim.y + threadIdx.y;
+	size_t k = blockIdx.z * blockDim.z + threadIdx.z;
+
+	size_t N1 = kSqr.getN1(), N2 = kSqr.getN2(), N3 = kSqr.getN3();
+
+	if (i < N1 && j < N2 && k < N3)
+	{
+		if (k == 0) {
+			
+		}
+		else {
+
+		}
+	}
+}
+
 
 void Distribution::setDistribution(cudaGrid_3D& Grid)
 {
@@ -71,11 +92,23 @@ void Distribution::setDistribution(cudaGrid_3D& Grid)
 	grid3Red = dim3((Q.getN1() + Bx - 1) / Bx, (Q.getN2() + By - 1) / By, (Q.getN3() + Bz - 1) / Bz);
 
 
+	numberOfBins = 100;
+	
+	double k1 = Ma_PI * Grid.getN1() / Grid.getL1();
+	double k2 = Ma_PI * Grid.getN2() / Grid.getL2();
+	double k3 = Ma_PI * Grid.getN3() / Grid.getL3();
+	double kMax = (kMax = (k1 < k2 ? k1 : k2)) < k3 ? kMax : k3;
+
+	RVector kBinsLin_host(numberOfBins);
+	for (int i = 0; i < numberOfBins; i++) {
+		kBinsLin_host(i) = (i + 1) * kMax / numberOfBins;
+	}
+	kBinsLin = kBinsLin_host;
+
 	cudaStreamCreate(&streamDistrib);
 }
 
-
-void Distribution::calculateNumberAndMomentum()
+void Distribution::calculate()
 {
 	setQquad<<< grid3Red, block3, 0, streamDistrib >>>(Q);
 	cudaStreamSynchronize(streamDistrib);
@@ -96,6 +129,8 @@ void Distribution::calculateNumberAndMomentum()
 	{
 		kernelSetDistributionFunction<<< grid3Red, block3, 0, streamDistrib >>>(lam, g, f2mean, k_sqr, Q, P);
 		cudaStreamSynchronize(streamDistrib);
+
+
 
 		numberOfParticles = P.getSum(streamDistrib).real() / volume;
 		meanMomentum = Q.getSum(streamDistrib).real() / (volume * numberOfParticles);

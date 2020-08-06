@@ -17,24 +17,24 @@ public:
 		return distributionFunctionFuture.wait_for(seconds(0)) == std::future_status::ready;
 	}
 
-	void calculateNumberAndMomentum();
+	void calculate();
 
-	void calculateNumberAndMomentumAsync(cudaGrid_3D& Grid)
+	void calculateAsync(cudaGrid_3D& Grid)
 	{
 		time = Grid.get_time();
 		Q = Grid.get_Q();
 		P = Grid.get_P();
 
-		distributionFunctionFuture = std::async(std::launch::async, &Distribution::calculateNumberAndMomentum, this);
+		distributionFunctionFuture = std::async(std::launch::async, &Distribution::calculate, this);
 	}
 
-	void calculateNumberAndMomentumSync(cudaGrid_3D& Grid)
+	void calculateSync(cudaGrid_3D& Grid)
 	{
 		time = Grid.get_time();
 		Q = Grid.get_Q();
 		P = Grid.get_P();
 
-		calculateNumberAndMomentum();
+		calculate();
 	}
 
 	void waitUntilAsyncEnd()
@@ -60,6 +60,10 @@ private:
 	double f2mean;
 	cudaRVector3 k_sqr;
 	cudaCVector3 Q, P;
+
+	int numberOfBins;
+	cudaRVector kBinsLin;
+	cudaCVector ditrLin;
 
 	double volume;
 
