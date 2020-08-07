@@ -10,7 +10,7 @@ public:
 	Distribution() {}
 	~Distribution() { outFile.close(); cudaStreamDestroy(streamDistrib); }
 
-	void setDistribution(cudaGrid_3D& Grid);
+	void setupDistribution(cudaGrid_3D& Grid);
 
 	bool isDistributionFunctionReady()
 	{
@@ -54,20 +54,26 @@ public:
 	}
 
 private:
-	double time;
 
+	std::ofstream outFile;
+	std::ofstream outFileDistr;
+
+	double time;
 	double lam, g;
 	double f2mean;
+	double volume;
+
 	cudaRVector3 k_sqr;
 	cudaCVector3 Q, P;
 
+	dim3 block3;
+	dim3 grid3Red;
+
 	int numberOfBins;
-	cudaRVector kBinsLin;
-	cudaCVector ditrLin;
+	cudaVector3<unsigned __int8> kInds;
+	cudaRVector distrLin;
+	RVector distrLinHost;
 
-	double volume;
-
-	std::ofstream outFile;
 	double numberOfParticles, meanMomentum;
 
 	std::future<void> distributionFunctionFuture;
@@ -76,7 +82,6 @@ private:
 
 	cudaStream_t streamDistrib;
 
-	dim3 block3;
-	dim3 grid3Red;
+
 
 };

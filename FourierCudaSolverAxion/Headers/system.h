@@ -22,7 +22,7 @@ public:
 		outMaxVal.open("outMaxVal.txt");
 		outMaxVal.precision(14);
 
-		distr.setDistribution(Grid);
+		distr.setupDistribution(Grid);
 	}
 
 	~systemEquCuda_3D() {
