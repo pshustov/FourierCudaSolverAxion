@@ -72,6 +72,7 @@ private:
 	int numberOfBins;
 	cudaVector3<unsigned __int8> kInds;
 	cudaRVector distrLin;
+	cudaRVector denominators;
 	RVector distrLinHost;
 
 	double numberOfParticles, meanMomentum;

@@ -69,7 +69,17 @@ __global__ void kernelSetKInds(int numberOfBins, double kMax, cudaRVector3Dev kS
 	}
 }
 
-__global__ void kernelSetDistrbZero(cudaRVectorDev data)
+__global__ void kernelSetDenominators(cudaVector3Dev<unsigned __int8> kInds, cudaRVectorDev denoms)
+{
+	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (i < kInds.size())
+	{
+		atomicAdd(&denoms(kInds(i)), 1);
+	}
+}
+
+__global__ void kernelSetZero(cudaRVectorDev data)
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < data.getN())
@@ -78,7 +88,7 @@ __global__ void kernelSetDistrbZero(cudaRVectorDev data)
 	}
 }
 
-__global__ void kernelCalculateDistrLin(int numberOfBins, cudaVector3Dev<unsigned __int8> kInds, cudaRVectorDev distrLin, cudaCVector3Dev data)
+__global__ void kernelCalculateDistrLin(cudaVector3Dev<unsigned __int8> kInds, cudaRVectorDev distrLin, cudaCVector3Dev data)
 {
 	cg::thread_block thisBlock = cg::this_thread_block();
 	
@@ -92,6 +102,8 @@ __global__ void kernelCalculateDistrLin(int numberOfBins, cudaVector3Dev<unsigne
 	
 	size_t ind = (i * N2 + j) * N3 + k;
 	size_t indThread = (threadIdx.x * blockDim.y + threadIdx.y) * blockDim.z + threadIdx.z;
+
+	int numberOfBins = distrLin.getN();
 
 	if (i < N1 && j < N2 && k < N3)
 	{
@@ -115,9 +127,16 @@ __global__ void kernelCalculateDistrLin(int numberOfBins, cudaVector3Dev<unsigne
 		{
 			atomicAdd(&distrLin(indThread), distrShared[indThread]);
 		}
+	}	
+}
+
+__global__ void kernelDivide(cudaRVectorDev distrLin, cudaRVectorDev denom)
+{
+	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < distrLin.getN())
+	{
+		distrLin(i) /= denom(i);
 	}
-	
-	
 }
 
 
@@ -142,8 +161,9 @@ void Distribution::setupDistribution(cudaGrid_3D& Grid)
 
 	numberOfBins = 64;
 	kInds.set(Q.getN1(), Q.getN2(), Q.getN3());
-	distrLin.set(numberOfBins);
-	distrLinHost.set(numberOfBins);
+	distrLin.set(numberOfBins + 1);
+	denominators.set(numberOfBins + 1);
+	distrLinHost.set(numberOfBins + 1);
 
 	numberOfParticles = 0;
 	meanMomentum = 0;
@@ -159,6 +179,18 @@ void Distribution::setupDistribution(cudaGrid_3D& Grid)
 	dim3 blockT = blockSize;
 	dim3 gridT = (k_sqr.size() + blockSize - 1) / blockSize;
 	kernelSetKInds<<< gridT, blockT, 0, streamDistrib >>>(numberOfBins, kMax, k_sqr, kInds);
+	cudaStreamSynchronize(streamDistrib);
+
+	blockSize = 32;
+	blockT = blockSize;
+	gridT = (denominators.getN() + blockSize - 1) / blockSize;
+	kernelSetZero<<< gridT, blockT, 0, streamDistrib >>>(denominators);
+
+	blockSize = 256;
+	blockT = blockSize;
+	gridT = (kInds.size() + blockSize - 1) / blockSize;
+	kernelSetDenominators<<< gridT, blockT, 0, streamDistrib >>>(kInds, denominators);
+
 	cudaStreamSynchronize(streamDistrib);
 
 	outFileDistr << numberOfBins;
@@ -187,8 +219,8 @@ void Distribution::calculate()
 
 			int blockSize = 32;
 			dim3 blockT = blockSize;
-			dim3 gridT = (k_sqr.size() + blockSize - 1) / blockSize;
-			kernelSetDistrbZero<<< gridT, blockT, 0, streamDistrib >>>(distrLin);
+			dim3 gridT = (distrLin.getN() + blockSize - 1) / blockSize;
+			kernelSetZero<<< gridT, blockT, 0, streamDistrib >>>(distrLin);
 			cudaStreamSynchronize(streamDistrib);
 			distrLinHost = distrLin;
 		}
@@ -203,9 +235,10 @@ void Distribution::calculate()
 
 		int blockSize = 32;
 		dim3 blockT = blockSize;
-		dim3 gridT = (k_sqr.size() + blockSize - 1) / blockSize;
-		kernelSetDistrbZero<<< gridT, blockT, 0, streamDistrib >>>(distrLin);
-		kernelCalculateDistrLin<<< grid3Red, block3, (numberOfBins+1)*sizeof(double), streamDistrib >>> (numberOfBins, kInds, distrLin, P);
+		dim3 gridT = (distrLin.getN() + blockSize - 1) / blockSize;
+		kernelSetZero<<< gridT, blockT, 0, streamDistrib >>>(distrLin);
+		kernelCalculateDistrLin<<< grid3Red, block3, (numberOfBins+1)*sizeof(double), streamDistrib >>> (kInds, distrLin, P);
+		kernelDivide<<< gridT, blockT, 0, streamDistrib >>>(distrLin, denominators);
 		cudaStreamSynchronize(streamDistrib);
 		distrLinHost = distrLin;
 
