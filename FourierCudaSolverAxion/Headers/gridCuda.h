@@ -73,10 +73,10 @@ public:
 	cudaStream_t get_mainStream() const { return mainStream; }
 
 	/// FFT and IFFT
-	void doFFTforward(cudaCVector3 &f, cudaCVector3 &F, bool isNormed = true) { cufft.forward(f, F, isNormed); }
-	void doFFTforward(cudaRVector3 &f, cudaCVector3 &F, bool isNormed = true) { cufft.forward(f, F, isNormed); }
-	void doFFTinverce(cudaCVector3 &F, cudaCVector3 &f, bool isNormed = true) { cufft.inverce(F, f, isNormed); }
-	void doFFTinverce(cudaCVector3 &F, cudaRVector3 &f, bool isNormed = true) { cufft.inverce(F, f, isNormed); }
+	void doFFTforward(cudaCVector3 &f, cudaCVector3 &F) { cufft.forward(f, F); }
+	void doFFTforward(cudaRVector3 &f, cudaCVector3 &F) { cufft.forward(f, F); }
+	void doFFTinverce(cudaCVector3 &F, cudaCVector3 &f) { cufft.inverce(F, f); }
+	void doFFTinverce(cudaCVector3 &F, cudaRVector3 &f) { cufft.inverce(F, f); }
 
 
 	/// Sets 

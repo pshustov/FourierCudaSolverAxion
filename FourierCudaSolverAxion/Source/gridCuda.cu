@@ -52,17 +52,11 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	n_fft[0] = (int)N1;
 	n_fft[1] = (int)N2;
 	n_fft[2] = (int)N3;
-	std::cout << "1" << std::endl;
 	cufft.reset(3, n_fft, getVolume(), 1, mainStream);
-	
-	std::cout << "2" << std::endl;
 
-	//fft
 	fft();
 	
-	std::cout << "3" << std::endl;
-
-	std::cout << "First FFT have been done\n";
+	std::cout << "First FFT done\n";
 
 	isIFFTsyncQ = true;
 	isIFFTsyncP = true;

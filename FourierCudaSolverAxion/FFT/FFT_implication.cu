@@ -1,7 +1,56 @@
 #include "stdafx.h"
 
-#ifdef _WIN64
-__global__ void kernelForwardNorm(const size_t size, const size_t N, const double L, double *V)
+#ifdef __linux__
+
+__device__ void callbackForwardNormZ(void* dataOut, size_t offset, cufftDoubleComplex element, void* callerInfo, void* sharedPointer)
+{
+	//printf("PRIBNTR\n");
+	//double* dataLN = (double*)callerInfo;
+	//if (offset == 1)
+	//{
+	//	printf("callbackForwardNormZ\ndata0 = %g \tdata1 = %g", dataLN[0], dataLN[1]);
+	//}
+	//((complex*)dataOut)[offset] *= (dataLN[0] / dataLN[1]);
+}
+__device__ void callbackForwardNormD(void* dataOut, size_t offset, cufftDoubleReal element, void* callerInfo, void* sharedPointer)
+{
+	//printf("PRIBNTR\n");
+	//double* dataLN = (double*)callerInfo;
+	//if (offset == 1)
+	//{
+	//	printf("callbackForwardNormD\ndata0 = %g \tdata1 = %g", dataLN[0], dataLN[1]);
+	//}
+	//((double*)dataOut)[offset] *= (dataLN[0] / dataLN[1]);
+}
+__device__ void callbackInverseNormZ(void* dataOut, size_t offset, cufftDoubleComplex element, void* callerInfo, void* sharedPointer)
+{
+	//printf("PRIBNTR\n");
+	//double* dataLN = (double*)callerInfo;
+	//if (offset == 1)
+	//{
+	//	printf("callbackInverseNormZ\ndata0 = %g \tdata1 = %g", dataLN[0], dataLN[1]);
+	//}
+	//((complex*)dataOut)[offset] /= dataLN[0];
+}
+__device__ void callbackInverseNormD(void* dataOut, size_t offset, cufftDoubleReal element, void* callerInfo, void* sharedPointer)
+{
+	//printf("PRIBNTR\n");
+	//double* dataLN = (double*)callerInfo;
+	//if (offset == 1)
+	//{
+	//	printf("callbackInverseNormD\ndata0 = %g \tdata1 = %g", dataLN[0], dataLN[1]);
+	//}
+	//((double*)dataOut)[offset] /= dataLN[0];
+}
+
+__device__ cufftCallbackStoreZ d_callbackForwardNormZ = callbackForwardNormZ;
+__device__ cufftCallbackStoreD d_callbackForwardNormD = callbackForwardNormD;
+__device__ cufftCallbackStoreZ d_callbackInverseNormZ = callbackInverseNormZ;
+__device__ cufftCallbackStoreD d_callbackInverseNormD = callbackInverseNormD;
+
+#else
+
+__global__ void kernelForwardNorm(const size_t size, const size_t N, const double L, double* V)
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < size)
@@ -9,7 +58,7 @@ __global__ void kernelForwardNorm(const size_t size, const size_t N, const doubl
 		V[i] = V[i] * L / N;
 	}
 }
-__global__ void kernelForwardNorm(const size_t size, const size_t N, const double L, complex *V)
+__global__ void kernelForwardNorm(const size_t size, const size_t N, const double L, complex* V)
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < size)
@@ -33,60 +82,57 @@ __global__ void kernelInverseNorm(const size_t size, const size_t N, const doubl
 		V[i] = V[i] / L;
 	}
 }
-#endif
 
-#ifdef linux
-__device__ void callbackForwardNormZ(void* dataOut, size_t offset, cufftDoubleComplex element, void* callerInfo, void* sharedPointer)
-{
-	double* dataLN = (double*)callerInfo;
-	((complex*)dataOut)[offset] *= (dataLN[0] / dataLN[1]);
-}
-__device__ void callbackForwardNormD(void* dataOut, size_t offset, cufftDoubleReal element, void* callerInfo, void* sharedPointer)
-{
-	double* dataLN = (double*)callerInfo;
-	((double*)dataOut)[offset] *= (dataLN[0] / dataLN[1]);
-}
-__device__ void callbackInverseNormZ(void* dataOut, size_t offset, cufftDoubleComplex element, void* callerInfo, void* sharedPointer)
-{
-	double* dataLN = (double*)callerInfo;
-	((complex*)dataOut)[offset] /= dataLN[0];
-}
-__device__ void callbackInverseNormD(void* dataOut, size_t offset, cufftDoubleReal element, void* callerInfo, void* sharedPointer)
-{
-	double* dataLN = (double*)callerInfo;
-	((double*)dataOut)[offset] /= dataLN[0];
-}
+#endif // __linux__
 
-__device__ cufftCallbackStoreZ d_callbackForwardNormZ = callbackForwardNormZ;
-__device__ cufftCallbackStoreD d_callbackForwardNormD = callbackForwardNormD;
-__device__ cufftCallbackStoreZ d_callbackInverseNormZ = callbackInverseNormZ;
-__device__ cufftCallbackStoreD d_callbackInverseNormD = callbackInverseNormD;
-#endif
-
-void cuFFT::forward(cudaCVector3& f, cudaCVector3& F, bool isNormed)
+void cuFFT::forward(cudaCVector3& f, cudaCVector3& F)
 {
 	checkCudaErrors(cufftExecZ2Z(planZ2ZF, (cufftDoubleComplex*)f.getArray(), (cufftDoubleComplex*)F.getArray(), CUFFT_FORWARD));
 	checkCudaErrors(cudaStreamSynchronize(stream));
 
-#ifdef _WIN64
-#endif
+#ifndef __linux__
+	dim3 block(BLOCK_SIZE);
+	dim3 grid((F.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	kernelForwardNorm << < grid, block, 0, stream >> > (F.size(), N, L, F.getArray());
+	cudaStreamSynchronize(stream);
+#endif // !__linux__
 }
-void cuFFT::forward(cudaRVector3& f, cudaCVector3& F, bool isNormed)
+void cuFFT::forward(cudaRVector3& f, cudaCVector3& F)
 {
 	checkCudaErrors(cufftExecD2Z(planD2Z, (cufftDoubleReal*)f.getArray(), (cufftDoubleComplex*)F.getArray()));
 	checkCudaErrors(cudaStreamSynchronize(stream));
+
+#ifndef __linux__
+	dim3 block(BLOCK_SIZE);
+	dim3 grid((F.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	kernelForwardNorm << < grid, block, 0, stream >> > (F.size(), N, L, F.getArray());
+	cudaStreamSynchronize(stream);
+#endif // !__linux__
 }
-void cuFFT::inverce(cudaCVector3 &F, cudaCVector3 &f, bool isNormed)
+void cuFFT::inverce(cudaCVector3& F, cudaCVector3& f)
 {
 	checkCudaErrors(cufftExecZ2Z(planZ2ZI, (cufftDoubleComplex*)F.getArray(), (cufftDoubleComplex*)f.getArray(), CUFFT_INVERSE));
 	checkCudaErrors(cudaStreamSynchronize(stream));
+
+#ifndef __linux__
+	dim3 block(BLOCK_SIZE);
+	dim3 grid((f.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	kernelInverseNorm << < grid, block, 0, stream >> > (f.size(), N, L, f.getArray());
+	cudaStreamSynchronize(stream);
+#endif // !__linux__
 }
-void cuFFT::inverce(cudaCVector3 &F, cudaRVector3 &f, bool isNormed)
+void cuFFT::inverce(cudaCVector3& F, cudaRVector3& f)
 {
 	checkCudaErrors(cufftExecZ2D(planZ2D, (cufftDoubleComplex*)F.getArray(), (cufftDoubleReal*)f.getArray()));
 	checkCudaErrors(cudaStreamSynchronize(stream));
-}
 
+#ifndef __linux__
+	dim3 block(BLOCK_SIZE);
+	dim3 grid((f.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	kernelInverseNorm << < grid, block, 0, stream >> > (f.size(), N, L, f.getArray());
+	cudaStreamSynchronize(stream);
+#endif // !__linux__
+}
 
 cuFFT::cuFFT(cudaStream_t _stream) : stream(_stream)
 {
@@ -105,7 +151,8 @@ cuFFT::cuFFT(cudaStream_t _stream) : stream(_stream)
 
 	setStream(stream);
 
-#ifdef linux
+#ifdef __linux__
+	std::cout << "LINUX detected" << std::endl;
 	checkCudaErrors(cudaMemcpyFromSymbol(&h_callbackForwardNormZ, d_callbackForwardNormZ, sizeof(h_callbackForwardNormZ)));
 	checkCudaErrors(cudaMemcpyFromSymbol(&h_callbackForwardNormD, d_callbackForwardNormD, sizeof(h_callbackForwardNormD)));
 	checkCudaErrors(cudaMemcpyFromSymbol(&h_callbackInverseNormZ, d_callbackInverseNormZ, sizeof(h_callbackInverseNormZ)));
@@ -242,25 +289,13 @@ void cuFFT::reset(const int _dim, const int *_n, double _L, const int _BATCH, cu
 		checkCudaErrors(cufftCreate(&planZ2D));
 		checkCudaErrors(cufftMakePlan3d(planZ2D, n[0], n[1], n[2], CUFFT_Z2D, &workSize));
 
-#ifdef linux
+#ifdef __linux__
+		std::cout << "LINUX detected" << std::endl;
 		checkCudaErrors(cufftXtSetCallback(planZ2ZF, (void**)&h_callbackForwardNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)callbackData));
 		checkCudaErrors(cufftXtSetCallback(planZ2ZI, (void**)&h_callbackInverseNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)callbackData));
 		checkCudaErrors(cufftXtSetCallback(planD2Z, (void**)&h_callbackForwardNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)callbackData));
 		checkCudaErrors(cufftXtSetCallback(planZ2D, (void**)&h_callbackInverseNormD, CUFFT_CB_ST_REAL_DOUBLE, (void**)callbackData));
 #endif
-
-		//if (cufftPlan3d(&planZ2Z, NX, NY, NZ, CUFFT_Z2Z) != CUFFT_SUCCESS) {
-		//	fprintf(stderr, "CUFFT error: Plan creation failed");
-		//	throw;
-		//}
-		//if (cufftPlan3d(&planD2Z, NX, NY, NZ, CUFFT_D2Z) != CUFFT_SUCCESS) {
-		//	fprintf(stderr, "CUFFT error: Plan creation failed");
-		//	throw;
-		//}
-		//if (cufftPlan3d(&planZ2D, NX, NY, NZ, CUFFT_Z2D) != CUFFT_SUCCESS) {
-		//	fprintf(stderr, "CUFFT error: Plan creation failed");
-		//	throw;
-		//}
 
 		break;
 
@@ -270,5 +305,4 @@ void cuFFT::reset(const int _dim, const int *_n, double _L, const int _BATCH, cu
 
 	stream = _stream;
 	setStream(stream);
-	std::cout << "55" << std::endl;
 }
