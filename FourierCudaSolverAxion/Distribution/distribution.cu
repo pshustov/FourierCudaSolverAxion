@@ -54,7 +54,7 @@ __global__ void kernelCalculateDistrFun(double lam, double g, double f2mean, cud
 	}
 }
 
-__global__ void kernelSetKInds(int numberOfBins, double kMax, cudaRVector3Dev kSqr, cudaVector3Dev<unsigned __int8> kInds)
+__global__ void kernelSetKInds(int numberOfBins, double kMax, cudaRVector3Dev kSqr, cudaVector3Dev<unsigned int> kInds)
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < kSqr.size())
@@ -69,7 +69,7 @@ __global__ void kernelSetKInds(int numberOfBins, double kMax, cudaRVector3Dev kS
 	}
 }
 
-__global__ void kernelSetDenominators(cudaVector3Dev<unsigned __int8> kInds, cudaRVectorDev denoms)
+__global__ void kernelSetDenominators(cudaVector3Dev<unsigned int> kInds, cudaRVectorDev denoms)
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -88,7 +88,7 @@ __global__ void kernelSetZero(cudaRVectorDev data)
 	}
 }
 
-__global__ void kernelCalculateDistrLin(cudaVector3Dev<unsigned __int8> kInds, cudaRVectorDev distrLin, cudaCVector3Dev data)
+__global__ void kernelCalculateDistrLin(cudaVector3Dev<unsigned int> kInds, cudaRVectorDev distrLin, cudaCVector3Dev data)
 {
 	cg::thread_block thisBlock = cg::this_thread_block();
 	
@@ -168,7 +168,11 @@ void Distribution::setupDistribution(cudaGrid_3D& Grid)
 	numberOfParticles = 0;
 	meanMomentum = 0;
 
-	cudaStreamCreate(&streamDistrib);
+	//cudaStreamCreate(&streamDistrib);
+	int priority_high, priority_low;
+	cudaDeviceGetStreamPriorityRange(&priority_low, &priority_high);
+	cudaStreamCreateWithPriority(&streamDistrib, cudaStreamNonBlocking, priority_low);
+
 	
 	double k1 = Ma_PI * Grid.getN1() / Grid.getL1();
 	double k2 = Ma_PI * Grid.getN2() / Grid.getL2();
@@ -192,6 +196,15 @@ void Distribution::setupDistribution(cudaGrid_3D& Grid)
 	kernelSetDenominators<<< gridT, blockT, 0, streamDistrib >>>(kInds, denominators);
 
 	cudaStreamSynchronize(streamDistrib);
+
+	//std::ofstream outDen("outDenom.txt");
+	//RVector P = denominators;
+	//for (size_t i = 0; i < P.getN() - 1; i++)
+	//{
+	//	outDen << P(i) << "\t";
+	//}
+	//outDen << P(P.getN() - 1);
+	//outDen.close();
 
 	outFileDistr << numberOfBins;
 	for (int i = 0; i < numberOfBins; i++)

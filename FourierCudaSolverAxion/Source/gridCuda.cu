@@ -3,8 +3,13 @@
 cudaGrid_3D::cudaGrid_3D(const std::string filename)
 {
 	//mainStream = cudaStreamDefault;
-	cudaStreamCreate(&mainStream);
-	cudaStreamCreate(&printStream);
+	//cudaStreamCreate(&mainStream);
+	//cudaStreamCreate(&printStream);
+
+	int priority_high, priority_low;
+	checkCudaErrors(cudaDeviceGetStreamPriorityRange(&priority_low, &priority_high));
+	checkCudaErrors(cudaStreamCreateWithPriority(&mainStream, cudaStreamNonBlocking, priority_high));
+	checkCudaErrors(cudaStreamCreateWithPriority(&printStream, cudaStreamNonBlocking, priority_low));
 
 	current_time = 0;
 
@@ -49,10 +54,9 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 	n_fft[2] = (int)N3;
 	cufft.reset(3, n_fft, getVolume(), 1, mainStream);
 
-	//fft
 	fft();
-
-	std::cout << "First FFT have been done\n";
+	
+	std::cout << "First FFT done\n";
 
 	isIFFTsyncQ = true;
 	isIFFTsyncP = true;

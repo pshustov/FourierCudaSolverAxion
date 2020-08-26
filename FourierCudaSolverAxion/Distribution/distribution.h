@@ -70,7 +70,7 @@ private:
 	dim3 grid3Red;
 
 	int numberOfBins;
-	cudaVector3<unsigned __int8> kInds;
+	cudaVector3<unsigned int> kInds;
 	cudaRVector distrLin;
 	cudaRVector denominators;
 	RVector distrLinHost;
