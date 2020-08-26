@@ -60,7 +60,7 @@ public:
 		Grid.set_g(_g);
 	}
 
-	void printingVTK();
+	void printingVTK(bool isVTKprinting = true);
 	void printingMaxVal();
 
 	double getTime() { return Grid.get_time(); }

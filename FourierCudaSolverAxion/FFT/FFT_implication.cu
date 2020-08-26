@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#ifdef __linux__
+#ifdef TESTCALLBACKS
 
 __device__ void callbackForwardNormZ(void* dataOut, size_t offset, cufftDoubleComplex element, void* callerInfo, void* sharedPointer)
 {
@@ -151,7 +151,7 @@ cuFFT::cuFFT(cudaStream_t _stream) : stream(_stream)
 
 	setStream(stream);
 
-#ifdef __linux__
+#ifdef TESTCALLBACKS
 	std::cout << "LINUX detected" << std::endl;
 	checkCudaErrors(cudaMemcpyFromSymbol(&h_callbackForwardNormZ, d_callbackForwardNormZ, sizeof(h_callbackForwardNormZ)));
 	checkCudaErrors(cudaMemcpyFromSymbol(&h_callbackForwardNormD, d_callbackForwardNormD, sizeof(h_callbackForwardNormD)));
@@ -289,7 +289,7 @@ void cuFFT::reset(const int _dim, const int *_n, double _L, const int _BATCH, cu
 		checkCudaErrors(cufftCreate(&planZ2D));
 		checkCudaErrors(cufftMakePlan3d(planZ2D, n[0], n[1], n[2], CUFFT_Z2D, &workSize));
 
-#ifdef __linux__
+#ifdef TESTCALLBACKS
 		std::cout << "LINUX detected" << std::endl;
 		checkCudaErrors(cufftXtSetCallback(planZ2ZF, (void**)&h_callbackForwardNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)callbackData));
 		checkCudaErrors(cufftXtSetCallback(planZ2ZI, (void**)&h_callbackInverseNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)callbackData));
