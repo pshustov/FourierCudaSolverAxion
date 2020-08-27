@@ -1,6 +1,10 @@
 #pragma once
+#include "cudaVector.h"
+#include "cudaFFT.h"
 
-#include "stdafx.h"
+const int N_MIN = 32;
+const double Ma_PI = 3.1415926535897932384626433832795;
+const int BLOCK_SIZE = 128;
 
 class cudaGrid_3D
 {
@@ -13,29 +17,9 @@ public:
 	void ifftQ();
 	void ifftP();
 
-	void save(std::ofstream & fileSave)
-	{		
-		fileSave << getN1() << "\n" << getN2() << "\n" << getN3() << "\n";
-		fileSave << getL1() << "\n" << getL2() << "\n" << getL3() << "\n";
+	void save(std::ofstream& fileSave);
 
-		ifft();
-
-		RVector3 RHost;
-		RHost = q;
-		for (size_t i = 0; i < RHost.size(); i++) {
-			fileSave << RHost(i) << '\n';
-		}
-		
-		RHost = p;
-		for (size_t i = 0; i < RHost.size(); i++) {
-			fileSave << RHost(i) << '\n';
-		}
-	}
-
-	void load(const std::string filename)
-	{
-		std::ifstream inFile(filename);
-	}
+	void load(const std::string filename);
 
 	/// Gets
 	size_t size() const { return N1*N2*N3; }
@@ -116,7 +100,7 @@ private:
 
 	RVector3 buferOutHost;
 	cudaRVector3 buferOutDev;
-	size_t N1buf = 32, N2buf = 32, N3buf = 32;
+	size_t N1buf, N2buf, N3buf;
 	bool isBuferising;
 
 	cuFFT cufft;
@@ -129,4 +113,3 @@ private:
 
 	cudaStream_t mainStream, printStream;
 };
-

@@ -1,8 +1,5 @@
 #pragma once
-#include "stdafx.h"
-
-//using namespace std;
-using namespace std::chrono;
+#include <future>
 
 class Distribution
 {
@@ -14,7 +11,7 @@ public:
 
 	bool isDistributionFunctionReady()
 	{
-		return distributionFunctionFuture.wait_for(seconds(0)) == std::future_status::ready;
+		return distributionFunctionFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
 	}
 
 	void calculate();

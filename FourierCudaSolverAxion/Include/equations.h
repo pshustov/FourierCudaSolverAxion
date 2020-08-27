@@ -1,8 +1,5 @@
 #pragma once
 
-#include "stdafx.h"
-
-
 class equationsAxionSymplectic_3D
 {
 public:

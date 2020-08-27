@@ -1,4 +1,9 @@
-#include "stdafx.h"
+#include <cooperative_groups.h>
+#include <cuda_runtime.h>
+#include "device_launch_parameters.h"
+
+#include "cudaComplex.h"
+#include "cudaReduction.h"
 
 namespace cg = cooperative_groups;
 
@@ -463,7 +468,7 @@ T reductionSum(int size, T* inData, cudaStream_t stream)
 	cudaStreamSynchronize(stream);
 
 	T result = 0;
-	for (size_t i = 0; i < s; i++)
+	for (int i = 0; i < s; i++)
 	{
 		result = fun(result, outData_host[i]);
 	}
@@ -514,7 +519,7 @@ template <> complex reductionSum<complex>(int size, complex* inData, cudaStream_
 	cudaStreamSynchronize(stream);
 
 	complex result = 0;
-	for (size_t i = 0; i < s; i++)
+	for (int i = 0; i < s; i++)
 	{
 		result = fun(result, outData_host[i]);
 	}

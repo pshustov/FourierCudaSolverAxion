@@ -1,4 +1,10 @@
-#include "stdafx.h"
+//#include "stdafx.h"
+#include <fstream>
+#include <cooperative_groups.h>
+#include <device_launch_parameters.h>
+
+#include "cudaGrid.h"
+#include "distribution.h"
 
 namespace cg = cooperative_groups;
 
@@ -155,8 +161,8 @@ void Distribution::setupDistribution(cudaGrid_3D& Grid)
 	P = Grid.get_P();
 
 	size_t Bx = 16, By = 16, Bz = 1;
-	block3 = dim3(Bx, By, Bz);
-	grid3Red = dim3((Q.getN1() + Bx - 1) / Bx, (Q.getN2() + By - 1) / By, (Q.getN3() + Bz - 1) / Bz);
+	block3 = dim3(static_cast<unsigned int>(Bx), static_cast<unsigned int>(By), static_cast<unsigned int>(Bz));
+	grid3Red = dim3(static_cast<unsigned int>((Q.getN1() + Bx - 1) / Bx), static_cast<unsigned int>((Q.getN2() + By - 1) / By), static_cast<unsigned int>((Q.getN3() + Bz - 1) / Bz));
 
 
 	numberOfBins = 64;
@@ -181,18 +187,18 @@ void Distribution::setupDistribution(cudaGrid_3D& Grid)
 
 	int blockSize = 256;
 	dim3 blockT = blockSize;
-	dim3 gridT = (k_sqr.size() + blockSize - 1) / blockSize;
+	dim3 gridT = static_cast<unsigned int>((k_sqr.size() + blockSize - 1) / blockSize);
 	kernelSetKInds<<< gridT, blockT, 0, streamDistrib >>>(numberOfBins, kMax, k_sqr, kInds);
 	cudaStreamSynchronize(streamDistrib);
 
 	blockSize = 32;
 	blockT = blockSize;
-	gridT = (denominators.getN() + blockSize - 1) / blockSize;
+	gridT = static_cast<unsigned int>((denominators.getN() + blockSize - 1) / blockSize);
 	kernelSetZero<<< gridT, blockT, 0, streamDistrib >>>(denominators);
 
 	blockSize = 256;
 	blockT = blockSize;
-	gridT = (kInds.size() + blockSize - 1) / blockSize;
+	gridT = static_cast<unsigned int>((kInds.size() + blockSize - 1) / blockSize);
 	kernelSetDenominators<<< gridT, blockT, 0, streamDistrib >>>(kInds, denominators);
 
 	cudaStreamSynchronize(streamDistrib);
@@ -232,7 +238,7 @@ void Distribution::calculate()
 
 			int blockSize = 32;
 			dim3 blockT = blockSize;
-			dim3 gridT = (distrLin.getN() + blockSize - 1) / blockSize;
+			dim3 gridT = static_cast<unsigned int>((distrLin.getN() + blockSize - 1) / blockSize);
 			kernelSetZero<<< gridT, blockT, 0, streamDistrib >>>(distrLin);
 			cudaStreamSynchronize(streamDistrib);
 			distrLinHost = distrLin;
@@ -248,7 +254,7 @@ void Distribution::calculate()
 
 		int blockSize = 32;
 		dim3 blockT = blockSize;
-		dim3 gridT = (distrLin.getN() + blockSize - 1) / blockSize;
+		dim3 gridT = static_cast<unsigned int>((distrLin.getN() + blockSize - 1) / blockSize);
 		kernelSetZero<<< gridT, blockT, 0, streamDistrib >>>(distrLin);
 		kernelCalculateDistrLin<<< grid3Red, block3, (numberOfBins+1)*sizeof(double), streamDistrib >>> (kInds, distrLin, P);
 		kernelDivide<<< gridT, blockT, 0, streamDistrib >>>(distrLin, denominators);

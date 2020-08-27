@@ -1,10 +1,17 @@
-	#pragma once
+#pragma once
+#include "cudaComplex.h"
+#include "cudaReduction.h"
 
-#include "stdafx.h"
-
+////////////		1D Vectors		////////////
+template <typename T> class vector;
 template <typename T> class cudaVector;
-template <typename T> class cudaVector3;
+template <typename T> class cudaVectorDev;
 
+
+/// <summary>
+/// Template for 1D host vector
+/// </summary>
+/// <typeparam name="T">Vector of this type</typeparam>
 template <typename T>
 class vector
 {
@@ -237,302 +244,129 @@ private:
 	size_t N;
 	T* Array;
 };
-using RVector = vector<double>;
+typedef RVector = vector<double>;
 using CVector = vector<complex>;
 
 
-//template <typename T>
-//class vector2
-//{
-//public:
-//	//constructor
-//	explicit vector2(const size_t _N1 = 1, const size_t _N2 = 1) : N1(_N1), N2(_N2)
-//	{
-//		//проверить происходит ли инициализация по умолчани у complex при таком задании
-//		Array = new T[N1*N2]();
-//	}
-//	//copy constructor	вызывается, когда создаётся новый vector2 и для его инициализации берётся значение существующего vector2
-//	vector2(const vector2& _M) : N1(_M.get_N1()), N2(_M.get_N2())
-//	{
-//		Array = new T[N1*N2];
-//		for (size_t i = 0; i < N1*N2; i++)
-//			Array[i] = _M(i);
-//	}
-//	//copy-assigment operator 
-//	vector2& operator=(const vector2& _M)
-//	{
-//		if (this != &_M)
-//		{
-//			delete[] Array;
-//			N1 = _M.get_N1();
-//			N2 = _M.get_N2();
-//			Array = new T[N1*N2];
-//			for (size_t i = 0; i < N1*N2; i++)
-//				Array[i] = _M(i);
-//		}
-//		return *this;
-//	}
-//	//destructor
-//	~vector2()
-//	{
-//		delete[] Array;
-//	}
-//
-//	T& operator() (size_t i) { return Array[i]; }
-//	const T& operator() (size_t i) const { return Array[i]; }
-//
-//	T& operator() (size_t i, size_t j) { return Array[i*N2 + j]; }
-//	const T& operator() (size_t i, size_t j) const {
-//		//return ((i >= 0 && i < N1 && j >= 0 && j < N2) ? Array[i*N2 + j] : throw); 
-//		if (i < N1 && j < N2)
-//		{
-//			return Array[i*N2 + j];
-//		}
-//		else
-//		{
-//			throw;
-//		}
-//	}
-//
-//	friend std::ostream& operator<< (std::ostream& os, vector2<T>& _M)
-//	{
-//		os << '{';
-//		int i = -1;
-//		while (++i < _M.N1)
-//		{
-//			os << " {";
-//			int j = -1;
-//			while (++j < _M.N2)
-//			{
-//				os << ' ';
-//				os << _M(i, j);
-//				if (j + 1 < _M.N2) os << ',';
-//			}
-//			os << " }\n";
-//			if (i + 1 < _M.N1) os << ',';
-//		}
-//		os << " }";
-//		return os;
-//	}
-//
-//	const size_t get_N1() const {
-//		return N1;
-//	}
-//	const size_t get_N2() const {
-//		return N2;
-//	}
-//
-//	//reshape and flash
-//	void set_size_erase(const size_t _N1, const size_t _N2) {
-//		delete[] Array;
-//		N1 = _N1;
-//		N2 = _N2;
-//		Array = new T[N1*N2]();
-//	}
-//
-//	void set(const vector<T> V, const int type, const size_t n)
-//	{
-//		switch (type)
-//		{
-//		case ROW:
-//			if (n < N1)
-//			{
-//				for (size_t i = 0; i < N2; i++)
-//				{
-//					operator() (n, i) = V(i);
-//				}
-//			}
-//			else
-//			{
-//				throw;
-//			}
-//			break;
-//		case COLUMN:
-//			if (n < N2)
-//			{
-//				for (size_t i = 0; i < N1; i++)
-//				{
-//					operator() (i, n) = V(i);
-//				}
-//			}
-//			else
-//			{
-//				throw;
-//			}
-//			break;
-//		default:
-//			break;
-//		}
-//	}
-//
-//	vector2<T>& operator+= (const T &b) {
-//		for (size_t i = 0; i < N1*N2; i++)
-//		{
-//			Array[i] += b;
-//		}
-//		return *this;
-//	}
-//	vector2<T>& operator-= (const T &b) {
-//		for (size_t i = 0; i < N1*N2; i++)
-//		{
-//			Array[i] -= b;
-//		}
-//		return *this;
-//	}
-//	vector2<T>& operator/= (const T &b) {
-//		for (size_t i = 0; i < N1*N2; i++)
-//		{
-//			Array[i] /= b;
-//		}
-//		return *this;
-//	}
-//	vector2<T>& operator*= (const T &b) {
-//		for (size_t i = 0; i < N1*N2; i++)
-//		{
-//			Array[i] *= b;
-//		}
-//		return *this;
-//	}
-//
-//	vector2<T>& operator+= (const vector2<T> &B)
-//	{
-//		if (N1 != B.get_N1() || N2 != B.get_N2())
-//			throw;
-//		for (size_t i = 0; i < N1*N2; i++)
-//		{
-//			Array[i] += B(i);
-//		}
-//		return *this;
-//	}
-//	vector2<T>& operator-= (const vector2<T> &B)
-//	{
-//		if (N1 != B.get_N1() || N2 != B.get_N2())
-//			throw;
-//		for (size_t i = 0; i < N1*N2; i++)
-//		{
-//			Array[i] -= B(i);
-//		}
-//		return *this;
-//	}
-//	vector2<T>& operator*= (const vector2<T> &B)
-//	{
-//		if (N1 != B.get_N1() || N2 != B.get_N2())
-//			throw;
-//		for (size_t i = 0; i < N1*N2; i++)
-//		{
-//			Array[i] *= B(i);
-//		}
-//		return *this;
-//	}
-//	vector2<T>& operator/= (const vector2<T> &B)
-//	{
-//		if (N1 != B.get_N1() || N2 != B.get_N2())
-//			throw;
-//		for (size_t i = 0; i < N1*N2; i++)
-//		{
-//			Array[i] /= B(i);
-//		}
-//		return *this;
-//	}
-//
-//	friend vector2<T> operator+(const vector2<T> &A, const vector2<T> &B)
-//	{
-//		if (A.get_N1() != B.get_N1() || A.get_N2() != B.get_N2())
-//			throw;
-//
-//		vector2<T> temp = A;
-//		temp += B;
-//		return temp;
-//	}
-//	friend vector2<T> operator-(const vector2<T> &A, const vector2<T> &B)
-//	{
-//		if (A.get_N1() != B.get_N1() || A.get_N2() != B.get_N2())
-//			throw;
-//
-//		vector2<T> temp = A;
-//		temp -= B;
-//		return temp;
-//	}
-//	friend vector2<T> operator*(const vector2<T> &A, const vector2<T> &B)
-//	{
-//		if (A.get_N1() != B.get_N1() || A.get_N2() != B.get_N2())
-//			throw;
-//
-//		vector2<T> temp = A;
-//		temp *= B;
-//		return temp;
-//	}
-//	friend vector2<T> operator/(const vector2<T> &A, const vector2<T> &B)
-//	{
-//		if (A.get_N1() != B.get_N1() || A.get_N2() != B.get_N2())
-//			throw;
-//
-//		vector2<T> temp = A;
-//		temp /= B;
-//		return temp;
-//	}
-//
-//	friend vector2<T> operator+(const T &a, const vector2<T> &B)
-//	{
-//		vector2<T> temp(B.get_N1()*B.get_N2());
-//		for (size_t i = 0; i < B.get_N1()*B.get_N2(); i++)
-//		{
-//			temp(i) = a + B(i);
-//		}
-//		return temp;
-//	}
-//	friend vector2<T> operator+(const vector2<T> &A, const T &b)
-//	{
-//		vector2<T> temp = A;
-//		temp += b;
-//		return temp;
-//	}
-//	friend vector2<T> operator-(const T &a, const vector2<T> &B)
-//	{
-//		vector2<T> temp(B.get_N1()*B.get_N2());
-//		for (size_t i = 0; i < B.get_N1()*B.get_N2(); i++)
-//		{
-//			temp(i) = a - B(i);
-//		}
-//		return temp;
-//	}
-//	friend vector2<T> operator-(const vector2<T> &A, const T &b)
-//	{
-//		vector2<T> temp = A;
-//		temp -= b;
-//		return temp;
-//	}
-//	friend vector2<T> operator*(const T &a, const vector2<T> &B)
-//	{
-//		vector2<T> temp(B.get_N1()*B.get_N2());
-//		for (size_t i = 0; i < B.get_N1()*B.get_N2(); i++)
-//		{
-//			temp(i) = a * B(i);
-//		}
-//		return temp;
-//	}
-//	friend vector2<T> operator*(const vector2<T> &A, const T &b)
-//	{
-//		vector2<T> temp = A;
-//		temp *= b;
-//		return temp;
-//	}
-//	friend vector2<T> operator/(const vector2<T> &A, const T &b)
-//	{
-//		vector2<T> temp = A;
-//		temp /= b;
-//		return temp;
-//	}
-//
-//private:
-//	size_t N1, N2;
-//	T* Array;
-//};
-//using RVector2 = vector2<double>;
-//using CVector2 = vector2<complex>;
-//using CVector2 = vector2<complex>;
+/// <summary>
+/// Template for 1D cuda vector
+/// </summary>
+/// <typeparam name="T">Vector of this type</typeparam>
+template <typename T>
+class cudaVector
+{
+public:
+	__host__ explicit cudaVector(const size_t _N = 1) : N(_N)
+	{
+		cudaMalloc(&Array, N * sizeof(T));
+	}
+	__host__ cudaVector(const cudaVector& _V) : N(_V.getN())
+	{
+		cudaMalloc(&Array, N * sizeof(T));
+		cudaMemcpy(Array, _V.Array, N * sizeof(T), cudaMemcpyDeviceToDevice);
+
+	}
+	__host__ cudaVector& operator=(const cudaVector& _V)
+	{
+		if (this != &_V)
+		{
+			N = _V.N;
+
+			cudaFree(Array);
+			cudaMalloc(&Array, N * sizeof(T));
+			cudaMemcpy(Array, _V.Array, N * sizeof(T), cudaMemcpyDeviceToDevice);
+		}
+		return *this;
+	}
+	__host__ ~cudaVector()
+	{
+		cudaFree(Array);
+	}
+
+	__host__ cudaVector(const vector<T>& _V) : N(_V.getN())
+	{
+		cudaMalloc(&Array, N * sizeof(T));
+		cudaMemcpy(Array, _V.Array, N * sizeof(T), cudaMemcpyHostToDevice);
+	}
+	__host__ cudaVector& operator=(const vector<T>& _V)
+	{
+		N = _V.getN();
+
+		cudaFree(Array);
+		cudaMalloc(&Array, N * sizeof(T));
+		cudaMemcpy(Array, _V.Array, N * sizeof(T), cudaMemcpyHostToDevice);
+
+		return *this;
+	}
+
+	__host__ size_t getN() const { return N; }
+
+	__host__ void set(const size_t _N)
+	{
+		N = _N;
+		cudaFree(Array);
+		cudaMalloc(&Array, N * sizeof(T));
+	}
+
+	__host__ T* getArray() { return Array; }
+
+	__host__ T getSum(cudaStream_t stream) { return reductionSum<T>(N, Array, stream); }
+	__host__ T getMax(cudaStream_t stream) { return reductionMax<T>(N, Array, stream); }
+
+	friend class vector<T>;
+	friend class cudaVectorDev<T>;
 
 
+private:
+	size_t N;
+	T* Array;
+};
+using cudaRVector = cudaVector<double>;
+using cudaCVector = cudaVector<complex>;
+
+
+/// <summary>
+/// Template for 1D device vector
+/// </summary>
+/// <typeparam name="T">Vector of this type</typeparam>
+template <typename T>
+class cudaVectorDev
+{
+public:
+	__host__ cudaVectorDev(const cudaVector<T>& _V) :N(_V.getN())
+	{
+		Array = _V.Array;
+	}
+	__host__ ~cudaVectorDev() { }
+
+	__device__ size_t getN() const { return N; }
+	__device__ T& operator() (size_t i) { return Array[i]; }
+	__device__ const T& operator() (size_t i) const { return Array[i]; }
+
+	friend class cudaVector<T>;
+
+private:
+	size_t N;
+	T* Array;
+};
+using cudaRVectorDev = cudaVectorDev<double>;
+using cudaCVectorDev = cudaVectorDev<complex>;
+
+
+
+
+
+
+////////////		3D Vectors		////////////
+template <typename T> class vector3;
+template <typename T> class cudaVector3;
+template <typename T> class cudaVector3Dev;
+
+
+/// <summary>
+/// Template for 3D host vector
+/// </summary>
+/// <typeparam name="T">Vector of this type</typeparam>
 template <typename T>
 class vector3
 {
@@ -805,3 +639,123 @@ private:
 };
 using RVector3 = vector3<double>;
 using CVector3 = vector3<complex>;
+
+
+/// <summary>
+/// Template for 3D cuda vector
+/// </summary>
+/// <typeparam name="T">Vector of this type</typeparam>
+template <typename T>
+class cudaVector3
+{
+public:
+
+	__host__ explicit cudaVector3(const size_t _N1 = 1, const size_t _N2 = 1, const size_t _N3 = 1) : N1(_N1), N2(_N2), N3(_N3)
+	{
+		cudaMalloc(&Array, N1 * N2 * N3 * sizeof(T));
+	}
+	__host__ cudaVector3(const cudaVector3& _V) : N1(_V.getN1()), N2(_V.getN2()), N3(_V.getN3())
+	{
+		cudaMalloc(&Array, N1 * N2 * N3 * sizeof(T));
+		cudaMemcpy(Array, _V.Array, N1 * N2 * N3 * sizeof(T), cudaMemcpyDeviceToDevice);
+	}
+	__host__ cudaVector3& operator=(const cudaVector3& _V)
+	{
+		if (this != &_V)
+		{
+			N1 = _V.getN1();
+			N2 = _V.getN2();
+			N3 = _V.getN3();
+
+			cudaFree(Array);
+			cudaMalloc(&Array, N1 * N2 * N3 * sizeof(T));
+			cudaMemcpy(Array, _V.Array, N1 * N2 * N3 * sizeof(T), cudaMemcpyDeviceToDevice);
+		}
+		return *this;
+	}
+	__host__ ~cudaVector3()
+	{
+		cudaFree(Array);
+	}
+
+	__host__ cudaVector3(const vector3<T>& _V) : N1(_V.getN1()), N2(_V.getN2()), N3(_V.getN3())
+	{
+		cudaMalloc(&Array, N1 * N2 * N3 * sizeof(T));
+		cudaMemcpy(Array, _V.Array, N1 * N2 * N3 * sizeof(T), cudaMemcpyHostToDevice);
+	}
+	__host__ cudaVector3& operator=(const vector3<T>& _V)
+	{
+		N1 = _V.getN1();
+		N2 = _V.getN2();
+		N3 = _V.getN3();
+
+		cudaFree(Array);
+		cudaMalloc(&Array, N1 * N2 * N3 * sizeof(T));
+		cudaMemcpy(Array, _V.Array, N1 * N2 * N3 * sizeof(T), cudaMemcpyHostToDevice);
+
+		return *this;
+	}
+
+	__host__ size_t getN1() const { return N1; }
+	__host__ size_t getN2() const { return N2; }
+	__host__ size_t getN3() const { return N3; }
+	__host__ size_t size() const { return N1 * N2 * N3; }
+
+	__host__ void set(const size_t _N1, const size_t _N2, const size_t _N3)
+	{
+		cudaFree(Array);
+		N1 = _N1;
+		N2 = _N2;
+		N3 = _N3;
+		cudaMalloc(&Array, N1 * N2 * N3 * sizeof(T));
+	}
+
+	__host__ T* getArray() { return Array; }
+
+	__host__ T getSum(cudaStream_t stream) { return reductionSum<T>(static_cast<int>(size()), Array, stream); }
+	__host__ T getMax(cudaStream_t stream) { return reductionMax<T>(static_cast<int>(size()), Array, stream); }
+
+	friend class vector3<T>;
+	friend class cudaVector3Dev<T>;
+
+private:
+	size_t N1, N2, N3;
+	T* Array;
+};
+using cudaRVector3 = cudaVector3<double>;
+using cudaCVector3 = cudaVector3<complex>;
+
+
+/// <summary>
+/// Template for 3D device vector
+/// </summary>
+/// <typeparam name="T">Vector of this type</typeparam>
+template <typename T>
+class cudaVector3Dev
+{
+public:
+	__host__ cudaVector3Dev(const cudaVector3<T>& _V) : N1(_V.getN1()), N2(_V.getN2()), N3(_V.getN3())
+	{
+		Array = _V.Array;
+	}
+	__host__ ~cudaVector3Dev() {}
+
+	__device__ size_t size() const { return N1 * N2 * N3; }
+	__device__ size_t getN1() const { return N1; }
+	__device__ size_t getN2() const { return N2; }
+	__device__ size_t getN3() const { return N3; }
+
+	__device__ T& operator() (size_t i) { return Array[i]; }
+	__device__ const T& operator() (size_t i) const { return Array[i]; }
+
+	__device__ T& operator() (size_t i, size_t j, size_t k) { return Array[(i * N2 + j) * N3 + k]; }
+	__device__ const T& operator() (size_t i, size_t j, size_t k) const { return Array[(i * N2 + j) * N3 + k]; }
+
+	friend class cudaVector3<T>;
+
+private:
+	size_t N1, N2, N3;
+	T* Array;
+};
+using cudaRVector3Dev = cudaVector3Dev<double>;
+using cudaCVector3Dev = cudaVector3Dev<complex>;

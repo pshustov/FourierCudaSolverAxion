@@ -1,4 +1,13 @@
-#include "stdafx.h"
+#include "cudaVector.h"
+#include "cudaFFT.h"
+
+#include <cufft.h>
+#include <cufftXt.h>
+#include <helper_cuda.h>
+#include <device_launch_parameters.h>
+
+
+#define FFT_BLOCK_SIZE 128
 
 #ifdef TESTCALLBACKS
 
@@ -91,8 +100,9 @@ void cuFFT::forward(cudaCVector3& f, cudaCVector3& F)
 	checkCudaErrors(cudaStreamSynchronize(stream));
 
 #ifndef __linux__
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((F.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	//unsigned int sz = ;
+	dim3 block(FFT_BLOCK_SIZE);
+	dim3 grid((static_cast<unsigned int>(F.size()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
 	kernelForwardNorm << < grid, block, 0, stream >> > (F.size(), N, L, F.getArray());
 	cudaStreamSynchronize(stream);
 #endif // !__linux__
@@ -103,8 +113,8 @@ void cuFFT::forward(cudaRVector3& f, cudaCVector3& F)
 	checkCudaErrors(cudaStreamSynchronize(stream));
 
 #ifndef __linux__
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((F.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	dim3 block(FFT_BLOCK_SIZE);
+	dim3 grid((static_cast<unsigned int>(F.size()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
 	kernelForwardNorm << < grid, block, 0, stream >> > (F.size(), N, L, F.getArray());
 	cudaStreamSynchronize(stream);
 #endif // !__linux__
@@ -115,8 +125,8 @@ void cuFFT::inverce(cudaCVector3& F, cudaCVector3& f)
 	checkCudaErrors(cudaStreamSynchronize(stream));
 
 #ifndef __linux__
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((f.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	dim3 block(FFT_BLOCK_SIZE);
+	dim3 grid((static_cast<unsigned int>(f.size()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
 	kernelInverseNorm << < grid, block, 0, stream >> > (f.size(), N, L, f.getArray());
 	cudaStreamSynchronize(stream);
 #endif // !__linux__
@@ -127,11 +137,19 @@ void cuFFT::inverce(cudaCVector3& F, cudaRVector3& f)
 	checkCudaErrors(cudaStreamSynchronize(stream));
 
 #ifndef __linux__
-	dim3 block(BLOCK_SIZE);
-	dim3 grid((f.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);
+	dim3 block(FFT_BLOCK_SIZE);
+	dim3 grid((static_cast<unsigned int>(f.size()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
 	kernelInverseNorm << < grid, block, 0, stream >> > (f.size(), N, L, f.getArray());
 	cudaStreamSynchronize(stream);
 #endif // !__linux__
+}
+
+void cuFFT::setStream(cudaStream_t stream) 
+{
+	checkCudaErrors(cufftSetStream(planZ2ZF, stream));
+	checkCudaErrors(cufftSetStream(planZ2ZI, stream));
+	checkCudaErrors(cufftSetStream(planD2Z, stream));
+	checkCudaErrors(cufftSetStream(planZ2D, stream));
 }
 
 cuFFT::cuFFT(cudaStream_t _stream) : stream(_stream)

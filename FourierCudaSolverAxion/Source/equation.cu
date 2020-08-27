@@ -1,4 +1,8 @@
-﻿#include "stdafx.h"
+﻿#include <cuda_runtime.h>
+#include <device_launch_parameters.h>
+
+#include "cudaGrid.h"
+#include "equations.h"
 
 
 __global__ void kernalStepSymplectic41_v2(const double dt, const double normT, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)

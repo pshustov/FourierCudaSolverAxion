@@ -1,11 +1,16 @@
-#include "stdafx.h"
+#include <string>
+#include <cuda_runtime.h>
+#include <cmath>
+#include <iostream>
+#include <fstream>
+#include <cuda_runtime.h>
+#include <helper_cuda.h>
+#include <device_launch_parameters.h>
+
+#include "cudaGrid.h"
 
 cudaGrid_3D::cudaGrid_3D(const std::string filename)
 {
-	//mainStream = cudaStreamDefault;
-	//cudaStreamCreate(&mainStream);
-	//cudaStreamCreate(&printStream);
-
 	int priority_high, priority_low;
 	checkCudaErrors(cudaDeviceGetStreamPriorityRange(&priority_low, &priority_high));
 	checkCudaErrors(cudaStreamCreateWithPriority(&mainStream, cudaStreamNonBlocking, priority_high));
@@ -15,6 +20,7 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 
 	std::ifstream in(filename);
 
+	N1buf = 32;	N2buf = 32;	N3buf = 32;
 	in >> N1;	in >> N2; 	in >> N3;
 	in >> L1;	in >> L2;	in >> L3;
 
@@ -224,7 +230,7 @@ double cudaGrid_3D::getEnergy()
 	{
 		int Bx = 16, By = 8, Bz = 1;
 		dim3 block(Bx, By, Bz);
-		dim3 grid((N1 + Bx - 1) / Bx, (N2 + By - 1) / By, (N3red + Bz - 1) / Bz);
+		dim3 grid((static_cast<unsigned int>(N1) + Bx - 1) / Bx, (static_cast<unsigned int>(N2) + By - 1) / By, (static_cast<unsigned int>(N3red) + Bz - 1) / Bz);
 		kernelEnergyQuad<<<grid, block, 0, mainStream>>>(k_sqr, Q, P, T);
 		cudaStreamSynchronize(mainStream);
 		energy = T.getSum(mainStream).real() / getVolume();
@@ -234,7 +240,7 @@ double cudaGrid_3D::getEnergy()
 		double V = getVolume();
 
 		block = dim3(BLOCK_SIZE);
-		grid = dim3((size() + BLOCK_SIZE - 1) / BLOCK_SIZE);
+		grid = dim3((static_cast<unsigned int>(size()) + BLOCK_SIZE - 1) / BLOCK_SIZE);
 		kernelEnergyNonLin<<<grid, block, 0, mainStream>>>(lambda, g, getVolume(), q, t);
 		cudaStreamSynchronize(mainStream);
 		energy += t.getSum(mainStream) * getVolume() / size();
@@ -256,7 +262,7 @@ void cudaGrid_3D::calculateQPsqr()
 	if (!isQPsqrCalculated)
 	{
 		dim3 block(BLOCK_SIZE);
-		dim3 grid((q.size() + BLOCK_SIZE - 1) / BLOCK_SIZE);	
+		dim3 grid((static_cast<unsigned int>(q.size()) + BLOCK_SIZE - 1) / BLOCK_SIZE);
 
 		ifft();
 		kernelQPsqr<<< grid, block, 0, mainStream >>>(q, p, qpSqr);
@@ -272,14 +278,69 @@ double cudaGrid_3D::getMaxValQsqr()
 }
 
 
+__global__ void kernelSyncBuf(double* A, double* A0)
+{
+	const int i = threadIdx.x;
+	const int j = threadIdx.y;
+	const int k = threadIdx.z;
+	const int N1 = blockDim.x;
+	const int N2 = blockDim.y;
+	const int N3 = blockDim.z;
+
+	const int iB = blockIdx.x;
+	const int jB = blockIdx.y;
+	const int kB = blockIdx.z;
+	//const int N1B = gridDim.x;	//just never used
+	const int N2B = gridDim.y;
+	const int N3B = gridDim.z;
+
+	const int iG = i + iB * N1;
+	const int jG = j + jB * N2;
+	const int kG = k + kB * N3;
+	//const int N1G = N1 * N1B;		//just never used
+	const int N2G = N2 * N2B;
+	const int N3G = N3 * N3B;
+
+	const int indB = k + N3 * (j + N2 * i);
+	const int indA = kB + N3B * (jB + N2B * iB);
+	const int indA0 = kG + N3G * (jG + N2G * iG);
+
+	extern __shared__ double B[];
+	B[indB] = A0[indA0];
+	__syncthreads();
+
+
+	int numOfElem = N1 * N2 * N3;
+	int step = 1;
+	while (numOfElem > 1)
+	{
+		if (indB % (2 * step) == 0)
+		{
+			B[indB] = B[indB] + B[indB + step];
+		}
+		__syncthreads();
+
+		numOfElem /= 2;
+		step *= 2;
+
+	}
+
+	if (indB == 0)
+	{
+		A[indA] = B[0] / (N1 * N2 * N3);
+	}
+
+}
+
+
 void cudaGrid_3D::printingVTK(std::ofstream& outVTK)
 {
 	calculateQPsqr();
 	if (isBuferising)
 	{
-		int factor1 = (N1 + N1buf - 1) / N1buf, factor2 = (N2 + N2buf - 1) / N2buf, factor3 = (N3 + N3buf - 1) / N3buf;
+		int factor1 = static_cast<int>((N1 + N1buf - 1) / N1buf), factor2 = static_cast<int>((N2 + N2buf - 1) / N2buf), factor3 = static_cast<int>((N3 + N3buf - 1) / N3buf);
 
-		dim3 grid(N1buf, N2buf, N3buf);
+		dim3 grid(static_cast<unsigned int>(N1buf), static_cast<unsigned int>(N2buf), static_cast<unsigned int>(N3buf));
 		dim3 block(factor1, factor2, factor3);
 		
 		kernelSyncBuf<<< grid, block, factor1 * factor2 * factor3 * sizeof(double), printStream >>>(buferOutDev.getArray(), qpSqr.getArray());
@@ -295,4 +356,29 @@ void cudaGrid_3D::printingVTK(std::ofstream& outVTK)
 		outVTK << buferOutHost(i) << '\n';
 	}
 	outVTK << std::flush;
+}
+
+void cudaGrid_3D::save(std::ofstream& fileSave)
+{
+	fileSave << getN1() << "\n" << getN2() << "\n" << getN3() << "\n";
+	fileSave << getL1() << "\n" << getL2() << "\n" << getL3() << "\n";
+
+	ifft();
+
+	RVector3 RHost;
+	RHost = q;
+	for (size_t i = 0; i < RHost.size(); i++) {
+		fileSave << RHost(i) << '\n';
+	}
+
+	RHost = p;
+	for (size_t i = 0; i < RHost.size(); i++) {
+		fileSave << RHost(i) << '\n';
+	}
+}
+
+
+void cudaGrid_3D::load(const std::string filename)
+{
+	std::ifstream inFile(filename);
 }

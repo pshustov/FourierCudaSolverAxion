@@ -1,28 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CudaCompile Include="Source\kernel.cu">
-      <Filter>Source</Filter>
-    </CudaCompile>
-    <CudaCompile Include="Source\equation.cu">
-      <Filter>Source</Filter>
-    </CudaCompile>
-    <CudaCompile Include="Source\gridCuda.cu">
-      <Filter>Source</Filter>
-    </CudaCompile>
-    <CudaCompile Include="FFT\FFT_implication.cu">
-      <Filter>FFT</Filter>
-    </CudaCompile>
-    <CudaCompile Include="Parallel_Reduction\reduction.cu">
-      <Filter>Parallel Reduction</Filter>
-    </CudaCompile>
-    <CudaCompile Include="Distribution\distribution.cu">
-      <Filter>Distribution</Filter>
-    </CudaCompile>
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="Distribution">
       <UniqueIdentifier>{b974b60a-a3e6-41b3-8e82-e1ed97e22fe8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{19e9a0ac-9f26-494b-ba01-1b987823139f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cudaComplex">
+      <UniqueIdentifier>{1a15c130-214b-40e9-97d4-18fe6a700c73}</UniqueIdentifier>
     </Filter>
     <Filter Include="FFT">
       <UniqueIdentifier>{76090fc5-6426-4c97-aa07-9af1d2e8a750}</UniqueIdentifier>
@@ -30,54 +16,73 @@
     <Filter Include="Parallel Reduction">
       <UniqueIdentifier>{4603699e-b713-49d4-91ce-2e68d41dbcef}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Headers">
-      <UniqueIdentifier>{19e9a0ac-9f26-494b-ba01-1b987823139f}</UniqueIdentifier>
+    <Filter Include="cudaVector">
+      <UniqueIdentifier>{02dbd85f-154a-4bd0-bf6b-b8f4b060628a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source">
-      <UniqueIdentifier>{38860047-79f9-42ef-820a-08888ed2f361}</UniqueIdentifier>
+    <Filter Include="cudaGrid">
+      <UniqueIdentifier>{0acf5871-82ff-498d-bfff-872a22062247}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System">
+      <UniqueIdentifier>{e791be3b-3817-470a-bc17-6b5c96fdac8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Equation">
+      <UniqueIdentifier>{4903c8a0-44da-45d6-ad6e-0024a782acd1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FFT\FFT_implication.h">
-      <Filter>FFT</Filter>
+    <ClInclude Include="Include\cudaComplex.h">
+      <Filter>cudaComplex</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\complexCuda.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="Include\cudaGrid.h">
+      <Filter>cudaGrid</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\equations.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\gridCuda.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\system.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\vector.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\vectorCuda.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Distribution\distribution.h">
-      <Filter>Distribution</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\stdafx.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Parallel_Reduction\reduction.h">
+    <ClInclude Include="Include\cudaReduction.h">
       <Filter>Parallel Reduction</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\kbhit.h">
+    <ClInclude Include="Include\cudaVector.h">
+      <Filter>cudaVector</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\cudaFFT.h">
+      <Filter>FFT</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\distribution.h">
+      <Filter>Distribution</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\equations.h">
+      <Filter>Equation</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\kbhit.h">
       <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\system.h">
+      <Filter>System</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\system.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\fourierCudaSolverAxion.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
+    <CudaCompile Include="Source\cudaComplex.cu">
+      <Filter>cudaComplex</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Source\cudaGrid.cu">
+      <Filter>cudaGrid</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Source\cudaReduction.cu">
+      <Filter>Parallel Reduction</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Source\cudaVector.cu">
+      <Filter>cudaVector</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Source\cudaFFT.cu">
+      <Filter>FFT</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Source\distribution.cu">
+      <Filter>Distribution</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Source\equation.cu">
+      <Filter>Equation</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Source\system.cu">
+      <Filter>System</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Source\fourierCudaSolverAxion.cu" />
   </ItemGroup>
 </Project>

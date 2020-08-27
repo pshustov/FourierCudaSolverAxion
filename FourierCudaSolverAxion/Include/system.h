@@ -1,6 +1,8 @@
 #pragma once
-
-#include "stdafx.h"
+#include <fstream>
+#include "cudaGrid.h"
+#include "distribution.h"
+#include "equations.h"
 
 class systemEquCuda_3D
 {
@@ -31,34 +33,8 @@ public:
 
 	void evaluate();
 
-	void save()
-	{
-		std::ofstream fsave;
-		
-		fsave.open("saveGrid.asv");
-		fsave.precision(5);
-		Grid.save(fsave);
-		fsave << "\n" << Grid.get_time() << std::endl;
-		fsave.close();
-
-		fsave.open("saveParams.asv");
-		fsave.precision(10);
-		fsave << Grid.get_g() << "\n" << Grid.get_lambda() << std::endl;
-
-		fsave.close();
-	}
-	void loadParams(std::string filename = "saveParams.asv")
-	{
-		std::ifstream fload(filename);
-
-		double _g, _lambda;
-
-		fload >> _g;
-		fload >> _lambda;
-
-		Grid.set_lambda(_lambda);
-		Grid.set_g(_g);
-	}
+	void save();
+	void loadParams(std::string filename = "saveParams.asv");
 
 	void printingVTK(bool isVTKprinting = true);
 	void printingMaxVal();

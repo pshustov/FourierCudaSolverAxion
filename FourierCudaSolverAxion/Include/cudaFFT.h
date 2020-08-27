@@ -1,5 +1,6 @@
 #pragma once
-#include "stdafx.h"
+#include <cufft.h>
+#include <cufftXt.h>
 
 class cuFFT
 {
@@ -15,12 +16,7 @@ public:
 	void inverce(cudaCVector3 &F, cudaCVector3 &f);
 	void inverce(cudaCVector3 &F, cudaRVector3 &f);
 
-	void setStream(cudaStream_t stream) {
-		checkCudaErrors(cufftSetStream(planZ2ZF, stream));
-		checkCudaErrors(cufftSetStream(planZ2ZI, stream));
-		checkCudaErrors(cufftSetStream(planD2Z, stream));
-		checkCudaErrors(cufftSetStream(planZ2D, stream));
-	}
+	void setStream(cudaStream_t stream);
 
 private:
 	int dim;

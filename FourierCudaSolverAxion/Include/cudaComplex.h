@@ -1,6 +1,7 @@
 #pragma once
 
-#include "stdafx.h"
+#include <cmath>
+#include <iostream>
 
 class complex
 {
@@ -11,7 +12,7 @@ public:
 	__host__ __device__ double real() const { return x; }
 	__host__ __device__ double imag() const { return y; }
 
-	__host__ __device__ double abs() const { return sqrt(x*x + y*y); }
+	__host__ __device__ double abs() const { return sqrt(x * x + y * y); }
 	__host__ __device__ double absSqr() const { return x*x + y*y; }
 
 	__host__ __device__ complex get_conj() const { return complex(x, -y); }
