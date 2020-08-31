@@ -1,11 +1,9 @@
+#include <device_launch_parameters.h>
+
 #include "cudaVector.h"
 #include "cudaFFT.h"
 
-#include <cufft.h>
-#include <cufftXt.h>
 #include <helper_cuda.h>
-#include <device_launch_parameters.h>
-
 
 #define FFT_BLOCK_SIZE 128
 
@@ -103,7 +101,7 @@ void cuFFT::forward(cudaCVector3& f, cudaCVector3& F)
 	//unsigned int sz = ;
 	dim3 block(FFT_BLOCK_SIZE);
 	dim3 grid((static_cast<unsigned int>(F.size()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
-	kernelForwardNorm << < grid, block, 0, stream >> > (F.size(), N, L, F.getArray());
+	kernelForwardNorm <<< grid, block, 0, stream >>> (F.size(), N, L, F.getArray());
 	cudaStreamSynchronize(stream);
 #endif // !__linux__
 }

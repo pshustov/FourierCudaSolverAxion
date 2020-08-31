@@ -1,5 +1,7 @@
 #pragma once
 #include <future>
+#include <fstream>
+#include "cudaGrid.h"
 
 class Distribution
 {

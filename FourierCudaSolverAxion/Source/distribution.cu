@@ -1,11 +1,9 @@
 //#include "stdafx.h"
-#include <fstream>
-#include <cooperative_groups.h>
 #include <device_launch_parameters.h>
 
-#include "cudaGrid.h"
 #include "distribution.h"
 
+#include <cooperative_groups.h>
 namespace cg = cooperative_groups;
 
 __device__ double getOmega(double lam, double g, double f2mean, double k_sqr)
