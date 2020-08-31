@@ -6,7 +6,7 @@
 #include <helper_cuda.h>
 
 #define FFT_BLOCK_SIZE 128
-
+#define SDSD 12
 
 #ifdef __linux__
 
@@ -78,9 +78,9 @@ __global__ void kernelInverseNorm(const size_t size, const size_t N, const doubl
 void cuFFT::forward(cudaCVector3& f, cudaCVector3& F)
 {
 	checkCudaErrors(cufftExecZ2Z(planZ2ZF, (cufftDoubleComplex*)f.getArray(), (cufftDoubleComplex*)F.getArray(), CUFFT_FORWARD));
-	checkCudaErrors(cudaStreamSynchronize(stream));
-
+	
 #ifndef __linux__
+	checkCudaErrors(cudaStreamSynchronize(stream));
 	//unsigned int sz = ;
 	dim3 block(FFT_BLOCK_SIZE);
 	dim3 grid((static_cast<unsigned int>(F.size()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
@@ -91,9 +91,9 @@ void cuFFT::forward(cudaCVector3& f, cudaCVector3& F)
 void cuFFT::forward(cudaRVector3& f, cudaCVector3& F)
 {
 	checkCudaErrors(cufftExecD2Z(planD2Z, (cufftDoubleReal*)f.getArray(), (cufftDoubleComplex*)F.getArray()));
-	checkCudaErrors(cudaStreamSynchronize(stream));
 
 #ifndef __linux__
+	checkCudaErrors(cudaStreamSynchronize(stream));
 	dim3 block(FFT_BLOCK_SIZE);
 	dim3 grid((static_cast<unsigned int>(F.size()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
 	kernelForwardNorm << < grid, block, 0, stream >> > (F.size(), N, L, F.getArray());
@@ -103,9 +103,9 @@ void cuFFT::forward(cudaRVector3& f, cudaCVector3& F)
 void cuFFT::inverce(cudaCVector3& F, cudaCVector3& f)
 {
 	checkCudaErrors(cufftExecZ2Z(planZ2ZI, (cufftDoubleComplex*)F.getArray(), (cufftDoubleComplex*)f.getArray(), CUFFT_INVERSE));
-	checkCudaErrors(cudaStreamSynchronize(stream));
-
+	
 #ifndef __linux__
+	checkCudaErrors(cudaStreamSynchronize(stream));
 	dim3 block(FFT_BLOCK_SIZE);
 	dim3 grid((static_cast<unsigned int>(f.size()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
 	kernelInverseNorm << < grid, block, 0, stream >> > (f.size(), N, L, f.getArray());
@@ -115,9 +115,10 @@ void cuFFT::inverce(cudaCVector3& F, cudaCVector3& f)
 void cuFFT::inverce(cudaCVector3& F, cudaRVector3& f)
 {
 	checkCudaErrors(cufftExecZ2D(planZ2D, (cufftDoubleComplex*)F.getArray(), (cufftDoubleReal*)f.getArray()));
-	checkCudaErrors(cudaStreamSynchronize(stream));
 
 #ifndef __linux__
+	checkCudaErrors(cudaStreamSynchronize(stream));
+	checkCudaErrors(cudaStreamSynchronize(stream));
 	dim3 block(FFT_BLOCK_SIZE);
 	dim3 grid((static_cast<unsigned int>(f.size()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
 	kernelInverseNorm << < grid, block, 0, stream >> > (f.size(), N, L, f.getArray());

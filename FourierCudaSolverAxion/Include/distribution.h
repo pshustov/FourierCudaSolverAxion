@@ -20,6 +20,7 @@ public:
 
 	void calculateAsync(cudaGrid_3D& Grid)
 	{
+		cudaStreamSynchronize(Grid.get_mainStream());
 		time = Grid.get_time();
 		Q = Grid.get_Q();
 		P = Grid.get_P();

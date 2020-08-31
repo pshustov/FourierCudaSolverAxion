@@ -29,6 +29,7 @@ void systemEquCuda_3D::evaluate()
 		evlulate_step(t);
 	}
 
+	cudaStreamSynchronize(Grid.get_mainStream());
 	std::cout << "Current n = " << distr.getNumberOfParticles() << ", p = " << distr.getMeanMomentum() << ", tau = " << distr.getTau() << ", cIn/cOut = " << (double)countIn / (double)countOut << std::endl;
 }
 

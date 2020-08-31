@@ -221,7 +221,7 @@ void Distribution::setupDistribution(cudaGrid_3D& Grid)
 void Distribution::calculate()
 {
 	setQquad<<< grid3Red, block3, 0, streamDistrib >>>(Q);
-	cudaStreamSynchronize(streamDistrib);
+	//cudaStreamSynchronize(streamDistrib);
 
 	complex f2m = Q.getSum(streamDistrib).real() / (volume * volume);
 	f2mean = f2m.real();
@@ -245,7 +245,7 @@ void Distribution::calculate()
 	else
 	{
 		kernelCalculateDistrFun<<< grid3Red, block3, 0, streamDistrib >>>(lam, g, f2mean, k_sqr, Q, P);
-		cudaStreamSynchronize(streamDistrib);
+		//cudaStreamSynchronize(streamDistrib);
 
 		numberOfParticles = P.getSum(streamDistrib).real() / volume;
 		meanMomentum = Q.getSum(streamDistrib).real() / (volume * numberOfParticles);
@@ -261,6 +261,7 @@ void Distribution::calculate()
 
 		isAlarmed = false;
 	}
+
 
 	outFile << time << '\t' << numberOfParticles << '\t' << meanMomentum << std::endl;
 	outFileDistr << time;
