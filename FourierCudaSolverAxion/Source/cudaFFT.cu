@@ -164,62 +164,9 @@ cuFFT::cuFFT(cudaStream_t _stream) : stream(_stream)
 	callbackData[1] = N;
 }
 
-cuFFT::cuFFT(const int _dim, const int *_n, const int _BATCH, cudaStream_t _stream) : dim(_dim), BATCH(_BATCH), stream(_stream)
+cuFFT::cuFFT(const int _dim, const int *_n, double _L, const int _BATCH, cudaStream_t _stream) : dim(_dim), BATCH(_BATCH), stream(_stream)
 {
-	throw;
-	n = new int[dim];
-	for (size_t i = 0; i < dim; i++)
-		n[i] = _n[i];
-
-	int NX, NY, NZ;
-	L = 1;
-
-	setStream(stream);
-
-	switch (dim)
-	{
-	case 1:
-		/*NX = n[0];
-		N = NX;
-
-		if (cufftPlan1d(&planZ2Z, NX, CUFFT_Z2Z, BATCH) != CUFFT_SUCCESS) {
-			fprintf(stderr, "CUFFT error: Plan creation failed");
-			return;
-		}
-		if (cufftPlan1d(&planD2Z, NX, CUFFT_D2Z, BATCH) != CUFFT_SUCCESS) {
-			fprintf(stderr, "CUFFT error: Plan creation failed");
-			return;
-		}
-		if (cufftPlan1d(&planZ2D, NX, CUFFT_Z2D, BATCH) != CUFFT_SUCCESS) {
-			fprintf(stderr, "CUFFT error: Plan creation failed");
-			return;
-		}
-		break;*/
-		throw;
-	case 3:
-		NX = n[0];
-		NY = n[1];
-		NZ = n[2];
-		N = NX * NY * NZ;
-
-		if (cufftPlan3d(&planZ2ZF, NX, NY, NZ, CUFFT_Z2Z) != CUFFT_SUCCESS) {
-			fprintf(stderr, "CUFFT error: Plan creation failed");
-			return;
-		}
-		if (cufftPlan3d(&planD2Z, NX, NY, NZ, CUFFT_D2Z) != CUFFT_SUCCESS) {
-			fprintf(stderr, "CUFFT error: Plan creation failed");
-			return;
-		}
-		if (cufftPlan3d(&planZ2D, NX, NY, NZ, CUFFT_Z2D) != CUFFT_SUCCESS) {
-			fprintf(stderr, "CUFFT error: Plan creation failed");
-			return;
-		}
-
-		break;
-	
-	default:
-		throw;
-	}
+	reset(_dim, _n, _L, _BATCH, _stream);
 }
 cuFFT::~cuFFT()
 {

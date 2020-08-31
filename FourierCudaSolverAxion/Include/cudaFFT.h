@@ -6,7 +6,7 @@ class cuFFT
 {
 public:
 	cuFFT(cudaStream_t _stream = cudaStreamDefault);
-	cuFFT(const int dim, const int *_n, const int _BATCH = 1, cudaStream_t _stream = cudaStreamDefault);
+	cuFFT(const int dim, const int *_n, double _L, const int _BATCH = 1, cudaStream_t _stream = cudaStreamDefault);
 	~cuFFT();
 
 	void reset(const int dim, const int *_n, double _L, const int _BATCH = 1, cudaStream_t _stream = cudaStreamDefault);
