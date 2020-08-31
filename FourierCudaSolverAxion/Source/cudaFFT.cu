@@ -7,53 +7,36 @@
 
 #define FFT_BLOCK_SIZE 128
 
-#ifdef TESTCALLBACKS
 
 __device__ void callbackForwardNormZ(void* dataOut, size_t offset, cufftDoubleComplex element, void* callerInfo, void* sharedPointer)
 {
-	//printf("PRIBNTR\n");
-	//double* dataLN = (double*)callerInfo;
-	//if (offset == 1)
-	//{
-	//	printf("callbackForwardNormZ\ndata0 = %g \tdata1 = %g", dataLN[0], dataLN[1]);
-	//}
-	//((complex*)dataOut)[offset] *= (dataLN[0] / dataLN[1]);
+	double* dataLN = (double*)callerInfo;
+	complex el = *(complex*)&element;
+	((complex*)dataOut)[offset] = el * (dataLN[0] / dataLN[1]);
 }
 __device__ void callbackForwardNormD(void* dataOut, size_t offset, cufftDoubleReal element, void* callerInfo, void* sharedPointer)
 {
-	//printf("PRIBNTR\n");
-	//double* dataLN = (double*)callerInfo;
-	//if (offset == 1)
-	//{
-	//	printf("callbackForwardNormD\ndata0 = %g \tdata1 = %g", dataLN[0], dataLN[1]);
-	//}
-	//((double*)dataOut)[offset] *= (dataLN[0] / dataLN[1]);
+	double* dataLN = (double*)callerInfo;
+	((double*)dataOut)[offset] = element * (dataLN[0] / dataLN[1]);
 }
 __device__ void callbackInverseNormZ(void* dataOut, size_t offset, cufftDoubleComplex element, void* callerInfo, void* sharedPointer)
 {
-	//printf("PRIBNTR\n");
-	//double* dataLN = (double*)callerInfo;
-	//if (offset == 1)
-	//{
-	//	printf("callbackInverseNormZ\ndata0 = %g \tdata1 = %g", dataLN[0], dataLN[1]);
-	//}
-	//((complex*)dataOut)[offset] /= dataLN[0];
+	double* dataLN = (double*)callerInfo;
+	complex el = *(complex*)&element;
+	((complex*)dataOut)[offset] = el / dataLN[0];
 }
 __device__ void callbackInverseNormD(void* dataOut, size_t offset, cufftDoubleReal element, void* callerInfo, void* sharedPointer)
 {
-	//printf("PRIBNTR\n");
-	//double* dataLN = (double*)callerInfo;
-	//if (offset == 1)
-	//{
-	//	printf("callbackInverseNormD\ndata0 = %g \tdata1 = %g", dataLN[0], dataLN[1]);
-	//}
-	//((double*)dataOut)[offset] /= dataLN[0];
+	double* dataLN = (double*)callerInfo;
+	((double*)dataOut)[offset] = element / dataLN[0];
 }
 
 __device__ cufftCallbackStoreZ d_callbackForwardNormZ = callbackForwardNormZ;
 __device__ cufftCallbackStoreD d_callbackForwardNormD = callbackForwardNormD;
 __device__ cufftCallbackStoreZ d_callbackInverseNormZ = callbackInverseNormZ;
 __device__ cufftCallbackStoreD d_callbackInverseNormD = callbackInverseNormD;
+
+#ifdef __linux__
 
 #else
 
@@ -167,7 +150,7 @@ cuFFT::cuFFT(cudaStream_t _stream) : stream(_stream)
 
 	setStream(stream);
 
-#ifdef TESTCALLBACKS
+#ifdef __linux__
 	std::cout << "LINUX detected" << std::endl;
 	checkCudaErrors(cudaMemcpyFromSymbol(&h_callbackForwardNormZ, d_callbackForwardNormZ, sizeof(h_callbackForwardNormZ)));
 	checkCudaErrors(cudaMemcpyFromSymbol(&h_callbackForwardNormD, d_callbackForwardNormD, sizeof(h_callbackForwardNormD)));
@@ -175,8 +158,7 @@ cuFFT::cuFFT(cudaStream_t _stream) : stream(_stream)
 	checkCudaErrors(cudaMemcpyFromSymbol(&h_callbackInverseNormD, d_callbackInverseNormD, sizeof(h_callbackInverseNormD)));
 #endif
 
-	callbackData = new double[2];
-
+	checkCudaErrors(cudaMallocManaged(&callbackData, 2 * sizeof(double)));
 	callbackData[0] = L;
 	callbackData[1] = N;
 }
@@ -305,12 +287,12 @@ void cuFFT::reset(const int _dim, const int *_n, double _L, const int _BATCH, cu
 		checkCudaErrors(cufftCreate(&planZ2D));
 		checkCudaErrors(cufftMakePlan3d(planZ2D, n[0], n[1], n[2], CUFFT_Z2D, &workSize));
 
-#ifdef TESTCALLBACKS
+#ifdef __linux__
 		std::cout << "LINUX detected" << std::endl;
-		checkCudaErrors(cufftXtSetCallback(planZ2ZF, (void**)&h_callbackForwardNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)callbackData));
-		checkCudaErrors(cufftXtSetCallback(planZ2ZI, (void**)&h_callbackInverseNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)callbackData));
-		checkCudaErrors(cufftXtSetCallback(planD2Z, (void**)&h_callbackForwardNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)callbackData));
-		checkCudaErrors(cufftXtSetCallback(planZ2D, (void**)&h_callbackInverseNormD, CUFFT_CB_ST_REAL_DOUBLE, (void**)callbackData));
+		checkCudaErrors(cufftXtSetCallback(planZ2ZF, (void**)&h_callbackForwardNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)&callbackData));
+		checkCudaErrors(cufftXtSetCallback(planZ2ZI, (void**)&h_callbackInverseNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)&callbackData));
+		checkCudaErrors(cufftXtSetCallback(planD2Z, (void**)&h_callbackForwardNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)&callbackData));
+		checkCudaErrors(cufftXtSetCallback(planZ2D, (void**)&h_callbackInverseNormD, CUFFT_CB_ST_REAL_DOUBLE, (void**)&callbackData));
 #endif
 
 		break;
