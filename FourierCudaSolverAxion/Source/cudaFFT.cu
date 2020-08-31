@@ -8,6 +8,8 @@
 #define FFT_BLOCK_SIZE 128
 
 
+#ifdef __linux__
+
 __device__ void callbackForwardNormZ(void* dataOut, size_t offset, cufftDoubleComplex element, void* callerInfo, void* sharedPointer)
 {
 	double* dataLN = (double*)callerInfo;
@@ -35,8 +37,6 @@ __device__ cufftCallbackStoreZ d_callbackForwardNormZ = callbackForwardNormZ;
 __device__ cufftCallbackStoreD d_callbackForwardNormD = callbackForwardNormD;
 __device__ cufftCallbackStoreZ d_callbackInverseNormZ = callbackInverseNormZ;
 __device__ cufftCallbackStoreD d_callbackInverseNormD = callbackInverseNormD;
-
-#ifdef __linux__
 
 #else
 
