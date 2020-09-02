@@ -84,7 +84,7 @@
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
-      <AdditionalOptions>--expt-extended-lambda --default-stream per-thread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>--expt-extended-lambda --default-stream per-thread  -lcufft_static -lculibos --device-c -std=c++17 %(AdditionalOptions)</AdditionalOptions>
       <CodeGeneration>compute_61,sm_61</CodeGeneration>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
     </CudaCompile>
@@ -92,7 +92,7 @@
       <PreserveSbr>true</PreserveSbr>
     </Bscmake>
     <CudaLink>
-      <AdditionalOptions>--expt-extended-lambda %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>--expt-extended-lambda  -lcufft_static -lculibos -m64 %(AdditionalOptions)</AdditionalOptions>
     </CudaLink>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -117,6 +117,7 @@
       <AdditionalOptions>--expt-extended-lambda %(AdditionalOptions)</AdditionalOptions>
       <CodeGeneration>compute_61,sm_61</CodeGeneration>
     </CudaCompile>
+    <CudaLink />
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
