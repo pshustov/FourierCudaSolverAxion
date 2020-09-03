@@ -232,7 +232,6 @@ double cudaGrid_3D::getEnergy()
 		dim3 block(Bx, By, Bz);
 		dim3 grid((static_cast<unsigned int>(N1) + Bx - 1) / Bx, (static_cast<unsigned int>(N2) + By - 1) / By, (static_cast<unsigned int>(N3red) + Bz - 1) / Bz);
 		kernelEnergyQuad<<<grid, block, 0, mainStream>>>(k_sqr, Q, P, T);
-		cudaStreamSynchronize(mainStream);
 		energy = T.getSum(mainStream).real() / getVolume();
 		
 		ifftQ();
@@ -242,7 +241,6 @@ double cudaGrid_3D::getEnergy()
 		block = dim3(BLOCK_SIZE);
 		grid = dim3((static_cast<unsigned int>(size()) + BLOCK_SIZE - 1) / BLOCK_SIZE);
 		kernelEnergyNonLin<<<grid, block, 0, mainStream>>>(lambda, g, getVolume(), q, t);
-		cudaStreamSynchronize(mainStream);
 		energy += t.getSum(mainStream) * getVolume() / size();
 
 		isEnergyCalculateted = true;
