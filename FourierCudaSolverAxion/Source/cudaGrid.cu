@@ -232,7 +232,7 @@ double cudaGrid_3D::getEnergy()
 		dim3 block(Bx, By, Bz);
 		dim3 grid((static_cast<unsigned int>(N1) + Bx - 1) / Bx, (static_cast<unsigned int>(N2) + By - 1) / By, (static_cast<unsigned int>(N3red) + Bz - 1) / Bz);
 		kernelEnergyQuad<<<grid, block, 0, mainStream>>>(k_sqr, Q, P, T);
-		energy = T.getSum(mainStream).real() / getVolume();
+		energy = T.getSum(mainStream).get_real() / getVolume();
 		
 		ifftQ();
 

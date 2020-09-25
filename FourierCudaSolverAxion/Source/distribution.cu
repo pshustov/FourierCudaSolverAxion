@@ -119,10 +119,10 @@ __global__ void kernelCalculateDistrLin(cudaVector3Dev<unsigned int> kInds, cuda
 		thisBlock.sync();
 
 		if (k == 0) {
-			atomicAdd(&distrShared[kInds(ind)], data(ind).real());
+			atomicAdd(&distrShared[kInds(ind)], data(ind).get_real());
 		}
 		else {
-			atomicAdd(&distrShared[kInds(ind)], 2 * data(ind).real());
+			atomicAdd(&distrShared[kInds(ind)], 2 * data(ind).get_real());
 		}
 		
 		thisBlock.sync();
@@ -223,8 +223,8 @@ void Distribution::calculate()
 	setQquad<<< grid3Red, block3, 0, streamDistrib >>>(Q);
 	//cudaStreamSynchronize(streamDistrib);
 
-	complex f2m = Q.getSum(streamDistrib).real() / (volume * volume);
-	f2mean = f2m.real();
+	complex f2m = Q.getSum(streamDistrib).get_real() / (volume * volume);
+	f2mean = f2m.get_real();
 
 	if ((1 + 3 * lam * f2mean + 15 * g * f2mean * f2mean) < 0) {
 		numberOfParticles = -1;
@@ -247,8 +247,8 @@ void Distribution::calculate()
 		kernelCalculateDistrFun<<< grid3Red, block3, 0, streamDistrib >>>(lam, g, f2mean, k_sqr, Q, P);
 		//cudaStreamSynchronize(streamDistrib);
 
-		numberOfParticles = P.getSum(streamDistrib).real() / volume;
-		meanMomentum = Q.getSum(streamDistrib).real() / (volume * numberOfParticles);
+		numberOfParticles = P.getSum(streamDistrib).get_real() / volume;
+		meanMomentum = Q.getSum(streamDistrib).get_real() / (volume * numberOfParticles);
 
 		int blockSize = 32;
 		dim3 blockT = blockSize;
