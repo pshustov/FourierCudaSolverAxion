@@ -717,6 +717,14 @@ public:
 		N3 = _N3;
 		cudaMalloc(&Array, N1 * N2 * N3 * sizeof(T));
 	}
+	__host__ void set(const size_t _N1, const size_t _N2, const size_t _N3, T* _Array)
+	{
+		N1 = _N1;
+		N2 = _N2;
+		N3 = _N3;
+		Array = _Array;
+	}
+
 
 	__host__ T* getArray() { return Array; }
 
