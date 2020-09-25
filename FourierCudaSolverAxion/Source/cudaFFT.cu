@@ -76,7 +76,7 @@ __global__ void kernelInverseNorm(const size_t size, const size_t N, const real 
 
 void cuFFT::forward(cudaCVector3& f, cudaCVector3& F)
 {
-	checkCudaErrors(cufftXtExec(planC2CF, (cufftDoubleComplex*)f.getArray(), (cufftDoubleComplex*)F.getArray(), CUFFT_FORWARD));
+	checkCudaErrors(cufftXtExec(planC2CF, f.getArray(), F.getArray(), CUFFT_FORWARD));
 	
 #ifndef __linux__
 	dim3 block(FFT_BLOCK_SIZE);
@@ -86,7 +86,7 @@ void cuFFT::forward(cudaCVector3& f, cudaCVector3& F)
 }
 void cuFFT::forward(cudaRVector3& f, cudaCVector3& F)
 {
-	checkCudaErrors(cufftXtExec(planR2C, (cufftDoubleReal*)f.getArray(), (cufftDoubleComplex*)F.getArray(), CUFFT_FORWARD));
+	checkCudaErrors(cufftXtExec(planR2C, f.getArray(), F.getArray(), CUFFT_FORWARD));
 
 #ifndef __linux__
 	dim3 block(FFT_BLOCK_SIZE);
@@ -96,7 +96,7 @@ void cuFFT::forward(cudaRVector3& f, cudaCVector3& F)
 }
 void cuFFT::inverce(cudaCVector3& F, cudaCVector3& f)
 {
-	checkCudaErrors(cufftXtExec(planC2CI, (cufftDoubleComplex*)F.getArray(), (cufftDoubleComplex*)f.getArray(), CUFFT_INVERSE));
+	checkCudaErrors(cufftXtExec(planC2CI, F.getArray(), f.getArray(), CUFFT_INVERSE));
 	
 #ifndef __linux__
 	dim3 block(FFT_BLOCK_SIZE);
@@ -106,7 +106,10 @@ void cuFFT::inverce(cudaCVector3& F, cudaCVector3& f)
 }
 void cuFFT::inverce(cudaCVector3& F, cudaRVector3& f)
 {
-	checkCudaErrors(cufftXtExec(planC2R, (cufftDoubleComplex*)F.getArray(), (cufftDoubleReal*)f.getArray(), CUFFT_INVERSE));
+	checkCudaErrors(cufftXtExec(planC2R, F.getArray(), f.getArray(), CUFFT_INVERSE));
+	//checkCudaErrors(cufftExecC2R(planC2R, (cufftComplex*)F.getArray(), (cufftReal*)f.getArray()));
+	//checkCudaErrors(cufftExecC2R(planC2R, (cufftComplex*)F.getArray(), (cufftReal*)f.getArray()));
+
 
 #ifndef __linux__
 	dim3 block(FFT_BLOCK_SIZE);
