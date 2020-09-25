@@ -6,7 +6,7 @@
 #include <cooperative_groups.h>
 namespace cg = cooperative_groups;
 
-__device__ double getOmega(double lam, double g, double f2mean, double k_sqr)
+__device__ real getOmega(real lam, real g, real f2mean, real k_sqr)
 {
 	return sqrt(1 + k_sqr + 3 * lam * f2mean + 15 * g * f2mean * f2mean);
 }
@@ -33,7 +33,7 @@ __global__ void setQquad(cudaCVector3Dev Q)
 
 }
 
-__global__ void kernelCalculateDistrFun(double lam, double g, double f2mean, cudaRVector3Dev kSqr, cudaCVector3Dev Q, cudaCVector3Dev P) 
+__global__ void kernelCalculateDistrFun(real lam, real g, real f2mean, cudaRVector3Dev kSqr, cudaCVector3Dev Q, cudaCVector3Dev P) 
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 	size_t j = blockIdx.y * blockDim.y + threadIdx.y;
@@ -44,8 +44,8 @@ __global__ void kernelCalculateDistrFun(double lam, double g, double f2mean, cud
 	if (i < N1 && j < N2 && k < N3)
 	{
 		size_t ind = (i * N2 + j) * N3 + k;
-		double omega = getOmega(lam, g, f2mean, kSqr(ind));
-		double m = 1 + kSqr(ind) + 1.5 * lam * f2mean + 5 * g * f2mean * f2mean;
+		real omega = getOmega(lam, g, f2mean, kSqr(ind));
+		real m = 1 + kSqr(ind) + 1.5 * lam * f2mean + 5 * g * f2mean * f2mean;
 
 		if (k == 0) {
 			P(ind) = 0.5 * (P(ind).absSqr() + m * Q(ind)) / omega;
@@ -58,12 +58,12 @@ __global__ void kernelCalculateDistrFun(double lam, double g, double f2mean, cud
 	}
 }
 
-__global__ void kernelSetKInds(int numberOfBins, double kMax, cudaRVector3Dev kSqr, cudaVector3Dev<unsigned int> kInds)
+__global__ void kernelSetKInds(int numberOfBins, real kMax, cudaRVector3Dev kSqr, cudaVector3Dev<unsigned int> kInds)
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < kSqr.size())
 	{
-		double t = sqrt(kSqr(i)) / kMax;
+		real t = sqrt(kSqr(i)) / kMax;
 		if (t < 1) {
 			kInds(i) = numberOfBins * t;
 		}
@@ -96,7 +96,7 @@ __global__ void kernelCalculateDistrLin(cudaVector3Dev<unsigned int> kInds, cuda
 {
 	cg::thread_block thisBlock = cg::this_thread_block();
 	
-	extern __shared__ double distrShared[];
+	extern __shared__ real distrShared[];
 
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 	size_t j = blockIdx.y * blockDim.y + threadIdx.y;
@@ -178,10 +178,10 @@ void Distribution::setupDistribution(cudaGrid_3D& Grid)
 	cudaStreamCreateWithPriority(&streamDistrib, cudaStreamNonBlocking, priority_low);
 
 	
-	double k1 = Ma_PI * Grid.getN1() / Grid.getL1();
-	double k2 = Ma_PI * Grid.getN2() / Grid.getL2();
-	double k3 = Ma_PI * Grid.getN3() / Grid.getL3();
-	double kMax = (kMax = (k1 < k2 ? k1 : k2)) < k3 ? kMax : k3;
+	real k1 = Ma_PI * Grid.getN1() / Grid.getL1();
+	real k2 = Ma_PI * Grid.getN2() / Grid.getL2();
+	real k3 = Ma_PI * Grid.getN3() / Grid.getL3();
+	real kMax = (kMax = (k1 < k2 ? k1 : k2)) < k3 ? kMax : k3;
 
 	int blockSize = 256;
 	dim3 blockT = blockSize;
@@ -254,7 +254,7 @@ void Distribution::calculate()
 		dim3 blockT = blockSize;
 		dim3 gridT = static_cast<unsigned int>((distrLin.getN() + blockSize - 1) / blockSize);
 		kernelSetZero<<< gridT, blockT, 0, streamDistrib >>>(distrLin);
-		kernelCalculateDistrLin<<< grid3Red, block3, (numberOfBins+1)*sizeof(double), streamDistrib >>> (kInds, distrLin, P);
+		kernelCalculateDistrLin<<< grid3Red, block3, (numberOfBins+1)*sizeof(real), streamDistrib >>> (kInds, distrLin, P);
 		kernelDivide<<< gridT, blockT, 0, streamDistrib >>>(distrLin, denominators);
 		cudaStreamSynchronize(streamDistrib);
 		distrLinHost = distrLin;
