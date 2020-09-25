@@ -244,9 +244,9 @@ private:
 	size_t N;
 	T* Array;
 };
-using RVector = vector<double>;
+using RVector = vector<real>;
 using CVector = vector<complex>;
-//typedef vector<double> RVector;
+//typedef vector<real> RVector;
 //typedef vector<complex> CVector;
 
 
@@ -323,9 +323,9 @@ private:
 	size_t N;
 	T* Array;
 };
-using cudaRVector = cudaVector<double>;
+using cudaRVector = cudaVector<real>;
 using cudaCVector = cudaVector<complex>;
-//typedef cudaVector<double> cudaRVector;
+//typedef cudaVector<real> cudaRVector;
 //typedef cudaVector<complex> cudaCVector;
 
 
@@ -353,9 +353,9 @@ private:
 	size_t N;
 	T* Array;
 };
-using cudaRVectorDev = cudaVectorDev<double>;
+using cudaRVectorDev = cudaVectorDev<real>;
 using cudaCVectorDev = cudaVectorDev<complex>;
-//typedef cudaVectorDev<double> cudaRVectorDev;
+//typedef cudaVectorDev<real> cudaRVectorDev;
 //typedef cudaVectorDev<complex> cudaCVectorDev;
 
 
@@ -643,9 +643,9 @@ private:
 	size_t N1, N2, N3;
 	T* Array;
 };
-using RVector3 = vector3<double>;
+using RVector3 = vector3<real>;
 using CVector3 = vector3<complex>;
-//typedef vector3<double> RVector3;
+//typedef vector3<real> RVector3;
 //typedef vector3<complex> CVector3;
 
 
@@ -730,9 +730,9 @@ private:
 	size_t N1, N2, N3;
 	T* Array;
 };
-using cudaRVector3 = cudaVector3<double>;
+using cudaRVector3 = cudaVector3<real>;
 using cudaCVector3 = cudaVector3<complex>;
-//typedef cudaVector3<double> cudaRVector3;
+//typedef cudaVector3<real> cudaRVector3;
 //typedef cudaVector3<complex> cudaCVector3;
 
 
@@ -767,7 +767,7 @@ private:
 	size_t N1, N2, N3;
 	T* Array;
 };
-using cudaRVector3Dev = cudaVector3Dev<double>;
+using cudaRVector3Dev = cudaVector3Dev<real>;
 using cudaCVector3Dev = cudaVector3Dev<complex>;
-//typedef cudaVector3Dev<double> cudaRVector3Dev;
+//typedef cudaVector3Dev<real> cudaRVector3Dev;
 //typedef cudaVector3Dev<complex> cudaCVector3Dev;
