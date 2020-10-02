@@ -193,8 +193,8 @@ cuFFT::~cuFFT()
 	checkCudaErrors(cufftDestroy(planC2CI));
 	checkCudaErrors(cufftDestroy(planR2C));
 	checkCudaErrors(cufftDestroy(planC2R));
+	checkCudaErrors(cudaFree(callbackData));
 	delete[] n;
-	delete[] callbackData;
 }
 void cuFFT::reset(const int _dim, const int *_n, real _L, const int _BATCH, cudaStream_t _stream)
 {
