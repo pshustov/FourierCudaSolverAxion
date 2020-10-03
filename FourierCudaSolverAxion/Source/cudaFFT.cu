@@ -181,7 +181,7 @@ cuFFT::cuFFT(const int _dim, const int *_n, real _L, const int _BATCH, cudaStrea
 	checkCudaErrors(cudaMemcpyFromSymbol(&h_callbackInverseNormD, d_callbackInverseNormD, sizeof(h_callbackInverseNormD)));
 #endif
 
-	checkCudaErrors(cudaMallocManaged(&callbackData, 2 * sizeof(double)));
+	checkCudaErrors(cudaMallocManaged(&callbackData, 2 * sizeof(real)));
 	callbackData[0] = L;
 	callbackData[1] = N;
 
