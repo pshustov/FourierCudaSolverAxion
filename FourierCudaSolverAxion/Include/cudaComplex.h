@@ -4,7 +4,7 @@
 #include <iostream>
 #include <cuda_runtime.h>
 
-typedef float real;
+typedef double real;
 
 class complex
 {

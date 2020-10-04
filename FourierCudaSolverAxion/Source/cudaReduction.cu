@@ -49,6 +49,7 @@ void getNumBlocksAndThreads(int n, int maxThreads, int& blocks, int& threads)
 	}
 }
 
+
 // Utility class used to avoid linker errors with extern
 // unsized shared memory arrays with templated type
 template<typename T>
@@ -84,6 +85,25 @@ struct SharedMemory<double>
 		return (double*)__smem_d;
 	}
 };
+
+// specialize for float to avoid unaligned memory
+// access compile errors
+template<>
+struct SharedMemory<float>
+{
+	__device__ inline operator float* ()
+	{
+		extern __shared__ float __smem_f[];
+		return (float*)__smem_f;
+	}
+
+	__device__ inline operator const float* () const
+	{
+		extern __shared__ float __smem_f[];
+		return (float*)__smem_f;
+	}
+};
+
 
 template <typename T, unsigned int blockSize, bool nIsPow2, typename F>
 __global__ void kernelReduce(T* g_idata, T* g_odata, unsigned int n, F fun)
@@ -235,7 +255,6 @@ __global__ void kernelReduce2(T* g_idata, T* g_odata, unsigned int n, F fun)
 		g_odata[2*blockIdx.x + 1] = result; 
 	}
 }
-
 
 
 template <typename T, typename F>
@@ -431,7 +450,6 @@ void reduce2(int size, int threads, int blocks, F fun, T* d_idata, T* d_odata, c
 }
 
 
-
 template <typename T>
 T reductionSum(int size, T* inData, cudaStream_t stream)
 {
@@ -498,9 +516,9 @@ template <> complex reductionSum<complex>(int size, complex* inData, cudaStream_
 	cudaMalloc((void**)&outData_dev, blocks * sizeof(complex));
 
 	auto fun = [] __host__ (complex A, complex B) { return A + B; };
-	auto funDub = [] __device__(double A, double B) { return A + B; };
+	auto funDub = [] __device__(real A, real B) { return A + B; };
 
-	reduce2(2*size, 2*threads, blocks, funDub, (double*)inData, (double*)outData_dev, stream);
+	reduce2(2*size, 2*threads, blocks, funDub, (real*)inData, (real*)outData_dev, stream);
 
 	int s = blocks;
 	while (s > cpuFinalThreshold)
@@ -508,7 +526,7 @@ template <> complex reductionSum<complex>(int size, complex* inData, cudaStream_
 		cudaMemcpyAsync(inData_dev, outData_dev, blocks * sizeof(complex), cudaMemcpyDeviceToDevice, stream);
 
 		getNumBlocksAndThreads(s, maxThreads, blocks, threads);
-		reduce2(2*s, 2*threads, blocks, funDub, (double*)inData_dev, (double*)outData_dev, stream);
+		reduce2(2*s, 2*threads, blocks, funDub, (real*)inData_dev, (real*)outData_dev, stream);
 
 		s = blocks;
 	}
@@ -530,7 +548,6 @@ template <> complex reductionSum<complex>(int size, complex* inData, cudaStream_
 
 	return result;
 }
-
 
 
 template <typename T>
