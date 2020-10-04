@@ -7,7 +7,7 @@
 class systemEquCuda_3D
 {
 public:
-	systemEquCuda_3D(std::string filename, double _precision, double _tau, double _lambda = 0, double _g = 0, bool isLoadParams = false)
+	systemEquCuda_3D(std::string filename, real _precision, real _tau, real _lambda = 0, real _g = 0, bool isLoadParams = false)
 		: precision(_precision), tau(_tau), Grid(filename), Equation(Grid)
 	{
 		if (isLoadParams)
@@ -39,24 +39,24 @@ public:
 	void printingVTK(bool isVTKprinting = true);
 	void printingMaxVal();
 
-	double getTime() { return Grid.get_time(); }
-	double getEnergy() { return energy = Grid.getEnergy(); }
-	double getDelta() { return (getEnergy() - energy0) / energy0; }
+	real getTime() { return Grid.get_time(); }
+	real getEnergy() { return energy = Grid.getEnergy(); }
+	real getDelta() { return (getEnergy() - energy0) / energy0; }
 
 private:
-	double precision;
-	double tau;
+	real precision;
+	real tau;
 	cudaGrid_3D Grid;
 	equationsAxionSymplectic_3D Equation;
 	Distribution distr;
 
-	double energy0, energy;
+	real energy0, energy;
 
 	std::ofstream outMaxVal;
 	std::ofstream outVTK;
 
 
-	void evlulate_step(const double _dt)
+	void evlulate_step(const real _dt)
 	{
 		Equation.equationCuda(_dt);
 	}

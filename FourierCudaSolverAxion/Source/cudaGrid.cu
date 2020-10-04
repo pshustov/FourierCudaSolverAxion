@@ -134,9 +134,9 @@ void cudaGrid_3D::set_sizes()
 
 void cudaGrid_3D::set_xk()
 {
-	double kappa1 = 2 * Ma_PI / L1;
-	double kappa2 = 2 * Ma_PI / L2;
-	double kappa3 = 2 * Ma_PI / L3;
+	real kappa1 = 2 * Ma_PI / L1;
+	real kappa2 = 2 * Ma_PI / L2;
+	real kappa3 = 2 * Ma_PI / L3;
 
 	RVector temp1(N1), temp2(N2), temp3(N3);
 	RVector3 temp31(N1, N2, N3red), temp32(N1, N2, N3red), temp33(N1, N2, N3red);
@@ -214,17 +214,17 @@ __global__ void kernelEnergyQuad(cudaRVector3Dev kSqr, cudaCVector3Dev Q, cudaCV
 	}
 }
 
-__global__ void kernelEnergyNonLin(double lam, double g, double V, cudaRVector3Dev q, cudaRVector3Dev t)
+__global__ void kernelEnergyNonLin(real lam, real g, real V, cudaRVector3Dev q, cudaRVector3Dev t)
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
-	double f = q(i);
+	real f = q(i);
 	if (i < q.size())
 	{
 		t(i) = (lam / 4.0 + g / 6.0 * f * f) * f * f * f * f;
 	}
 }
 
-double cudaGrid_3D::getEnergy()
+real cudaGrid_3D::getEnergy()
 {
 	if (!isEnergyCalculateted)
 	{
@@ -232,11 +232,11 @@ double cudaGrid_3D::getEnergy()
 		dim3 block(Bx, By, Bz);
 		dim3 grid((static_cast<unsigned int>(N1) + Bx - 1) / Bx, (static_cast<unsigned int>(N2) + By - 1) / By, (static_cast<unsigned int>(N3red) + Bz - 1) / Bz);
 		kernelEnergyQuad<<<grid, block, 0, mainStream>>>(k_sqr, Q, P, T);
-		energy = T.getSum(mainStream).real() / getVolume();
+		energy = T.getSum(mainStream).get_real() / getVolume();
 		
 		ifftQ();
 
-		double V = getVolume();
+		real V = getVolume();
 
 		block = dim3(BLOCK_SIZE);
 		grid = dim3((static_cast<unsigned int>(size()) + BLOCK_SIZE - 1) / BLOCK_SIZE);
@@ -269,14 +269,14 @@ void cudaGrid_3D::calculateQPsqr()
 	}
 }
 
-double cudaGrid_3D::getMaxValQsqr()
+real cudaGrid_3D::getMaxValQsqr()
 {
 	calculateQPsqr();
 	return qpSqr.getMax(printStream);
 }
 
 
-__global__ void kernelSyncBuf(double* A, double* A0)
+__global__ void kernelSyncBuf(real* A, real* A0)
 {
 	const int i = threadIdx.x;
 	const int j = threadIdx.y;
@@ -303,7 +303,7 @@ __global__ void kernelSyncBuf(double* A, double* A0)
 	const int indA = kB + N3B * (jB + N2B * iB);
 	const int indA0 = kG + N3G * (jG + N2G * iG);
 
-	extern __shared__ double B[];
+	extern __shared__ real B[];
 	B[indB] = A0[indA0];
 	__syncthreads();
 
@@ -341,7 +341,7 @@ void cudaGrid_3D::printingVTK(std::ofstream& outVTK)
 		dim3 grid(static_cast<unsigned int>(N1buf), static_cast<unsigned int>(N2buf), static_cast<unsigned int>(N3buf));
 		dim3 block(factor1, factor2, factor3);
 		
-		kernelSyncBuf<<< grid, block, factor1 * factor2 * factor3 * sizeof(double), printStream >>>(buferOutDev.getArray(), qpSqr.getArray());
+		kernelSyncBuf<<< grid, block, factor1 * factor2 * factor3 * sizeof(real), printStream >>>(buferOutDev.getArray(), qpSqr.getArray());
 		cudaStreamSynchronize(printStream);
 		buferOutHost = buferOutDev;
 	}

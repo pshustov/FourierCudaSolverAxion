@@ -5,7 +5,7 @@
 #include "equations.h"
 
 
-__global__ void kernalStepSymplectic41_v2(const double dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
+__global__ void kernalStepSymplectic41_v2(const real dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < Q.size())
@@ -14,7 +14,7 @@ __global__ void kernalStepSymplectic41_v2(const double dt, cudaRVector3Dev k_sqr
 		Q(i) += 1.3512071919596576340476878089715 * P(i) * dt;
 	}
 }
-__global__ void kernalStepSymplectic42_v2(const double dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
+__global__ void kernalStepSymplectic42_v2(const real dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < Q.size())
@@ -23,7 +23,7 @@ __global__ void kernalStepSymplectic42_v2(const double dt, cudaRVector3Dev k_sqr
 		Q(i) += -1.702414383919315268095375617943 * P(i) * dt;
 	}
 }
-__global__ void kernalStepSymplectic43_v2(const double dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
+__global__ void kernalStepSymplectic43_v2(const real dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < Q.size())
@@ -32,7 +32,7 @@ __global__ void kernalStepSymplectic43_v2(const double dt, cudaRVector3Dev k_sqr
 		Q(i) += 1.3512071919596576340476878089715 * P(i) * dt;
 	}
 }
-__global__ void kernalStepSymplectic44_v2(const double dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
+__global__ void kernalStepSymplectic44_v2(const real dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < Q.size())
@@ -41,10 +41,10 @@ __global__ void kernalStepSymplectic44_v2(const double dt, cudaRVector3Dev k_sqr
 	}
 }
 
-__global__ void kernel_Phi4_Phi6_v2(const int N, const double L, const double lambda, const double g, cudaRVector3Dev q, cudaRVector3Dev t)
+__global__ void kernel_Phi4_Phi6_v2(const int N, const real L, const real lambda, const real g, cudaRVector3Dev q, cudaRVector3Dev t)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	double f = q(i);// / L;
+	real f = q(i);// / L;
 	if (i < N)
 	{
 		t(i) = f * f * f * (lambda + g * f * f);
@@ -69,7 +69,7 @@ equationsAxionSymplectic_3D::equationsAxionSymplectic_3D(cudaGrid_3D& _Grid) : G
 	isGraphCreated = false;
 }
 
-void equationsAxionSymplectic_3D::equationCuda(const double dt)
+void equationsAxionSymplectic_3D::equationCuda(const real dt)
 {
 
 #ifdef _WIN64

@@ -7,7 +7,7 @@
 
 void systemEquCuda_3D::evaluate()
 {
-	double t = tau, dt;
+	real t = tau, dt;
 
 	distr.calculateAsync(Grid);
 
@@ -30,7 +30,7 @@ void systemEquCuda_3D::evaluate()
 	}
 
 	cudaStreamSynchronize(Grid.get_mainStream());
-	std::cout << "Current n = " << distr.getNumberOfParticles() << ", p = " << distr.getMeanMomentum() << ", tau = " << distr.getTau() << ", cIn/cOut = " << (double)countIn / (double)countOut << std::endl;
+	std::cout << "Current n = " << distr.getNumberOfParticles() << ", p = " << distr.getMeanMomentum() << ", tau = " << distr.getTau() << ", cIn/cOut = " << (real)countIn / (real)countOut << std::endl;
 }
 
 
@@ -45,7 +45,7 @@ void systemEquCuda_3D::printingVTK(bool isVTKprinting)
 {
 	if (isVTKprinting)
 	{
-		double time = getTime();
+		real time = getTime();
 
 		char buf[100];
 		sprintf(buf, "dataQsqr/data_%010.0f.vtk", round(time * 1000));
@@ -53,7 +53,7 @@ void systemEquCuda_3D::printingVTK(bool isVTKprinting)
 		outVTK.precision(5);
 
 		size_t N1 = Grid.getN1buf(), N2 = Grid.getN2buf(), N3 = Grid.getN3buf();
-		double L1 = Grid.getL1(), L2 = Grid.getL2(), L3 = Grid.getL3();
+		real L1 = Grid.getL1(), L2 = Grid.getL2(), L3 = Grid.getL3();
 
 		outVTK << "# vtk DataFile Version 2.0\n";
 		outVTK << "Square of the field\n";
@@ -93,7 +93,7 @@ void systemEquCuda_3D::loadParams(std::string filename)
 {
 	std::ifstream fload(filename);
 
-	double _g, _lambda;
+	real _g, _lambda;
 
 	fload >> _g;
 	fload >> _lambda;
@@ -105,7 +105,7 @@ void systemEquCuda_3D::loadParams(std::string filename)
 
 //void systemEquCuda_3D::printingVTK()
 //{
-//	double time = getTime();
+//	real time = getTime();
 //
 //
 //	char buf[100];
@@ -114,7 +114,7 @@ void systemEquCuda_3D::loadParams(std::string filename)
 //	outVTK.precision(4);
 //
 //	size_t N1 = Grid.get_N1_print(), N2 = Grid.get_N2_print(), N3 = Grid.get_N3_print();
-//	double L1 = Grid.get_L1(), L2 = Grid.get_L2(), L3 = Grid.get_L3();
+//	real L1 = Grid.get_L1(), L2 = Grid.get_L2(), L3 = Grid.get_L3();
 //
 //	outVTK << "# vtk DataFile Version 3.0\n";
 //	outVTK << "Density interpolation\n";
@@ -134,7 +134,7 @@ void systemEquCuda_3D::loadParams(std::string filename)
 //
 //void systemEquCuda_3D::printingVTKrho()
 //{
-//	double time = get_time();
+//	real time = get_time();
 //
 //	Grid.ifft();
 //	Grid.calculateRho();
@@ -146,7 +146,7 @@ void systemEquCuda_3D::loadParams(std::string filename)
 //	outVTK.precision(4);
 //
 //	size_t N1 = Grid.get_N1_print(), N2 = Grid.get_N2_print(), N3 = Grid.get_N3_print();
-//	double L1 = Grid.get_L1(), L2 = Grid.get_L2(), L3 = Grid.get_L3();
+//	real L1 = Grid.get_L1(), L2 = Grid.get_L2(), L3 = Grid.get_L3();
 //
 //	outVTK << "# vtk DataFile Version 3.0\n";
 //	outVTK << "Density interpolation Rho\n";
@@ -164,7 +164,7 @@ void systemEquCuda_3D::loadParams(std::string filename)
 //	outVTK.close();
 //}
 //
-//int inWichInterval(int Npow, double* bounders, double number)
+//int inWichInterval(int Npow, real* bounders, real number)
 //{
 //	int Ncompare = 1 << (Npow - 1);
 //	for (int i = Npow - 2; i >= 0; i--)

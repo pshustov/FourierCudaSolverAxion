@@ -6,7 +6,6 @@
 #include <helper_cuda.h>
 
 #define FFT_BLOCK_SIZE 128
-#define SDSD 12
 
 #ifdef __linux__
 
@@ -40,7 +39,7 @@ __device__ cufftCallbackStoreD d_callbackInverseNormD = callbackInverseNormD;
 
 #else
 
-__global__ void kernelForwardNorm(const size_t size, const size_t N, const double L, double* V)
+__global__ void kernelForwardNorm(const size_t size, const size_t N, const real L, real* V)
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < size)
@@ -48,7 +47,7 @@ __global__ void kernelForwardNorm(const size_t size, const size_t N, const doubl
 		V[i] = V[i] * L / N;
 	}
 }
-__global__ void kernelForwardNorm(const size_t size, const size_t N, const double L, complex* V)
+__global__ void kernelForwardNorm(const size_t size, const size_t N, const real L, complex* V)
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < size)
@@ -56,7 +55,7 @@ __global__ void kernelForwardNorm(const size_t size, const size_t N, const doubl
 		V[i] = V[i] * L / N;
 	}
 }
-__global__ void kernelInverseNorm(const size_t size, const size_t N, const double L, double* V)
+__global__ void kernelInverseNorm(const size_t size, const size_t N, const real L, real* V)
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < size)
@@ -64,7 +63,7 @@ __global__ void kernelInverseNorm(const size_t size, const size_t N, const doubl
 		V[i] = V[i] / L;
 	}
 }
-__global__ void kernelInverseNorm(const size_t size, const size_t N, const double L, complex* V)
+__global__ void kernelInverseNorm(const size_t size, const size_t N, const real L, complex* V)
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < size)
@@ -77,7 +76,7 @@ __global__ void kernelInverseNorm(const size_t size, const size_t N, const doubl
 
 void cuFFT::forward(cudaCVector3& f, cudaCVector3& F)
 {
-	checkCudaErrors(cufftExecZ2Z(planZ2ZF, (cufftDoubleComplex*)f.getArray(), (cufftDoubleComplex*)F.getArray(), CUFFT_FORWARD));
+	checkCudaErrors(cufftXtExec(planC2CF, f.getArray(), F.getArray(), CUFFT_FORWARD));
 	
 #ifndef __linux__
 	dim3 block(FFT_BLOCK_SIZE);
@@ -87,7 +86,7 @@ void cuFFT::forward(cudaCVector3& f, cudaCVector3& F)
 }
 void cuFFT::forward(cudaRVector3& f, cudaCVector3& F)
 {
-	checkCudaErrors(cufftExecD2Z(planD2Z, (cufftDoubleReal*)f.getArray(), (cufftDoubleComplex*)F.getArray()));
+	checkCudaErrors(cufftXtExec(planR2C, f.getArray(), F.getArray(), CUFFT_FORWARD));
 
 #ifndef __linux__
 	dim3 block(FFT_BLOCK_SIZE);
@@ -97,7 +96,7 @@ void cuFFT::forward(cudaRVector3& f, cudaCVector3& F)
 }
 void cuFFT::inverce(cudaCVector3& F, cudaCVector3& f)
 {
-	checkCudaErrors(cufftExecZ2Z(planZ2ZI, (cufftDoubleComplex*)F.getArray(), (cufftDoubleComplex*)f.getArray(), CUFFT_INVERSE));
+	checkCudaErrors(cufftXtExec(planC2CI, F.getArray(), f.getArray(), CUFFT_INVERSE));
 	
 #ifndef __linux__
 	dim3 block(FFT_BLOCK_SIZE);
@@ -107,7 +106,10 @@ void cuFFT::inverce(cudaCVector3& F, cudaCVector3& f)
 }
 void cuFFT::inverce(cudaCVector3& F, cudaRVector3& f)
 {
-	checkCudaErrors(cufftExecZ2D(planZ2D, (cufftDoubleComplex*)F.getArray(), (cufftDoubleReal*)f.getArray()));
+	checkCudaErrors(cufftXtExec(planC2R, F.getArray(), f.getArray(), CUFFT_INVERSE));
+	//checkCudaErrors(cufftExecC2R(planC2R, (cufftComplex*)F.getArray(), (cufftReal*)f.getArray()));
+	//checkCudaErrors(cufftExecC2R(planC2R, (cufftComplex*)F.getArray(), (cufftReal*)f.getArray()));
+
 
 #ifndef __linux__
 	dim3 block(FFT_BLOCK_SIZE);
@@ -118,10 +120,10 @@ void cuFFT::inverce(cudaCVector3& F, cudaRVector3& f)
 
 void cuFFT::setStream(cudaStream_t stream) 
 {
-	checkCudaErrors(cufftSetStream(planZ2ZF, stream));
-	checkCudaErrors(cufftSetStream(planZ2ZI, stream));
-	checkCudaErrors(cufftSetStream(planD2Z, stream));
-	checkCudaErrors(cufftSetStream(planZ2D, stream));
+	checkCudaErrors(cufftSetStream(planC2CF, stream));
+	checkCudaErrors(cufftSetStream(planC2CI, stream));
+	checkCudaErrors(cufftSetStream(planR2C, stream));
+	checkCudaErrors(cufftSetStream(planC2R, stream));
 }
 
 cuFFT::cuFFT(cudaStream_t _stream) : stream(_stream)
@@ -134,10 +136,10 @@ cuFFT::cuFFT(cudaStream_t _stream) : stream(_stream)
 
 	BATCH = 1;
 
-	checkCudaErrors(cufftCreate(&planZ2ZF));
-	checkCudaErrors(cufftCreate(&planZ2ZI));
-	checkCudaErrors(cufftCreate(&planD2Z));
-	checkCudaErrors(cufftCreate(&planZ2D));
+	checkCudaErrors(cufftCreate(&planC2CF));
+	checkCudaErrors(cufftCreate(&planC2CI));
+	checkCudaErrors(cufftCreate(&planR2C));
+	checkCudaErrors(cufftCreate(&planC2R));
 
 	setStream(stream);
 
@@ -154,20 +156,47 @@ cuFFT::cuFFT(cudaStream_t _stream) : stream(_stream)
 	callbackData[1] = N;
 }
 
-cuFFT::cuFFT(const int _dim, const int *_n, double _L, const int _BATCH, cudaStream_t _stream) : dim(_dim), BATCH(_BATCH), stream(_stream)
+cuFFT::cuFFT(const int _dim, const int *_n, real _L, const int _BATCH, cudaStream_t _stream) : dim(_dim), BATCH(_BATCH), stream(_stream)
 {
+	dim = 1;
+	n = new int[dim];
+	n[0] = 1024;
+	L = 10;
+	N = 1024;
+
+	BATCH = 1;
+
+	checkCudaErrors(cufftCreate(&planC2CF));
+	checkCudaErrors(cufftCreate(&planC2CI));
+	checkCudaErrors(cufftCreate(&planR2C));
+	checkCudaErrors(cufftCreate(&planC2R));
+
+	setStream(stream);
+
+#ifdef __linux__
+	std::cout << "LINUX detected" << std::endl;
+	checkCudaErrors(cudaMemcpyFromSymbol(&h_callbackForwardNormZ, d_callbackForwardNormZ, sizeof(h_callbackForwardNormZ)));
+	checkCudaErrors(cudaMemcpyFromSymbol(&h_callbackForwardNormD, d_callbackForwardNormD, sizeof(h_callbackForwardNormD)));
+	checkCudaErrors(cudaMemcpyFromSymbol(&h_callbackInverseNormZ, d_callbackInverseNormZ, sizeof(h_callbackInverseNormZ)));
+	checkCudaErrors(cudaMemcpyFromSymbol(&h_callbackInverseNormD, d_callbackInverseNormD, sizeof(h_callbackInverseNormD)));
+#endif
+
+	checkCudaErrors(cudaMallocManaged(&callbackData, 2 * sizeof(double)));
+	callbackData[0] = L;
+	callbackData[1] = N;
+
 	reset(_dim, _n, _L, _BATCH, _stream);
 }
 cuFFT::~cuFFT()
 {
-	checkCudaErrors(cufftDestroy(planZ2ZF));
-	checkCudaErrors(cufftDestroy(planZ2ZI));
-	checkCudaErrors(cufftDestroy(planD2Z));
-	checkCudaErrors(cufftDestroy(planZ2D));
+	checkCudaErrors(cufftDestroy(planC2CF));
+	checkCudaErrors(cufftDestroy(planC2CI));
+	checkCudaErrors(cufftDestroy(planR2C));
+	checkCudaErrors(cufftDestroy(planC2R));
 	delete[] n;
 	delete[] callbackData;
 }
-void cuFFT::reset(const int _dim, const int *_n, double _L, const int _BATCH, cudaStream_t _stream)
+void cuFFT::reset(const int _dim, const int *_n, real _L, const int _BATCH, cudaStream_t _stream)
 {
 	dim = _dim;
 	delete[] n;
@@ -184,10 +213,10 @@ void cuFFT::reset(const int _dim, const int *_n, double _L, const int _BATCH, cu
 	callbackData[0] = L;
 	callbackData[1] = N;
 
-	checkCudaErrors(cufftDestroy(planZ2ZF));
-	checkCudaErrors(cufftDestroy(planZ2ZI));
-	checkCudaErrors(cufftDestroy(planD2Z));
-	checkCudaErrors(cufftDestroy(planZ2D));
+	checkCudaErrors(cufftDestroy(planC2CF));
+	checkCudaErrors(cufftDestroy(planC2CI));
+	checkCudaErrors(cufftDestroy(planR2C));
+	checkCudaErrors(cufftDestroy(planC2R));
 
 	switch (dim)
 	{
@@ -199,11 +228,11 @@ void cuFFT::reset(const int _dim, const int *_n, double _L, const int _BATCH, cu
 			fprintf(stderr, "CUFFT error: Plan creation failed");
 			throw;
 		}
-		if (cufftPlan1d(&planD2Z, NX, CUFFT_D2Z, BATCH) != CUFFT_SUCCESS) {
+		if (cufftPlan1d(&planR2C, NX, CUFFT_D2Z, BATCH) != CUFFT_SUCCESS) {
 			fprintf(stderr, "CUFFT error: Plan creation failed");
 			throw;
 		}
-		if (cufftPlan1d(&planZ2D, NX, CUFFT_Z2D, BATCH) != CUFFT_SUCCESS) {
+		if (cufftPlan1d(&planC2R, NX, CUFFT_Z2D, BATCH) != CUFFT_SUCCESS) {
 			fprintf(stderr, "CUFFT error: Plan creation failed");
 			throw;
 		}
@@ -214,31 +243,45 @@ void cuFFT::reset(const int _dim, const int *_n, double _L, const int _BATCH, cu
 		size_t workSize;
 		
 #ifdef _WIN64
-		checkCudaErrors(cufftPlan3d(&planZ2ZF, n[0], n[1], n[2], CUFFT_Z2Z));
-		checkCudaErrors(cufftPlan3d(&planZ2ZI, n[0], n[1], n[2], CUFFT_Z2Z));
-		checkCudaErrors(cufftPlan3d(&planD2Z, n[0], n[1], n[2], CUFFT_D2Z));
-		checkCudaErrors(cufftPlan3d(&planZ2D, n[0], n[1], n[2], CUFFT_Z2D));
+		if (typeid(real)==typeid(double)) {
+			checkCudaErrors(cufftPlan3d(&planC2CF, n[0], n[1], n[2], CUFFT_Z2Z));
+			checkCudaErrors(cufftPlan3d(&planC2CI, n[0], n[1], n[2], CUFFT_Z2Z));
+			checkCudaErrors(cufftPlan3d(&planR2C, n[0], n[1], n[2], CUFFT_D2Z));
+			checkCudaErrors(cufftPlan3d(&planC2R, n[0], n[1], n[2], CUFFT_Z2D));
+		}
+		else {
+			if (typeid(real) == typeid(float)) {
+				checkCudaErrors(cufftPlan3d(&planC2CF, n[0], n[1], n[2], CUFFT_C2C));
+				checkCudaErrors(cufftPlan3d(&planC2CI, n[0], n[1], n[2], CUFFT_C2C));
+				checkCudaErrors(cufftPlan3d(&planR2C, n[0], n[1], n[2], CUFFT_R2C));
+				checkCudaErrors(cufftPlan3d(&planC2R, n[0], n[1], n[2], CUFFT_C2R));
+			}
+			else {
+				throw;
+			}
+		}
+
 #endif // _WIN64
 
 
 #ifdef __linux__
-		checkCudaErrors(cufftCreate(&planZ2ZF));
-		checkCudaErrors(cufftMakePlan3d(planZ2ZF, n[0], n[1], n[2], CUFFT_Z2Z, &workSize));
+		checkCudaErrors(cufftCreate(&planC2CF));
+		checkCudaErrors(cufftMakePlan3d(planC2CF, n[0], n[1], n[2], CUFFT_Z2Z, &workSize));
 
-		checkCudaErrors(cufftCreate(&planZ2ZI));
-		checkCudaErrors(cufftMakePlan3d(planZ2ZI, n[0], n[1], n[2], CUFFT_Z2Z, &workSize));
+		checkCudaErrors(cufftCreate(&planC2CI));
+		checkCudaErrors(cufftMakePlan3d(planC2CI, n[0], n[1], n[2], CUFFT_Z2Z, &workSize));
 
-		checkCudaErrors(cufftCreate(&planD2Z));
-		checkCudaErrors(cufftMakePlan3d(planD2Z, n[0], n[1], n[2], CUFFT_D2Z, &workSize));
+		checkCudaErrors(cufftCreate(&planR2C));
+		checkCudaErrors(cufftMakePlan3d(planR2C, n[0], n[1], n[2], CUFFT_D2Z, &workSize));
 
-		checkCudaErrors(cufftCreate(&planZ2D));
-		checkCudaErrors(cufftMakePlan3d(planZ2D, n[0], n[1], n[2], CUFFT_Z2D, &workSize));
+		checkCudaErrors(cufftCreate(&planC2R));
+		checkCudaErrors(cufftMakePlan3d(planC2R, n[0], n[1], n[2], CUFFT_Z2D, &workSize));
 
 		std::cout << "LINUX detected" << std::endl;
-		checkCudaErrors(cufftXtSetCallback(planZ2ZF, (void**)&h_callbackForwardNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)&callbackData));
-		checkCudaErrors(cufftXtSetCallback(planZ2ZI, (void**)&h_callbackInverseNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)&callbackData));
-		checkCudaErrors(cufftXtSetCallback(planD2Z, (void**)&h_callbackForwardNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)&callbackData));
-		checkCudaErrors(cufftXtSetCallback(planZ2D, (void**)&h_callbackInverseNormD, CUFFT_CB_ST_REAL_DOUBLE, (void**)&callbackData));
+		checkCudaErrors(cufftXtSetCallback(planC2CF, (void**)&h_callbackForwardNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)&callbackData));
+		checkCudaErrors(cufftXtSetCallback(planC2CI, (void**)&h_callbackInverseNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)&callbackData));
+		checkCudaErrors(cufftXtSetCallback(planR2C, (void**)&h_callbackForwardNormZ, CUFFT_CB_ST_COMPLEX_DOUBLE, (void**)&callbackData));
+		checkCudaErrors(cufftXtSetCallback(planC2R, (void**)&h_callbackInverseNormD, CUFFT_CB_ST_REAL_DOUBLE, (void**)&callbackData));
 #endif	// __linux__
 
 		break;

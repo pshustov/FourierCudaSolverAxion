@@ -6,10 +6,10 @@ class cuFFT
 {
 public:
 	cuFFT(cudaStream_t _stream = cudaStreamDefault);
-	cuFFT(const int dim, const int *_n, double _L, const int _BATCH = 1, cudaStream_t _stream = cudaStreamDefault);
+	cuFFT(const int dim, const int *_n, real _L, const int _BATCH = 1, cudaStream_t _stream = cudaStreamDefault);
 	~cuFFT();
 
-	void reset(const int dim, const int *_n, double _L, const int _BATCH = 1, cudaStream_t _stream = cudaStreamDefault);
+	void reset(const int dim, const int *_n, real _L, const int _BATCH = 1, cudaStream_t _stream = cudaStreamDefault);
 	
 	void forward(cudaCVector3 &f, cudaCVector3 &F);
 	void forward(cudaRVector3 &f, cudaCVector3 &F);
@@ -22,8 +22,8 @@ private:
 	int dim;
 	int *n;
 	int BATCH;
-	cufftHandle planZ2ZF, planZ2ZI, planD2Z, planZ2D;
-	double L;
+	cufftHandle planC2CF, planC2CI, planR2C, planC2R;
+	real L;
 	int N;
 
 	cufftCallbackStoreZ h_callbackForwardNormZ;
@@ -31,7 +31,7 @@ private:
 	cufftCallbackStoreZ h_callbackInverseNormZ;
 	cufftCallbackStoreD h_callbackInverseNormD;
 
-	double* callbackData;
+	real* callbackData;
 
 	cudaStream_t stream;
 };
