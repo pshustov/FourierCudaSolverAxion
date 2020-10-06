@@ -61,7 +61,7 @@ __global__ void kernelCalculateDistrFun(real lam, real g, real f2mean, cudaRVect
 __global__ void kernelSetKInds(int numberOfBins, real kMax, cudaRVector3Dev kSqr, cudaVector3Dev<unsigned int> kInds)
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < kSqr.size())
+	if (i < kSqr.getSize())
 	{
 		real t = sqrt(kSqr(i)) / kMax;
 		if (t < 1) {
@@ -77,7 +77,7 @@ __global__ void kernelSetDenominators(cudaVector3Dev<unsigned int> kInds, cudaRV
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 
-	if (i < kInds.size())
+	if (i < kInds.getSize())
 	{
 		atomicAdd(&denoms(kInds(i)), 1);
 	}
@@ -185,7 +185,7 @@ void Distribution::setupDistribution(cudaGrid_3D& Grid)
 
 	int blockSize = 256;
 	dim3 blockT = blockSize;
-	dim3 gridT = static_cast<unsigned int>((k_sqr.size() + blockSize - 1) / blockSize);
+	dim3 gridT = static_cast<unsigned int>((k_sqr.getSize() + blockSize - 1) / blockSize);
 	kernelSetKInds<<< gridT, blockT, 0, streamDistrib >>>(numberOfBins, kMax, k_sqr, kInds);
 	cudaStreamSynchronize(streamDistrib);
 
@@ -196,7 +196,7 @@ void Distribution::setupDistribution(cudaGrid_3D& Grid)
 
 	blockSize = 256;
 	blockT = blockSize;
-	gridT = static_cast<unsigned int>((kInds.size() + blockSize - 1) / blockSize);
+	gridT = static_cast<unsigned int>((kInds.getSize() + blockSize - 1) / blockSize);
 	kernelSetDenominators<<< gridT, blockT, 0, streamDistrib >>>(kInds, denominators);
 
 	cudaStreamSynchronize(streamDistrib);

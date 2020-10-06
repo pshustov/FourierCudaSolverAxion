@@ -109,8 +109,8 @@ void cuFFT::forward(cudaCVector3& f, cudaCVector3& F)
 	
 #ifndef __linux__
 	dim3 block(FFT_BLOCK_SIZE);
-	dim3 grid((static_cast<unsigned int>(F.size()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
-	kernelForwardNorm <<< grid, block, 0, stream >>> (F.size(), N, volume, F.getArray());
+	dim3 grid((static_cast<unsigned int>(F.getSize()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
+	kernelForwardNorm <<< grid, block, 0, stream >>> (F.getSize(), N, volume, F.getArray());
 #endif // !__linux__
 }
 void cuFFT::forward(cudaRVector3& f, cudaCVector3& F)
@@ -119,8 +119,8 @@ void cuFFT::forward(cudaRVector3& f, cudaCVector3& F)
 
 #ifndef __linux__
 	dim3 block(FFT_BLOCK_SIZE);
-	dim3 grid((static_cast<unsigned int>(F.size()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
-	kernelForwardNorm << < grid, block, 0, stream >> > (F.size(), N, volume, F.getArray());
+	dim3 grid((static_cast<unsigned int>(F.getSize()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
+	kernelForwardNorm << < grid, block, 0, stream >> > (F.getSize(), N, volume, F.getArray());
 #endif // !__linux__
 }
 void cuFFT::inverce(cudaCVector3& F, cudaCVector3& f)
@@ -129,8 +129,8 @@ void cuFFT::inverce(cudaCVector3& F, cudaCVector3& f)
 	
 #ifndef __linux__
 	dim3 block(FFT_BLOCK_SIZE);
-	dim3 grid((static_cast<unsigned int>(f.size()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
-	kernelInverseNorm << < grid, block, 0, stream >> > (f.size(), N, volume, f.getArray());
+	dim3 grid((static_cast<unsigned int>(f.getSize()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
+	kernelInverseNorm << < grid, block, 0, stream >> > (f.getSize(), N, volume, f.getArray());
 #endif // !__linux__
 }
 void cuFFT::inverce(cudaCVector3& F, cudaRVector3& f)
@@ -139,8 +139,8 @@ void cuFFT::inverce(cudaCVector3& F, cudaRVector3& f)
 
 #ifndef __linux__
 	dim3 block(FFT_BLOCK_SIZE);
-	dim3 grid((static_cast<unsigned int>(f.size()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
-	kernelInverseNorm <<< grid, block, 0, stream >>> (f.size(), N, volume, f.getArray());
+	dim3 grid((static_cast<unsigned int>(f.getSize()) + FFT_BLOCK_SIZE - 1) / FFT_BLOCK_SIZE);
+	kernelInverseNorm <<< grid, block, 0, stream >>> (f.getSize(), N, volume, f.getArray());
 #endif // !__linux__
 }
 

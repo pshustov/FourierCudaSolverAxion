@@ -218,7 +218,7 @@ __global__ void kernelEnergyNonLin(real lam, real g, real V, cudaRVector3Dev q, 
 {
 	size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 	real f = q(i);
-	if (i < q.size())
+	if (i < q.getSize())
 	{
 		t(i) = (lam / 4.0 + g / 6.0 * f * f) * f * f * f * f;
 	}
@@ -239,9 +239,9 @@ real cudaGrid_3D::getEnergy()
 		real V = getVolume();
 
 		block = dim3(BLOCK_SIZE);
-		grid = dim3((static_cast<unsigned int>(size()) + BLOCK_SIZE - 1) / BLOCK_SIZE);
+		grid = dim3((static_cast<unsigned int>(getSize()) + BLOCK_SIZE - 1) / BLOCK_SIZE);
 		kernelEnergyNonLin<<<grid, block, 0, mainStream>>>(lambda, g, getVolume(), q, t);
-		energy += t.getSum(mainStream) * getVolume() / size();
+		energy += t.getSum(mainStream) * getVolume() / getSize();
 
 		isEnergyCalculateted = true;
 	}
@@ -252,7 +252,7 @@ real cudaGrid_3D::getEnergy()
 __global__ void kernelQPsqr(cudaRVector3Dev q, cudaRVector3Dev p, cudaRVector3Dev qpSqr)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < q.size()) { qpSqr(i) = 0.5 * (q(i) * q(i) + p(i) * p(i)); }
+	if (i < q.getSize()) { qpSqr(i) = 0.5 * (q(i) * q(i) + p(i) * p(i)); }
 }
 
 void cudaGrid_3D::calculateQPsqr()
@@ -260,7 +260,7 @@ void cudaGrid_3D::calculateQPsqr()
 	if (!isQPsqrCalculated)
 	{
 		dim3 block(BLOCK_SIZE);
-		dim3 grid((static_cast<unsigned int>(q.size()) + BLOCK_SIZE - 1) / BLOCK_SIZE);
+		dim3 grid((static_cast<unsigned int>(q.getSize()) + BLOCK_SIZE - 1) / BLOCK_SIZE);
 
 		ifft();
 		kernelQPsqr<<< grid, block, 0, mainStream >>>(q, p, qpSqr);
@@ -350,7 +350,7 @@ void cudaGrid_3D::printingVTK(std::ofstream& outVTK)
 		buferOutHost = qpSqr;
 	}
 
-	for (size_t i = 0; i < buferOutHost.size(); i++) {
+	for (size_t i = 0; i < buferOutHost.getSize(); i++) {
 		outVTK << buferOutHost(i) << '\n';
 	}
 	outVTK << std::flush;
@@ -365,12 +365,12 @@ void cudaGrid_3D::save(std::ofstream& fileSave)
 
 	RVector3 RHost;
 	RHost = q;
-	for (size_t i = 0; i < RHost.size(); i++) {
+	for (size_t i = 0; i < RHost.getSize(); i++) {
 		fileSave << RHost(i) << '\n';
 	}
 
 	RHost = p;
-	for (size_t i = 0; i < RHost.size(); i++) {
+	for (size_t i = 0; i < RHost.getSize(); i++) {
 		fileSave << RHost(i) << '\n';
 	}
 }

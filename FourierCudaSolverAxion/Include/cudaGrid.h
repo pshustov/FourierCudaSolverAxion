@@ -22,7 +22,7 @@ public:
 	void load(const std::string filename);
 
 	/// Gets
-	size_t size() const { return N1*N2*N3; }
+	size_t getSize() const { return N1*N2*N3; }
 	size_t getN1() const { return N1; }
 	size_t getN2() const { return N2; }
 	size_t getN3() const { return N3; }

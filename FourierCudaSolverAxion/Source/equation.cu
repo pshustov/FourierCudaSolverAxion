@@ -8,7 +8,7 @@
 __global__ void kernalStepSymplectic41_v2(const real dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < Q.size())
+	if (i < Q.getSize())
 	{
 		P(i) -= 0.67560359597982881702384390448573 * ((1 + k_sqr(i)) * Q(i) + T(i)) * dt;
 		Q(i) += 1.3512071919596576340476878089715 * P(i) * dt;
@@ -17,7 +17,7 @@ __global__ void kernalStepSymplectic41_v2(const real dt, cudaRVector3Dev k_sqr, 
 __global__ void kernalStepSymplectic42_v2(const real dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < Q.size())
+	if (i < Q.getSize())
 	{
 		P(i) -= -0.17560359597982881702384390448573 * ((1 + k_sqr(i)) * Q(i) + T(i)) * dt;
 		Q(i) += -1.702414383919315268095375617943 * P(i) * dt;
@@ -26,7 +26,7 @@ __global__ void kernalStepSymplectic42_v2(const real dt, cudaRVector3Dev k_sqr, 
 __global__ void kernalStepSymplectic43_v2(const real dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < Q.size())
+	if (i < Q.getSize())
 	{
 		P(i) -= -0.17560359597982881702384390448573 * ((1 + k_sqr(i)) * Q(i) + T(i)) * dt;
 		Q(i) += 1.3512071919596576340476878089715 * P(i) * dt;
@@ -35,7 +35,7 @@ __global__ void kernalStepSymplectic43_v2(const real dt, cudaRVector3Dev k_sqr, 
 __global__ void kernalStepSymplectic44_v2(const real dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < Q.size())
+	if (i < Q.getSize())
 	{
 		P(i) -= 0.67560359597982881702384390448573 * ((1 + k_sqr(i)) * Q(i) + T(i)) * dt;
 	}
