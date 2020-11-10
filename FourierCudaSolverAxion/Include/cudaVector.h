@@ -246,8 +246,6 @@ private:
 };
 using RVector = vector<real>;
 using CVector = vector<complex>;
-//typedef vector<real> RVector;
-//typedef vector<complex> CVector;
 
 
 /// <summary>
@@ -325,8 +323,6 @@ private:
 };
 using cudaRVector = cudaVector<real>;
 using cudaCVector = cudaVector<complex>;
-//typedef cudaVector<real> cudaRVector;
-//typedef cudaVector<complex> cudaCVector;
 
 
 /// <summary>
@@ -355,8 +351,6 @@ private:
 };
 using cudaRVectorDev = cudaVectorDev<real>;
 using cudaCVectorDev = cudaVectorDev<complex>;
-//typedef cudaVectorDev<real> cudaRVectorDev;
-//typedef cudaVectorDev<complex> cudaCVectorDev;
 
 
 
@@ -441,7 +435,7 @@ public:
 	}
 	const T& operator() (size_t i, size_t j, size_t k) const {
 		if (i >= N1 || j >= N2 || k >= N3) throw;
-			return Array[(i*N2 + j)*N3 + k];
+		return Array[(i*N2 + j)*N3 + k];
 	}
 
 	T sum() const {
@@ -647,8 +641,6 @@ private:
 };
 using RVector3 = vector3<real>;
 using CVector3 = vector3<complex>;
-//typedef vector3<real> RVector3;
-//typedef vector3<complex> CVector3;
 
 
 /// <summary>
@@ -740,8 +732,6 @@ private:
 };
 using cudaRVector3 = cudaVector3<real>;
 using cudaCVector3 = cudaVector3<complex>;
-//typedef cudaVector3<real> cudaRVector3;
-//typedef cudaVector3<complex> cudaCVector3;
 
 
 /// <summary>
@@ -789,5 +779,3 @@ private:
 };
 using cudaRVector3Dev = cudaVector3Dev<real>;
 using cudaCVector3Dev = cudaVector3Dev<complex>;
-//typedef cudaVector3Dev<real> cudaRVector3Dev;
-//typedef cudaVector3Dev<complex> cudaCVector3Dev;
