@@ -9,7 +9,7 @@ const int BLOCK_SIZE = 128;
 class cudaGrid_3D
 {
 public:
-	cudaGrid_3D(const std::string filename);
+	cudaGrid_3D(const std::string& filename);
 	~cudaGrid_3D();
 
 	void fft();
@@ -19,7 +19,7 @@ public:
 
 	void save(std::ofstream& fileSave);
 
-	void load(const std::string filename);
+	void load(const std::string& filename);
 
 	/// Gets
 	size_t getSize() const { return N1*N2*N3; }
@@ -112,4 +112,6 @@ private:
 	real energy;
 
 	cudaStream_t mainStream, printStream;
+
+	real f0, sigma, p0;
 };

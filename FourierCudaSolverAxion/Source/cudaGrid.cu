@@ -9,7 +9,7 @@
 
 #include "cudaGrid.h"
 
-cudaGrid_3D::cudaGrid_3D(const std::string filename)
+cudaGrid_3D::cudaGrid_3D(const std::string& filename)
 {
 	int priority_high, priority_low;
 	checkCudaErrors(cudaDeviceGetStreamPriorityRange(&priority_low, &priority_high));
@@ -18,41 +18,11 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 
 	current_time = 0;
 
-	std::ifstream in(filename);
-
-	double f0_temp, sigma_temp, p0_temp;
-
+	///must be identical with save()
 	N1buf = 32;	N2buf = 32;	N3buf = 32;
-	in >> N1;	in >> N2; 	in >> N3;
-	in >> L1;	in >> L2;	in >> L3;
-	in >> f0_temp;
-	in >> sigma_temp;
-	in >> p0_temp;
 
-	//check N1 N2 N3
-	if (N1 / N_MIN == 0 || N2 / N_MIN == 0 || N3 / N_MIN == 0) { throw; }
-
-	//malloc for all varibles 
-	set_sizes();
-
-	// set q p
-	RVector3 RHost(N1, N2, N3);
-	for (size_t i = 0; i < N1*N2*N3; i++) {
-		in >> RHost(i);
-	}
-	q = RHost;
-
-	for (size_t i = 0; i < N1*N2*N3; i++) {
-		in >> RHost(i);
-	}
-	p = RHost;
-
-	if (!in.eof())
-	{
-		in >> current_time;
-	}
-	in.close();
-	std::cout << "Loading have been done\n";
+	// loading
+	load(filename);
 
 	// set x and k
 	set_xk();
@@ -365,6 +335,9 @@ void cudaGrid_3D::save(std::ofstream& fileSave)
 {
 	fileSave << getN1() << "\n" << getN2() << "\n" << getN3() << "\n";
 	fileSave << getL1() << "\n" << getL2() << "\n" << getL3() << "\n";
+	fileSave << f0 << "\n";
+	fileSave << sigma << "\n";
+	fileSave << p0 << "\n";
 
 	ifft();
 
@@ -378,10 +351,46 @@ void cudaGrid_3D::save(std::ofstream& fileSave)
 	for (size_t i = 0; i < RHost.getSize(); i++) {
 		fileSave << RHost(i) << '\n';
 	}
+
+	fileSave << current_time;
 }
 
-
-void cudaGrid_3D::load(const std::string filename)
+void cudaGrid_3D::load(const std::string& filename)
 {
-	std::ifstream inFile(filename);
+	std::ifstream in(filename);
+
+	in >> N1;	in >> N2; 	in >> N3;
+	in >> L1;	in >> L2;	in >> L3;
+	in >> f0;
+	in >> sigma;
+	in >> p0;
+
+	//check N1 N2 N3
+	if (N1 / N_MIN == 0 || N2 / N_MIN == 0 || N3 / N_MIN == 0) { throw; }
+
+	//malloc for all varibles 
+	set_sizes();
+
+	// set q p
+	RVector3 RHost(N1, N2, N3);
+	for (size_t i = 0; i < N1 * N2 * N3; i++) {
+		in >> RHost(i);
+	}
+	q = RHost;
+
+	for (size_t i = 0; i < N1 * N2 * N3; i++) {
+		in >> RHost(i);
+	}
+	p = RHost;
+
+	if (!in.eof()) {
+		in >> current_time;
+	}
+	else {
+		current_time = 0;
+	}
+
+	in.close();
+	std::cout << "Loading have been done\n";
+
 }

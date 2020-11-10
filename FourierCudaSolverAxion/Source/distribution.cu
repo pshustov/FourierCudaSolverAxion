@@ -146,8 +146,9 @@ __global__ void kernelDivide(cudaRVectorDev distrLin, cudaRVectorDev denom)
 
 void Distribution::setupDistribution(cudaGrid_3D& Grid)
 {
-	outFile.open("outNumberAndMomentum.txt");
-	outFileDistr.open("outDistributionLin.txt");
+	mode = (isLoad ? std::ios_base::app : std::ios_base::out);
+	outFile.open("outNumberAndMomentum.txt", mode);
+	outFileDistr.open("outDistributionLin.txt", mode);
 
 	time = Grid.get_time();
 	lam = Grid.get_lambda();
@@ -210,12 +211,15 @@ void Distribution::setupDistribution(cudaGrid_3D& Grid)
 	//outDen << P(P.getN() - 1);
 	//outDen.close();
 
-	outFileDistr << numberOfBins;
-	for (int i = 0; i < numberOfBins; i++)
+	if (~isLoad)
 	{
-		outFileDistr << "\t" << (i + 1) * kMax / numberOfBins;
+		outFileDistr << numberOfBins;
+		for (int i = 0; i < numberOfBins; i++)
+		{
+			outFileDistr << "\t" << (i + 1) * kMax / numberOfBins;
+		}
+		outFileDistr << std::endl;
 	}
-	outFileDistr << std::endl;
 }
 
 void Distribution::calculate()

@@ -4,7 +4,6 @@
 
 #include "system.h"
 
-
 void systemEquCuda_3D::evaluate()
 {
 	real t = tau, dt;
@@ -33,13 +32,10 @@ void systemEquCuda_3D::evaluate()
 	std::cout << "Current n = " << distr.getNumberOfParticles() << ", p = " << distr.getMeanMomentum() << ", tau = " << distr.getTau() << ", cIn/cOut = " << (real)countIn / (real)countOut << std::endl;
 }
 
-
 void systemEquCuda_3D::printingMaxVal()
 {
 	outMaxVal << getTime() << "\t" << Grid.getMaxValQsqr() << std::endl;
 }
-
-
 
 void systemEquCuda_3D::printingVTK(bool isVTKprinting)
 {
@@ -72,23 +68,21 @@ void systemEquCuda_3D::printingVTK(bool isVTKprinting)
 	}
 }
 
-
 void systemEquCuda_3D::save()
 {
 	std::ofstream fsave;
 
 	fsave.open("saveGrid.asv");
-	fsave.precision(5);
+	fsave.precision(7);
 	Grid.save(fsave);
-	fsave << "\n" << Grid.get_time() << std::endl;
 	fsave.close();
 
 	fsave.open("saveParams.asv");
-	fsave.precision(10);
+	fsave.precision(12);
 	fsave << Grid.get_g() << "\n" << Grid.get_lambda() << std::endl;
-
 	fsave.close();
 }
+
 void systemEquCuda_3D::loadParams(std::string filename)
 {
 	std::ifstream fload(filename);

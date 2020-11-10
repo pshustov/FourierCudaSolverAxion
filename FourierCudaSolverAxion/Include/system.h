@@ -7,10 +7,10 @@
 class systemEquCuda_3D
 {
 public:
-	systemEquCuda_3D(std::string filename, real _precision, real _tau, real _lambda = 0, real _g = 0, bool isLoadParams = false)
-		: precision(_precision), tau(_tau), Grid(filename), Equation(Grid)
+	systemEquCuda_3D(const std::string& filename, real _precision, real _tau, real _lambda = 0, real _g = 0, bool isLoad = false)
+		: precision(_precision), tau(_tau), Grid(filename), Equation(Grid), distr(isLoad)
 	{
-		if (isLoadParams)
+		if (isLoad)
 		{
 			loadParams();
 		}
@@ -21,7 +21,8 @@ public:
 		}
 		energy0 = getEnergy();
 
-		outMaxVal.open("outMaxVal.txt");
+		std::ios_base::openmode mode = (isLoad ? std::ios_base::app : std::ios_base::out);
+		outMaxVal.open("outMaxVal.txt", mode);
 		outMaxVal.precision(14);
 
 		distr.setupDistribution(Grid);

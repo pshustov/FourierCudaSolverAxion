@@ -6,7 +6,7 @@
 class Distribution
 {
 public:
-	Distribution() {}
+	Distribution(bool _isLoad) : isLoad(_isLoad) { }
 	~Distribution() { outFile.close(); cudaStreamDestroy(streamDistrib); }
 
 	void setupDistribution(cudaGrid_3D& Grid);
@@ -54,7 +54,9 @@ public:
 	}
 
 private:
-
+	
+	bool isLoad;
+	std::ios_base::openmode mode;
 	std::ofstream outFile;
 	std::ofstream outFileDistr;
 
@@ -82,7 +84,4 @@ private:
 	bool isAlarmed = false;
 
 	cudaStream_t streamDistrib;
-
-
-
 };
