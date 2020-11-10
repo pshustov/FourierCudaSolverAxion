@@ -20,9 +20,14 @@ cudaGrid_3D::cudaGrid_3D(const std::string filename)
 
 	std::ifstream in(filename);
 
+	double f0_temp, sigma_temp, p0_temp;
+
 	N1buf = 32;	N2buf = 32;	N3buf = 32;
 	in >> N1;	in >> N2; 	in >> N3;
 	in >> L1;	in >> L2;	in >> L3;
+	in >> f0_temp;
+	in >> sigma_temp;
+	in >> p0_temp;
 
 	//check N1 N2 N3
 	if (N1 / N_MIN == 0 || N2 / N_MIN == 0 || N3 / N_MIN == 0) { throw; }
