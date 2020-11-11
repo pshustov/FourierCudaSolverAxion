@@ -81,7 +81,10 @@ public:
 	void set_sizes();
 	void set_xk();
 	void timestep(real dt) { setSmthChanged();  current_time += dt; }
+	
+	void calculateEnergy();
 	real getEnergy();
+	real getEnergyPrev();
 
 	void calculateQPsqr();
 	real getMaxValQsqr();
@@ -109,7 +112,7 @@ private:
 	real current_time;
 	bool isIFFTsyncQ, isIFFTsyncP, isEnergyCalculateted, isQPsqrCalculated;
 
-	real energy;
+	real energy, energyPrev;
 
 	cudaStream_t mainStream, printStream;
 

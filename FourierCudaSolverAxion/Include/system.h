@@ -20,6 +20,7 @@ public:
 			Grid.set_g(_g);
 		}
 		energy0 = getEnergy();
+		energyPrev = energy0;
 
 		std::ios_base::openmode mode = (isLoad ? std::ios_base::app : std::ios_base::out);
 		outMaxVal.open("outMaxVal.txt", mode);
@@ -42,7 +43,12 @@ public:
 
 	real getTime() { return Grid.get_time(); }
 	real getEnergy() { return energy = Grid.getEnergy(); }
-	real getDelta() { return (getEnergy() - energy0) / energy0; }
+	real getEnergyPrev() { return energyPrev = Grid.getEnergyPrev(); }
+	real getDelta0() { return (getEnergy() - energy0) / energy0; }
+	real getDelta1() { 
+		getEnergyPrev();
+		return (getEnergy() - energyPrev) / energyPrev; 
+	}
 
 private:
 	real precision;
@@ -51,7 +57,7 @@ private:
 	equationsAxionSymplectic_3D Equation;
 	Distribution distr;
 
-	real energy0, energy;
+	real energy0, energyPrev, energy;
 
 	std::ofstream outMaxVal;
 	std::ofstream outVTK;

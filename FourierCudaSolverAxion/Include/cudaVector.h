@@ -1,6 +1,7 @@
 #pragma once
 #include "cudaComplex.h"
 #include "cudaReduction.h"
+#include <assert.h>
 
 ////////////		1D Vectors		////////////
 template <typename T> class vector;

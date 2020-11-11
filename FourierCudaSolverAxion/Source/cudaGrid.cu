@@ -16,7 +16,10 @@ cudaGrid_3D::cudaGrid_3D(const std::string& filename)
 	checkCudaErrors(cudaStreamCreateWithPriority(&mainStream, cudaStreamNonBlocking, priority_high));
 	checkCudaErrors(cudaStreamCreateWithPriority(&printStream, cudaStreamNonBlocking, priority_low));
 
+	N1 = 0; N2 = 0; N3 = 0; N3red = 0;
+	L1 = 0; L2 = 0; L3 = 0;
 	current_time = 0;
+	energy = 0;	energyPrev = 0;
 
 	///must be identical with save()
 	N1buf = 32;	N2buf = 32;	N3buf = 32;
@@ -82,7 +85,6 @@ void cudaGrid_3D::ifftP()
 void cudaGrid_3D::set_sizes()
 {
 	if (N3 % 2 != 0) { throw; }
-	N3red = N3 / 2 + 1;
 
 	x1.set(N1);
 	x2.set(N2);
@@ -199,28 +201,39 @@ __global__ void kernelEnergyNonLin(real lam, real g, real V, cudaRVector3Dev q, 
 	}
 }
 
-real cudaGrid_3D::getEnergy()
+void cudaGrid_3D::calculateEnergy()
 {
 	if (!isEnergyCalculateted)
 	{
+		energyPrev = energy;
+
 		int Bx = 16, By = 8, Bz = 1;
 		dim3 block(Bx, By, Bz);
 		dim3 grid((static_cast<unsigned int>(N1) + Bx - 1) / Bx, (static_cast<unsigned int>(N2) + By - 1) / By, (static_cast<unsigned int>(N3red) + Bz - 1) / Bz);
-		kernelEnergyQuad<<<grid, block, 0, mainStream>>>(k_sqr, Q, P, T);
+		kernelEnergyQuad << <grid, block, 0, mainStream >> > (k_sqr, Q, P, T);
 		energy = T.getSum(mainStream).get_real() / getVolume();
-		
+
 		ifftQ();
 
 		real V = getVolume();
 
 		block = dim3(BLOCK_SIZE);
 		grid = dim3((static_cast<unsigned int>(getSize()) + BLOCK_SIZE - 1) / BLOCK_SIZE);
-		kernelEnergyNonLin<<<grid, block, 0, mainStream>>>(lambda, g, getVolume(), q, t);
+		kernelEnergyNonLin << <grid, block, 0, mainStream >> > (lambda, g, getVolume(), q, t);
 		energy += t.getSum(mainStream) * getVolume() / getSize();
 
 		isEnergyCalculateted = true;
 	}
+}
+
+real cudaGrid_3D::getEnergy() {
+	calculateEnergy();
 	return energy;
+}
+
+real cudaGrid_3D::getEnergyPrev() {
+	calculateEnergy();
+	return energyPrev;
 }
 
 
@@ -360,6 +373,7 @@ void cudaGrid_3D::load(const std::string& filename)
 	std::ifstream in(filename);
 
 	in >> N1;	in >> N2; 	in >> N3;
+	N3red = N3 / 2 + 1;
 	in >> L1;	in >> L2;	in >> L3;
 	in >> f0;
 	in >> sigma;
