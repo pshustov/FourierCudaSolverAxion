@@ -36,7 +36,7 @@
     <CudaCompile Include="Source\fourierCudaSolverAxion.cu" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\interface.cpp" />
+    <CudaCompile Include="Source\interface.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C198BA64-B741-482E-BF96-45ACBAB79F62}</ProjectGuid>

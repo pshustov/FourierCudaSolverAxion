@@ -211,7 +211,7 @@ void Distribution::setupDistribution(cudaGrid_3D& Grid)
 	//outDen << P(P.getN() - 1);
 	//outDen.close();
 
-	if (~isLoad)
+	if (!isLoad)
 	{
 		outFileDistr << numberOfBins;
 		for (int i = 0; i < numberOfBins; i++)
