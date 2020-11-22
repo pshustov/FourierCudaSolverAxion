@@ -1,28 +1,31 @@
 #pragma once
 #include <fstream>
+#include <chrono>
 #include "cudaGrid.h"
 #include "distribution.h"
 #include "equations.h"
+#include "interface.h"
+
 
 class systemEquCuda_3D
 {
 public:
-	systemEquCuda_3D(const std::string& filename, real _precision, real _tau, real _lambda = 0, real _g = 0, bool isLoad = false)
-		: precision(_precision), tau(_tau), Grid(filename), Equation(Grid), distr(isLoad)
+	systemEquCuda_3D(Params params)
+		: precision(params.precision()), tau(params.tau()), Grid(params.filename()), Equation(Grid), distr(params.isLoad())
 	{
-		if (isLoad)
+		if (params.isLoad())
 		{
 			loadParams();
 		}
 		else
 		{
-			Grid.set_lambda(_lambda);
-			Grid.set_g(_g);
+			Grid.set_lambda(params.lambda());
+			Grid.set_g(params.g());
 		}
 		energy0 = getEnergy();
 		energyPrev = energy0;
 
-		std::ios_base::openmode mode = (isLoad ? std::ios_base::app : std::ios_base::out);
+		std::ios_base::openmode mode = (params.isLoad() ? std::ios_base::app : std::ios_base::out);
 		outMaxVal.open("outMaxVal.txt", mode);
 		outMaxVal.precision(14);
 

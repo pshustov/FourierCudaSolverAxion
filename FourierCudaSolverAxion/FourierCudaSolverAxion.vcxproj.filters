@@ -28,6 +28,9 @@
     <Filter Include="Equation">
       <UniqueIdentifier>{4903c8a0-44da-45d6-ad6e-0024a782acd1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Interface">
+      <UniqueIdentifier>{dc9daa04-0e09-4edd-8ba6-43e124900d48}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\cudaComplex.h">
@@ -57,6 +60,9 @@
     <ClInclude Include="Include\system.h">
       <Filter>System</Filter>
     </ClInclude>
+    <ClInclude Include="Include\interface.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="Source\cudaComplex.cu">
@@ -84,5 +90,10 @@
       <Filter>System</Filter>
     </CudaCompile>
     <CudaCompile Include="Source\fourierCudaSolverAxion.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\interface.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

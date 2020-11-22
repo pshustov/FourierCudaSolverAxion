@@ -18,6 +18,7 @@
     <ClInclude Include="Include\distribution.h" />
     <ClInclude Include="Include\equations.h" />
     <ClInclude Include="Include\cudaFFT.h" />
+    <ClInclude Include="Include\interface.h" />
     <ClInclude Include="Include\kbhit.h" />
     <ClInclude Include="Include\system.h" />
   </ItemGroup>
@@ -33,6 +34,9 @@
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="Source\fourierCudaSolverAxion.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\interface.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C198BA64-B741-482E-BF96-45ACBAB79F62}</ProjectGuid>
@@ -92,6 +96,14 @@
       <PreserveSbr>true</PreserveSbr>
     </Bscmake>
     <CudaLink />
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -102,6 +114,7 @@
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(CudaToolkitIncludeDir);C:\ProgramData\NVIDIA Corporation\CUDA Samples\v10.2\common\inc;$(ProjectDir)\Include</AdditionalIncludeDirectories>
       <WholeProgramOptimization>true</WholeProgramOptimization>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -117,6 +130,14 @@
       <GenerateRelocatableDeviceCode>false</GenerateRelocatableDeviceCode>
     </CudaCompile>
     <CudaLink />
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
