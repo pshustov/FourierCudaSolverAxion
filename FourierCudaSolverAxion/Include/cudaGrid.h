@@ -1,9 +1,10 @@
 #pragma once
 #include "cudaVector.h"
 #include "cudaFFT.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 const int N_MIN = 32;
-const real Ma_PI = 3.1415926535897932384626433832795;
 const int BLOCK_SIZE = 128;
 
 class cudaGrid_3D
@@ -54,6 +55,9 @@ public:
 	real get_time() const { return current_time; }
 	real get_lambda() const { return lambda; }
 	real get_g() const { return g; }
+	real get_f0() const { return f0; }
+	real get_sigma() const { return sigma; }
+	real get_p0() const { return p0; }
 	cudaStream_t get_mainStream() const { return mainStream; }
 
 	/// FFT and IFFT

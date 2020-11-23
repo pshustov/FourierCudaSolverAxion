@@ -179,9 +179,9 @@ void Distribution::setupDistribution(cudaGrid_3D& Grid)
 	cudaStreamCreateWithPriority(&streamDistrib, cudaStreamNonBlocking, priority_low);
 
 	
-	real k1 = Ma_PI * Grid.getN1() / Grid.getL1();
-	real k2 = Ma_PI * Grid.getN2() / Grid.getL2();
-	real k3 = Ma_PI * Grid.getN3() / Grid.getL3();
+	real k1 = M_PI * Grid.getN1() / Grid.getL1();
+	real k2 = M_PI * Grid.getN2() / Grid.getL2();
+	real k3 = M_PI * Grid.getN3() / Grid.getL3();
 	real kMax = (kMax = (k1 < k2 ? k1 : k2)) < k3 ? kMax : k3;
 
 	int blockSize = 256;
@@ -230,7 +230,8 @@ void Distribution::calculate()
 	complex f2m = Q.getSum(streamDistrib).get_real() / (volume * volume);
 	f2mean = f2m.get_real();
 
-	if ((1 + 3 * lam * f2mean + 15 * g * f2mean * f2mean) < 0) {
+	instability = 1 + 3 * lam * f2mean + 15 * g * f2mean * f2mean;
+	if (instability < 0) {
 		numberOfParticles = -1;
 		meanMomentum = -1;
 

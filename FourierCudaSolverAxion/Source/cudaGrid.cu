@@ -111,9 +111,9 @@ void cudaGrid_3D::set_sizes()
 
 void cudaGrid_3D::set_xk()
 {
-	real kappa1 = 2 * Ma_PI / L1;
-	real kappa2 = 2 * Ma_PI / L2;
-	real kappa3 = 2 * Ma_PI / L3;
+	real kappa1 = 2 * M_PI / L1;
+	real kappa2 = 2 * M_PI / L2;
+	real kappa3 = 2 * M_PI / L3;
 
 	RVector temp1(N1), temp2(N2), temp3(N3);
 	RVector3 temp31(N1, N2, N3red), temp32(N1, N2, N3red), temp33(N1, N2, N3red);
@@ -348,9 +348,9 @@ void cudaGrid_3D::save(std::ofstream& fileSave)
 {
 	fileSave << getN1() << "\n" << getN2() << "\n" << getN3() << "\n";
 	fileSave << getL1() << "\n" << getL2() << "\n" << getL3() << "\n";
-	fileSave << f0 << "\n";
-	fileSave << sigma << "\n";
-	fileSave << p0 << "\n";
+	fileSave << get_f0() << "\n";
+	fileSave << get_sigma() << "\n";
+	fileSave << get_p0() << "\n";
 
 	ifft();
 

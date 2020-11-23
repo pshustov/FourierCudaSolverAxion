@@ -15,6 +15,8 @@ bool makeChoiceYN(std::string strQuestion)
 		std::cout << strQuestion << " [y/n]: ";
 		std::cin >> type;
 	} while (!std::cin.fail() && type != 'y' && type != 'n');
+	
+	std::cout << std::endl;
 
 	if (type == 'y')
 		return true;
@@ -274,7 +276,7 @@ void Params::myInterface()
 	var_gpuID.set(setCudaDev());
 	var_timeLimitSave.set(std::chrono::minutes{ 15 });
 
-	var_isLoad.set(makeChoiceYN("New task?"));
+	var_isLoad.set(!makeChoiceYN("New task?"));
 
 	if (var_isLoad.get()) {
 		var_filename.set("saveGrid.asv");

@@ -29,7 +29,10 @@ void systemEquCuda_3D::evaluate()
 	}
 
 	cudaStreamSynchronize(Grid.get_mainStream());
-	std::cout << "Current n = " << distr.getNumberOfParticles() << ", p = " << distr.getMeanMomentum() << ", tau = " << distr.getTau() << ", cIn/cOut = " << (real)countIn / (real)countOut << std::endl;
+	std::streamsize ss = std::cout.precision();
+	std::cout.precision(3);
+	std::cout << "Current n = " << distr.getNumberOfParticles() / Grid.getVolume() << ", p = " << distr.getMeanMomentum() << ", tau = " << distr.getTau() << ", cIn/cOut = " << (real)countIn / (real)countOut << std::endl;
+	std::cout.precision(ss);
 }
 
 void systemEquCuda_3D::printingMaxVal()
@@ -73,13 +76,18 @@ void systemEquCuda_3D::save()
 	std::ofstream fsave;
 
 	fsave.open("saveGrid.asv");
-	fsave.precision(7);
+	fsave.precision(12);
 	Grid.save(fsave);
 	fsave.close();
 
 	fsave.open("saveParams.asv");
 	fsave.precision(12);
 	fsave << Grid.get_g() << "\n" << Grid.get_lambda() << std::endl;
+	fsave << Grid.getN1() << "\n" << Grid.getN2() << "\n" << Grid.getN3() << "\n";
+	fsave << Grid.getL1() << "\n" << Grid.getL2() << "\n" << Grid.getL3() << "\n";
+	fsave << Grid.get_f0() << "\n";
+	fsave << Grid.get_sigma() << "\n";
+	fsave << Grid.get_p0() << std::endl;
 	fsave.close();
 }
 
@@ -94,6 +102,8 @@ void systemEquCuda_3D::loadParams(std::string filename)
 
 	Grid.set_lambda(_lambda);
 	Grid.set_g(_g);
+
+	fload.close();
 }
 
 

@@ -45,13 +45,15 @@ public:
 	real getNumberOfParticles() const { return numberOfParticles; }
 	real getMeanMomentum() const { return meanMomentum; }
 	real getTau() const {
-		constexpr real C = 64. / (3. * 3.1415926535897932384626433832795);
-		real p3 = meanMomentum * meanMomentum * meanMomentum;
-		real L6 = volume * volume;
+		real p2 = meanMomentum * meanMomentum;
 		real lam2 = lam * lam;
-		real N2 = numberOfParticles * numberOfParticles;
-		return C * p3 * L6 / (lam2 * N2);
+		real v = meanMomentum / sqrt(1. + p2);
+		real sigma = 9. * lam2 / (32. * M_PI * (1. + p2));		
+		real f = 6. * M_PI * M_PI * M_PI * numberOfParticles / (meanMomentum * meanMomentum * meanMomentum * volume);
+		real n = numberOfParticles / volume;
+		return 1 / (sigma * n * v * (1 + f));
 	}
+	real getInstability() const { return instability; }
 
 private:
 	
@@ -64,6 +66,7 @@ private:
 	real lam, g;
 	real f2mean;
 	real volume;
+	real instability;
 
 	cudaRVector3 k_sqr;
 	cudaCVector3 Q, P;

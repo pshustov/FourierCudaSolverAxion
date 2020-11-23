@@ -41,6 +41,56 @@ __global__ void kernalStepSymplectic44_v2(const real dt, cudaRVector3Dev k_sqr, 
 	}
 }
 
+
+template <unsigned int stepn>
+__global__ void kernalStepSymplectic8_v3(const real dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	if (i < Q.getSize())
+	{
+		switch (stepn)
+		{
+		case 1:
+			P(i) -= -0.17560359597982881702384390448573 * ((1 + k_sqr(i)) * Q(i) + T(i)) * dt;
+			Q(i) += 1.3512071919596576340476878089715 * P(i) * dt;
+		case 2:
+
+		case 3:
+
+		case 4:
+
+		case 5:
+
+		case 6:
+
+		case 7:
+
+		case 8:
+
+		case 9:
+
+		case 10:
+
+		case 11:
+
+		case 12:
+
+		case 13:
+		case 14:
+		case 15:
+		case 16:
+
+		default:
+			break;
+		}
+
+		P(i) -= 0.67560359597982881702384390448573 * ((1 + k_sqr(i)) * Q(i) + T(i)) * dt;
+		Q(i) += 1.3512071919596576340476878089715 * P(i) * dt;
+	}
+}
+
+
+
 __global__ void kernel_Phi4_Phi6_v2(const int N, const real L, const real lambda, const real g, cudaRVector3Dev q, cudaRVector3Dev t)
 {
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
