@@ -90,10 +90,8 @@
       <Filter>System</Filter>
     </CudaCompile>
     <CudaCompile Include="Source\fourierCudaSolverAxion.cu" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Source\interface.cpp">
+    <CudaCompile Include="Source\interface.cu">
       <Filter>Interface</Filter>
-    </ClCompile>
+    </CudaCompile>
   </ItemGroup>
 </Project>

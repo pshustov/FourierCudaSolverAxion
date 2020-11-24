@@ -49,7 +49,7 @@ public:
 		real lam2 = lam * lam;
 		real v = meanMomentum / sqrt(1. + p2);
 		real sigma = 9. * lam2 / (32. * M_PI * (1. + p2));		
-		real f = 6. * M_PI * M_PI * M_PI * numberOfParticles / (meanMomentum * meanMomentum * meanMomentum * volume);
+		real f = 6. * M_PI * M_PI * numberOfParticles / (meanMomentum * meanMomentum * meanMomentum * volume);
 		real n = numberOfParticles / volume;
 		return 1 / (sigma * n * v * (1 + f));
 	}
