@@ -7,6 +7,7 @@ public:
 	~equationsAxionSymplectic_3D() { cudaStreamDestroy(stream); }
 
 	void equationCuda(const real dt);
+	void equationCuda_v2(const real dt);
 	void getNonlin_Phi4_Phi6();
 
 	void setCudaStream(cudaStream_t& _stream) { stream = _stream; }
