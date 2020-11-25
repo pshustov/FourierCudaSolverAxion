@@ -104,6 +104,10 @@ void systemEquCuda_3D::loadParams(std::string filename)
 	Grid.set_g(_g);
 
 	fload.close();
+
+	std::cout << "Params was load:\n";
+	std::cout << "g = " << Grid.get_g() << std::endl;
+	std::cout << "lam = " << Grid.get_lambda() << std::endl;
 }
 
 
