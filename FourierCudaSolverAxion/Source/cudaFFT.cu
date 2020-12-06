@@ -155,6 +155,9 @@ void cuFFT::setStream(cudaStream_t stream)
 
 cuFFT::cuFFT()
 {
+	int ver; 
+	cufftGetVersion(&ver);
+	std::cout << "CuFFT version: " << ver << std::endl;
 	isInitialized = false;
 #ifdef CALBACKS
 	checkCudaErrors(cudaMemcpyFromSymbol(&h_callbackForwardNormC, d_callbackForwardNormC, sizeof(h_callbackForwardNormC)));

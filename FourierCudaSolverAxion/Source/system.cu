@@ -31,7 +31,7 @@ void systemEquCuda_3D::evaluate()
 	cudaStreamSynchronize(Grid.get_mainStream());
 	std::streamsize ss = std::cout.precision();
 	std::cout.precision(3);
-	std::cout << "Current n = " << distr.getNumberOfParticles() / Grid.getVolume() << ", p = " << distr.getMeanMomentum() << ", tau = " << distr.getTau() << ", cIn/cOut = " << (real)countIn / (real)countOut << std::endl;
+	std::cout << "Current n = " << distr.getNumberOfParticles() / Grid.getVolume() << ", p = " << distr.getMeanMomentum() << ", tau = " << distr.getTau() << ", If = " << distr.getInstability() <<   ", cIn/cOut = " << (real)countIn / (real)countOut << std::endl;
 	std::cout.precision(ss);
 }
 

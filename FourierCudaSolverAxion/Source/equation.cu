@@ -4,6 +4,7 @@
 #include "cudaGrid.h"
 #include "equations.h"
 
+#define GRAPH
 
 __global__ void kernalStepSymplectic41_v2(const real dt, cudaRVector3Dev k_sqr, cudaCVector3Dev Q, cudaCVector3Dev P, cudaCVector3Dev T)
 {
@@ -123,21 +124,7 @@ equationsAxionSymplectic_3D::equationsAxionSymplectic_3D(cudaGrid_3D& _Grid) : G
 void equationsAxionSymplectic_3D::equationCuda(const real dt)
 {
 
-#ifdef _WIN64
-	getNonlin_Phi4_Phi6();
-	kernalStepSymplectic41_v2 << <gridRed, block, 0, stream >> > (dt, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
-
-	getNonlin_Phi4_Phi6();
-	kernalStepSymplectic42_v2 << <gridRed, block, 0, stream >> > (dt, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
-
-	getNonlin_Phi4_Phi6();
-	kernalStepSymplectic43_v2 << <gridRed, block, 0, stream >> > (dt, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
-
-	getNonlin_Phi4_Phi6();
-	kernalStepSymplectic44_v2 << <gridRed, block, 0, stream >> > (dt, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
-#endif // _WIN64
-
-#ifdef __linux__
+#ifdef GRAPH
 	if (!isGraphCreated) {
 		cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal);
 
@@ -156,9 +143,21 @@ void equationsAxionSymplectic_3D::equationCuda(const real dt)
 		cudaStreamEndCapture(stream, &graph);
 		cudaGraphInstantiate(&graphExec, graph, NULL, NULL, 0);
 		isGraphCreated = true;
-}
+	}
 	cudaGraphLaunch(graphExec, stream);
-#endif // __linux__
+#else
+	getNonlin_Phi4_Phi6();
+	kernalStepSymplectic41_v2 << <gridRed, block, 0, stream >> > (dt, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+
+	getNonlin_Phi4_Phi6();
+	kernalStepSymplectic42_v2 << <gridRed, block, 0, stream >> > (dt, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+
+	getNonlin_Phi4_Phi6();
+	kernalStepSymplectic43_v2 << <gridRed, block, 0, stream >> > (dt, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+
+	getNonlin_Phi4_Phi6();
+	kernalStepSymplectic44_v2 << <gridRed, block, 0, stream >> > (dt, Grid.get_k_sqr(), Grid.get_Q(), Grid.get_P(), Grid.get_T());
+#endif // GRAPH
 
 	Grid.setSmthChanged();	
 	Grid.timestep(dt);
