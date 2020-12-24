@@ -6,6 +6,7 @@
 #include "equations.h"
 #include "interface.h"
 
+#include <helper_cuda.h>
 
 class systemEquCuda_3D
 {
@@ -30,6 +31,9 @@ public:
 		outMaxVal.precision(14);
 
 		distr.setupDistribution(Grid);
+		distr.calculateAsync(Grid);
+		distr.waitUntilAsyncEnd();
+		cudaDeviceSynchronize();
 	}
 
 	~systemEquCuda_3D() {
@@ -69,6 +73,7 @@ private:
 	void evlulate_step(const real _dt)
 	{
 		Equation.equationCuda(_dt);
+		getLastCudaError("Error after step: ");
 	}
 
 };

@@ -406,7 +406,6 @@ public:
 	{
 		Array = new T[size]();
 		cudaMemcpy(Array, _V.Array, size * sizeof(T), cudaMemcpyDeviceToHost);
-		cudaDeviceSynchronize();
 	}
 	vector3& operator=(const cudaVector3<T>& _V)
 	{
@@ -417,7 +416,6 @@ public:
 		size = _V.getSize();
 		Array = new T[size];
 		cudaMemcpy(Array, _V.Array, size * sizeof(T), cudaMemcpyDeviceToHost);
-		cudaDeviceSynchronize();
 		return *this;
 	}
 
@@ -653,15 +651,16 @@ class cudaVector3
 {
 public:
 
-	__host__ explicit cudaVector3(const size_t _N1 = 1, const size_t _N2 = 1, const size_t _N3 = 1) : N1(_N1), N2(_N2), N3(_N3), size(_N1*_N2*_N3)
+	__host__ explicit cudaVector3(const size_t _N1 = 1, const size_t _N2 = 1, const size_t _N3 = 1) :
+		N1(_N1), N2(_N2), N3(_N3), size(_N1*_N2*_N3), reduction((int)size, Array)
 	{
 		cudaMalloc(&Array, size * sizeof(T));
 	}
-	__host__ cudaVector3(const cudaVector3& _V) : N1(_V.getN1()), N2(_V.getN2()), N3(_V.getN3()), size(_V.getSize())
+	__host__ cudaVector3(const cudaVector3& _V) :
+		N1(_V.getN1()), N2(_V.getN2()), N3(_V.getN3()), size(_V.getSize()), reduction((int)size, Array)
 	{
 		cudaMalloc(&Array, size * sizeof(T));
 		cudaMemcpy(Array, _V.Array, size * sizeof(T), cudaMemcpyDeviceToDevice);
-		cudaDeviceSynchronize();
 	}
 	__host__ cudaVector3& operator=(const cudaVector3& _V)
 	{
@@ -674,7 +673,7 @@ public:
 			cudaFree(Array);
 			cudaMalloc(&Array, size * sizeof(T));
 			cudaMemcpy(Array, _V.Array, size * sizeof(T), cudaMemcpyDeviceToDevice);
-			cudaDeviceSynchronize();
+			reduction.reset((int)size);
 		}
 		return *this;
 	}
@@ -683,11 +682,10 @@ public:
 		cudaFree(Array);
 	}
 
-	__host__ cudaVector3(const vector3<T>& _V) : N1(_V.getN1()), N2(_V.getN2()), N3(_V.getN3()), size(_V.getSize())
+	__host__ cudaVector3(const vector3<T>& _V) : N1(_V.getN1()), N2(_V.getN2()), N3(_V.getN3()), size(_V.getSize()), reduction((int)size, Array)
 	{
 		cudaMalloc(&Array, size * sizeof(T));
 		cudaMemcpy(Array, _V.Array, size * sizeof(T), cudaMemcpyHostToDevice);
-		cudaDeviceSynchronize();
 	}
 	__host__ cudaVector3& operator=(const vector3<T>& _V)
 	{
@@ -698,7 +696,7 @@ public:
 		cudaFree(Array);
 		cudaMalloc(&Array, size * sizeof(T));
 		cudaMemcpy(Array, _V.Array, size * sizeof(T), cudaMemcpyHostToDevice);
-		cudaDeviceSynchronize();
+		reduction.reset((int)size);
 
 		return *this;
 	}
@@ -716,13 +714,35 @@ public:
 		N3 = _N3;
 		size = N1 * N2 * N3;
 		cudaMalloc(&Array, size * sizeof(T));
-		cudaDeviceSynchronize();
+		reduction.reset((int)size);
+	}
+	__host__ cudaVector3& copy(const cudaVector3& _V, cudaStream_t stream = cudaStreamDefault)
+	{
+		if (this != &_V)
+		{
+			if (N1 == _V.getN1() && N2 == _V.getN2() && N3 == _V.getN3() && size == _V.getSize())
+			{
+				cudaMemcpyAsync(Array, _V.Array, size * sizeof(T), cudaMemcpyDeviceToDevice, stream);
+			}
+			else
+			{
+				N1 = _V.getN1();
+				N2 = _V.getN2();
+				N3 = _V.getN3();
+				size = _V.getSize();
+				cudaFree(Array);
+				cudaMalloc(&Array, size * sizeof(T));
+				cudaMemcpyAsync(Array, _V.Array, size * sizeof(T), cudaMemcpyDeviceToDevice, stream);
+				reduction.reset((int)size);
+			}
+		}
+		return *this;
 	}
 
 	__host__ T* getArray() { return Array; }
 
-	__host__ T getSum(cudaStream_t stream) { return reductionSum<T>(static_cast<int>(getSize()), Array, stream); }
-	__host__ T getMax(cudaStream_t stream) { return reductionMax<T>(static_cast<int>(getSize()), Array, stream); }
+	__host__ T getSum(cudaStream_t stream) { return reduction.getSum(stream); }
+	__host__ T getMax(cudaStream_t stream) { return reduction.getMax(stream); }
 
 	friend class vector3<T>;
 	friend class cudaVector3Dev<T>;
@@ -730,6 +750,7 @@ public:
 private:
 	size_t N1, N2, N3, size;
 	T* Array;
+	Reduction<T> reduction;
 };
 using cudaRVector3 = cudaVector3<real>;
 using cudaCVector3 = cudaVector3<complex>;

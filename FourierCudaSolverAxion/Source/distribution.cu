@@ -4,6 +4,8 @@
 #include "distribution.h"
 
 #include <cooperative_groups.h>
+#include <helper_cuda.h>
+
 namespace cg = cooperative_groups;
 
 __device__ real getOmega(real lam, real g, real f2mean, real k_sqr)
@@ -18,6 +20,7 @@ __global__ void setQquad(cudaCVector3Dev Q)
 	size_t k = blockIdx.z * blockDim.z + threadIdx.z;
 	
 	size_t N1 = Q.getN1(), N2 = Q.getN2(), N3 = Q.getN3();
+
 
 	if (i < N1 && j < N2 && k < N3)
 	{
@@ -225,7 +228,6 @@ void Distribution::setupDistribution(cudaGrid_3D& Grid)
 void Distribution::calculate()
 {
 	setQquad<<< grid3Red, block3, 0, streamDistrib >>>(Q);
-	//cudaStreamSynchronize(streamDistrib);
 
 	complex f2m = Q.getSum(streamDistrib).get_real() / (volume * volume);
 	f2mean = f2m.get_real();
@@ -275,6 +277,5 @@ void Distribution::calculate()
 		outFileDistr << "\t" << distrLinHost(i);
 	}
 	outFileDistr << std::endl;
-
 }
 

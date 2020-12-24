@@ -6,24 +6,38 @@
 class Distribution
 {
 public:
-	Distribution(bool _isLoad) : isLoad(_isLoad) { }
-	~Distribution() { outFile.close(); cudaStreamDestroy(streamDistrib); }
+	Distribution(bool _isLoad) : isLoad(_isLoad) 
+	{
+
+	}
+	~Distribution() { 
+		outFile.close();
+		cudaStreamDestroy(streamDistrib); 
+	}
 
 	void setupDistribution(cudaGrid_3D& Grid);
 
 	bool isDistributionFunctionReady()
 	{
-		return distributionFunctionFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+		if (distributionFunctionFuture.valid())
+		{
+			return distributionFunctionFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+		}
+		else
+		{
+			return true;
+		}
+		//return distributionFunctionFuture._Is_ready();
 	}
 
 	void calculate();
 
 	void calculateAsync(cudaGrid_3D& Grid)
 	{
-		cudaStreamSynchronize(Grid.get_mainStream());
 		time = Grid.get_time();
-		Q = Grid.get_Q();
-		P = Grid.get_P();
+		Q.copy(Grid.get_Q(), Grid.get_mainStream());
+		P.copy(Grid.get_P(), Grid.get_mainStream());
+		cudaStreamSynchronize(Grid.get_mainStream());
 
 		distributionFunctionFuture = std::async(std::launch::async, &Distribution::calculate, this);
 	}

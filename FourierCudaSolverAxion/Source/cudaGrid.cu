@@ -207,11 +207,20 @@ void cudaGrid_3D::calculateEnergy()
 	{
 		energyPrev = energy;
 
+		getLastCudaError("dsd");
 		int Bx = 16, By = 8, Bz = 1;
 		dim3 block(Bx, By, Bz);
 		dim3 grid((static_cast<unsigned int>(N1) + Bx - 1) / Bx, (static_cast<unsigned int>(N2) + By - 1) / By, (static_cast<unsigned int>(N3red) + Bz - 1) / Bz);
+		getLastCudaError("dsd");
 		kernelEnergyQuad << <grid, block, 0, mainStream >> > (k_sqr, Q, P, T);
+		cudaDeviceSynchronize();
+		getLastCudaError("dsd");
+		//energy = k_sqr.getSum(mainStream) / getVolume();
+		//energy = Q.getSum(mainStream).get_real() / getVolume();
+		//energy = P.getSum(mainStream).get_real() / getVolume();
 		energy = T.getSum(mainStream).get_real() / getVolume();
+
+		getLastCudaError("dsd");
 
 		ifftQ();
 

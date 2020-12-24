@@ -4,10 +4,9 @@ class equationsAxionSymplectic_3D
 {
 public:
 	equationsAxionSymplectic_3D(cudaGrid_3D& _Grid);
-	~equationsAxionSymplectic_3D() { cudaStreamDestroy(stream); }
+	~equationsAxionSymplectic_3D() { cudaStreamDestroy(stream); cudaFree(dt_local); }
 
 	void equationCuda(const real dt);
-	void equationCuda_v2(const real dt);
 	void getNonlin_Phi4_Phi6();
 
 	void setCudaStream(cudaStream_t& _stream) { stream = _stream; }
@@ -24,6 +23,7 @@ private:
 	cudaGraphExec_t graphExec;
 
 	bool isGraphCreated;
+	real* dt_local;
 };
 
 

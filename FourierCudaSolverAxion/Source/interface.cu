@@ -204,9 +204,9 @@ Params::Params(int argc, char* argv[], bool isDebug) :
 			var_isLoad.set(false);
 			var_isPrintVTK.set(false);
 			var_gpuID.set(0);
-			var_precision.set(0.0005);
-			var_tau.set(0.0005);
-			var_lambda.set(0.0001);
+			var_precision.set(0.05);
+			var_tau.set(25);
+			var_lambda.set(0.00001);
 			var_g.set(0);
 		}
 		else

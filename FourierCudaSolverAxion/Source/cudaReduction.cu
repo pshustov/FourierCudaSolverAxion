@@ -5,6 +5,9 @@
 #include "cudaComplex.h"
 #include "cudaReduction.h"
 
+
+#include <helper_cuda.h>
+
 namespace cg = cooperative_groups;
 
 
@@ -404,6 +407,9 @@ void reduce2(int size, int threads, int blocks, F fun, T* d_idata, T* d_odata, c
             case  2:
 				kernelReduce2<T,   2, true><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
+
+			default:
+				throw("reduce2 error");
         }
     }
     else
@@ -445,6 +451,9 @@ void reduce2(int size, int threads, int blocks, F fun, T* d_idata, T* d_odata, c
             case  2:
 				kernelReduce2<T,   2, false><<< dimGrid, dimBlock, smemSize, stream >>>(d_idata, d_odata, size, fun);
                 break;
+
+			default:
+				throw("reduce2 error");
         }
     }
 }
@@ -462,6 +471,7 @@ T reductionSum(int size, T* inData, cudaStream_t stream)
 	T* inData_dev = NULL;
 	T* outData_dev = NULL;
 
+	cudaDeviceSynchronize();
 	cudaMalloc((void**)&inData_dev, blocks * sizeof(T));
 	cudaMalloc((void**)&outData_dev, blocks * sizeof(T));
 
@@ -480,20 +490,32 @@ T reductionSum(int size, T* inData, cudaStream_t stream)
 		s = blocks;
 	}
 
-	T* outData_host;
-	outData_host = (T*)malloc(s * sizeof(T));
-	cudaMemcpyAsync(outData_host, outData_dev, s * sizeof(T), cudaMemcpyDeviceToHost, stream);
-	cudaStreamSynchronize(stream);
-
 	T result = 0;
-	for (int i = 0; i < s; i++)
+
+	if (cpuFinalThreshold > 1)
 	{
-		result = fun(result, outData_host[i]);
+		T* outData_host;
+		outData_host = (T*)malloc(s * sizeof(T));
+		cudaMemcpyAsync(outData_host, outData_dev, s * sizeof(T), cudaMemcpyDeviceToHost, stream);
+
+		cudaStreamSynchronize(stream);
+
+		for (int i = 0; i < s; i++)
+		{
+			result = fun(result, outData_host[i]);
+		}
+
+		free(outData_host);
+
+	}
+	else
+	{
+		cudaMemcpyAsync(&result, outData_dev, sizeof(T), cudaMemcpyDeviceToHost, stream);
+		cudaStreamSynchronize(stream);
 	}
 
 	cudaFree(inData_dev);
 	cudaFree(outData_dev);
-	free(outData_host);
 
 	return result;
 }
@@ -502,7 +524,7 @@ template float reductionSum<float>(int size, float* inData, cudaStream_t stream)
 template double reductionSum<double>(int size, double* inData, cudaStream_t stream);
 template <> complex reductionSum<complex>(int size, complex* inData, cudaStream_t stream)
 {
-	int cpuFinalThreshold = 64;
+	int cpuFinalThreshold = 1;
 	int maxThreads = 512;
 	maxThreads = maxThreads / 2;
 
@@ -511,44 +533,68 @@ template <> complex reductionSum<complex>(int size, complex* inData, cudaStream_
 
 	complex* inData_dev = NULL;
 	complex* outData_dev = NULL;
-
+	
+	cudaDeviceSynchronize();
 	cudaMalloc((void**)&inData_dev, blocks * sizeof(complex));
 	cudaMalloc((void**)&outData_dev, blocks * sizeof(complex));
+
+	getLastCudaError("num1");
+	std::cout << "num1 pass" << std::endl;
 
 	auto fun = [] __host__ (complex A, complex B) { return A + B; };
 	auto funDub = [] __device__(real A, real B) { return A + B; };
 
 	reduce2(2*size, 2*threads, blocks, funDub, (real*)inData, (real*)outData_dev, stream);
 
+	getLastCudaError("num2");
+	std::cout << "num2 pass" << std::endl;
+
 	int s = blocks;
 	while (s > cpuFinalThreshold)
 	{
 		cudaMemcpyAsync(inData_dev, outData_dev, blocks * sizeof(complex), cudaMemcpyDeviceToDevice, stream);
 
+		getLastCudaError("num3");
+		std::cout << "num3 pass" << std::endl;
+
 		getNumBlocksAndThreads(s, maxThreads, blocks, threads);
 		reduce2(2*s, 2*threads, blocks, funDub, (real*)inData_dev, (real*)outData_dev, stream);
+
+		getLastCudaError("num4");
+		std::cout << "num4 pass" << std::endl;
 
 		s = blocks;
 	}
 
-	complex* outData_host;
-	outData_host = (complex*)malloc(s * sizeof(complex));
-	cudaMemcpyAsync(outData_host, outData_dev, s * sizeof(complex), cudaMemcpyDeviceToHost, stream);
-	cudaStreamSynchronize(stream);
-
 	complex result = 0;
-	for (int i = 0; i < s; i++)
+
+	if (cpuFinalThreshold > 1)
 	{
-		result = fun(result, outData_host[i]);
+		complex* outData_host;
+		outData_host = (complex*)malloc(s * sizeof(complex));
+		cudaMemcpyAsync(outData_host, outData_dev, s * sizeof(complex), cudaMemcpyDeviceToHost, stream);
+		cudaStreamSynchronize(stream);
+
+		for (int i = 0; i < s; i++)
+		{
+			result = fun(result, outData_host[i]);
+		}
+		free(outData_host);
 	}
+	else
+	{
+		cudaMemcpyAsync(&result, outData_dev, sizeof(complex), cudaMemcpyDeviceToHost, stream);
+		cudaStreamSynchronize(stream);
+	}
+
+	getLastCudaError("num8");
+	std::cout << "num8 pass" << std::endl;
 
 	cudaFree(inData_dev);
 	cudaFree(outData_dev);
-	free(outData_host);
 
 	return result;
 }
-
 
 template <typename T>
 T reductionMax(int size, T* inData, cudaStream_t stream)
@@ -600,3 +646,190 @@ T reductionMax(int size, T* inData, cudaStream_t stream)
 template int reductionMax<int>(int size, int* inData, cudaStream_t stream);
 template float reductionMax<float>(int size, float* inData, cudaStream_t stream);
 template double reductionMax<double>(int size, double* inData, cudaStream_t stream);
+
+
+
+template<typename T>
+Reduction<T>::Reduction(int _size, T*& _Array, int _cpuFinalThreshold, int _maxThreads) :
+	size(_size),
+	Array(_Array),
+	cpuFinalThreshold(_cpuFinalThreshold),
+	maxThreads(_maxThreads) {
+	initialize();
+}
+
+template<typename T>
+Reduction<T>::~Reduction() {
+	clear();
+}
+
+template<typename T>
+void Reduction<T>::initialize()
+{
+	int blocks = 0, threads = 0;
+	getNumBlocksAndThreads(size, maxThreads, blocks, threads);
+
+	checkCudaErrors(cudaMalloc((void**)&inData_dev, blocks * sizeof(T)));
+	checkCudaErrors(cudaMalloc((void**)&outData_dev, blocks * sizeof(T)));
+	checkCudaErrors(cudaHostAlloc((void**)&outData_host, cpuFinalThreshold * sizeof(T), cudaHostAllocDefault));
+}
+template<>
+void Reduction<complex>::initialize()
+{
+	int blocks = 0, threads = 0;
+	getNumBlocksAndThreads(size, maxThreads / 2, blocks, threads);
+
+	checkCudaErrors(cudaMalloc((void**)&inData_dev, blocks * sizeof(complex)));
+	checkCudaErrors(cudaMalloc((void**)&outData_dev, blocks * sizeof(complex)));
+	checkCudaErrors(cudaHostAlloc((void**)&outData_host, cpuFinalThreshold * sizeof(complex), cudaHostAllocDefault));
+}
+
+
+template<typename T>
+void Reduction<T>::clear()
+{
+	checkCudaErrors(cudaFree(inData_dev));
+	checkCudaErrors(cudaFree(outData_dev));
+	checkCudaErrors(cudaFreeHost(outData_host));
+}
+
+template<typename T>
+void Reduction<T>::reset(int _size, int _cpuFinalThreshold, int _maxThreads)
+{
+	size = _size;
+	cpuFinalThreshold = _cpuFinalThreshold;
+	maxThreads = _maxThreads;
+	
+	clear();
+	initialize();
+}
+
+template<typename T>
+T Reduction<T>::getSum(cudaStream_t stream)
+{
+	T result = 0;
+
+	int blocks = 0, threads = 0;
+	getNumBlocksAndThreads(size, maxThreads, blocks, threads);
+
+	auto fun = [] __host__ __device__(T A, T B) { return A + B; };
+
+	reduce(size, threads, blocks, fun, Array, outData_dev, stream);
+
+	int s = blocks;
+	while (s > cpuFinalThreshold)
+	{
+		checkCudaErrors(cudaMemcpyAsync(inData_dev, outData_dev, blocks * sizeof(T), cudaMemcpyDeviceToDevice, stream));
+
+		getNumBlocksAndThreads(s, maxThreads, blocks, threads);
+		reduce(s, threads, blocks, fun, inData_dev, outData_dev, stream);
+
+		s = blocks;
+	}
+
+	if (cpuFinalThreshold > 1)
+	{
+		checkCudaErrors(cudaMemcpyAsync(outData_host, outData_dev, s * sizeof(T), cudaMemcpyDeviceToHost, stream));
+		checkCudaErrors(cudaStreamSynchronize(stream));
+
+		for (int i = 0; i < s; i++)
+		{
+			result = fun(result, outData_host[i]);
+		}
+	}
+	else
+	{
+		checkCudaErrors(cudaMemcpyAsync(&result, outData_dev, sizeof(T), cudaMemcpyDeviceToHost, stream));
+		checkCudaErrors(cudaStreamSynchronize(stream));
+	}
+
+	return result;
+}
+template <>
+complex Reduction<complex>::getSum(cudaStream_t stream) 
+{
+	int blocks = 0, threads = 0;
+	getNumBlocksAndThreads(size, maxThreads / 2, blocks, threads);
+
+	auto fun = [] __host__(complex A, complex B) { return A + B; };
+	auto funDub = [] __device__(real A, real B) { return A + B; };
+
+	reduce2(2 * size, 2 * threads, blocks, funDub, (real*)Array, (real*)outData_dev, stream);
+
+	int s = blocks;
+	while (s > cpuFinalThreshold)
+	{
+		checkCudaErrors(cudaMemcpyAsync(inData_dev, outData_dev, blocks * sizeof(complex), cudaMemcpyDeviceToDevice, stream));
+
+		getNumBlocksAndThreads(s, maxThreads / 2, blocks, threads);
+		reduce2(2 * s, 2 * threads, blocks, funDub, (real*)inData_dev, (real*)outData_dev, stream);
+
+		s = blocks;
+	}
+
+	complex result = 0;
+
+	if (cpuFinalThreshold > 1)
+	{
+		checkCudaErrors(cudaMemcpyAsync(outData_host, outData_dev, s * sizeof(complex), cudaMemcpyDeviceToHost, stream));
+		checkCudaErrors(cudaStreamSynchronize(stream));
+
+		for (int i = 0; i < s; i++)
+		{
+			result = fun(result, outData_host[i]);
+		}
+	}
+	else
+	{
+		checkCudaErrors(cudaMemcpyAsync(&result, outData_dev, sizeof(complex), cudaMemcpyDeviceToHost, stream));
+		checkCudaErrors(cudaStreamSynchronize(stream));
+	}
+
+	return result;
+}
+
+template<typename T>
+T Reduction<T>::getMax(cudaStream_t stream)
+{
+	T result = 0;
+
+	int blocks = 0, threads = 0;
+	getNumBlocksAndThreads(size, maxThreads, blocks, threads);
+
+	auto fun = [] __host__ __device__(T A, T B) { return (A > B) ? A : B; };
+
+	reduce(size, threads, blocks, fun, Array, outData_dev, stream);
+
+	int s = blocks;
+	while (s > cpuFinalThreshold)
+	{
+		checkCudaErrors(cudaMemcpyAsync(inData_dev, outData_dev, blocks * sizeof(T), cudaMemcpyDeviceToDevice, stream));
+
+		getNumBlocksAndThreads(s, maxThreads, blocks, threads);
+		reduce(s, threads, blocks, fun, inData_dev, outData_dev, stream);
+
+		s = blocks;
+	}
+
+	checkCudaErrors(cudaMemcpyAsync(outData_host, outData_dev, s * sizeof(T), cudaMemcpyDeviceToHost, stream));
+	checkCudaErrors(cudaStreamSynchronize(stream));
+
+	for (size_t i = 0; i < s; i++)
+	{
+		result = fun(result, outData_host[i]);
+	}
+
+	return result;
+}
+template <>
+complex Reduction<complex>::getMax(cudaStream_t stream)
+{
+	throw("There is no complex Max.");
+}
+
+
+template class Reduction<int>;
+template class Reduction<unsigned int>;
+template class Reduction<float>;
+template class Reduction<double>;
+template class Reduction<complex>;

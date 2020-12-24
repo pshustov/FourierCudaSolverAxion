@@ -6,10 +6,12 @@
 
 void systemEquCuda_3D::evaluate()
 {
+	std::streamsize ss = std::cout.precision();
+	std::cout.precision(3);
+	std::cout << "Current n = " << distr.getNumberOfParticles() / Grid.getVolume() << ", p = " << distr.getMeanMomentum() << ", tau = " << distr.getTau() << ", If = " << distr.getInstability() << std::endl;
+	std::cout.precision(ss);
+
 	real t = tau, dt;
-
-	distr.calculateAsync(Grid);
-
 	int countIn = 0, countOut = 0;
 
 	while (t >= (dt = Grid.get_dt(precision)) ) {
@@ -28,11 +30,8 @@ void systemEquCuda_3D::evaluate()
 		evlulate_step(t);
 	}
 
-	cudaStreamSynchronize(Grid.get_mainStream());
-	std::streamsize ss = std::cout.precision();
-	std::cout.precision(3);
-	std::cout << "Current n = " << distr.getNumberOfParticles() / Grid.getVolume() << ", p = " << distr.getMeanMomentum() << ", tau = " << distr.getTau() << ", If = " << distr.getInstability() <<   ", cIn/cOut = " << (real)countIn / (real)countOut << std::endl;
-	std::cout.precision(ss);
+	std::cout << "cIn/cOut = " << (real)countIn / (real)countOut << std::endl;
+	distr.waitUntilAsyncEnd();
 }
 
 void systemEquCuda_3D::printingMaxVal()

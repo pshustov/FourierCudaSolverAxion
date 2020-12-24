@@ -15,7 +15,10 @@
     <ClInclude Include="Include\cudaGrid.h" />
     <ClInclude Include="Include\cudaReduction.h" />
     <ClInclude Include="Include\cudaVector.h" />
-    <ClInclude Include="Include\distribution.h" />
+    <ClInclude Include="Include\distribution.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Include\equations.h" />
     <ClInclude Include="Include\cudaFFT.h" />
     <ClInclude Include="Include\interface.h" />
@@ -27,7 +30,10 @@
     <CudaCompile Include="Source\cudaGrid.cu" />
     <CudaCompile Include="Source\cudaReduction.cu" />
     <CudaCompile Include="Source\cudaVector.cu" />
-    <CudaCompile Include="Source\distribution.cu" />
+    <CudaCompile Include="Source\distribution.cu">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </CudaCompile>
     <CudaCompile Include="Source\equation.cu" />
     <CudaCompile Include="Source\cudaFFT.cu" />
     <CudaCompile Include="Source\system.cu" />
